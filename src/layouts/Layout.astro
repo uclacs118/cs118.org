@@ -1,30 +1,393 @@
 ---
-interface Props {
-    title: String
-}
-const { title } = Astro.props;
+const { title, frontmatter } = Astro.props;
+
+const pageTitle = title ? title : frontmatter.title;
 ---
 
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
+    <head>
+        <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
         <link rel="icon" type="image/png" href="/favicon.png" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="mask-icon" href="/favicon.ico" />
-        <title>{title}</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="mask-icon" href="/favicon.ico" />
+
+        <script
+            is:inline
+            id="MathJax-script"
+            async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+        ></script>
+        <script
+            is:inline
+            type="module"
+            src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+        ></script>
+        <script
+            is:inline
+            nomodule=""
+            src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+        ></script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap"
+            rel="stylesheet"
+        />
+
+        <title>{pageTitle}</title>
+    </head>
+    <body>
+        <div class="expandbutton">
+            <a onclick="expand()"
+                ><ion-icon name="chevron-forward-circle" size="large"
+                ></ion-icon></a
+            >
+        </div>
+
+        <nav>
+            <noscript>
+                <style>
+                    .buttons {
+                        display: none;
+                    }
+                </style>
+            </noscript>
+
+            <div class="buttons">
+                <div class="darkbutton">
+                    <a onclick="setMode(!darkMode)"
+                        ><ion-icon name="sunny" size="large"></ion-icon></a
+                    >
+                </div>
+                <div class="collapsebutton">
+                    <a onclick="collapse()"
+                        ><ion-icon name="chevron-back-circle" size="large"
+                        ></ion-icon></a
+                    >
+                </div>
+            </div>
+            <div class="head">
+                <img src="/favicon.png" />
+                <div>
+                    <h1>CS 118</h1>
+                    <h2>Computer Network Fundamentals</h2>
+                </div>
+            </div>
+
+            <div class="links">
+                <ul>
+                    <li style="color: var(--acc); font-weight: bolder;">
+                        <ion-icon name="newspaper" size="large"
+                        ></ion-icon>Syllabus
+                    </li>
+                    <li>
+                        <ion-icon name="calendar-outline" size="large"
+                        ></ion-icon>Schedule
+                    </li>
+                    <li>
+                        <ion-icon name="create-outline" size="large"></ion-icon>
+                        Homeworks
+                        <!-- <ul> -->
+                        <!--     <li>Homework 1</li> -->
+                        <!--     <li>Homework 2</li> -->
+                        <!--     <li>Homework 3</li> -->
+                        <!--     <li>Homework 4</li> -->
+                        <!-- </ul> -->
+                    </li>
+                    <li>
+                        <ion-icon name="construct-outline" size="large"
+                        ></ion-icon>
+                        Projects
+                        <!-- <ul> -->
+                        <!--     <li>Sockets</li> -->
+                        <!--     <li>Transport</li> -->
+                        <!--     <li>Security</li> -->
+                        <!-- </ul> -->
+                    </li>
+                    <li>
+                        <ion-icon name="podium-outline" size="large"
+                        ></ion-icon>Gradescope
+                    </li>
+
+                    <li>
+                        <ion-icon name="flag-outline" size="large"
+                        ></ion-icon>Bruin Learn
+                    </li>
+                    <li>
+                        <ion-icon name="chatbubbles-outline" size="large"
+                        ></ion-icon>Piazza
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="content">
+            <slot />
+        </div>
+    </body>
 </html>
 
 <style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
+    :root {
+        --bg: #ffffff;
+        --fg: #202020;
+        --acc: #2065d7;
+        /* --acc: #cf2929; */
+        --alt: #888888;
+        --hsize: 20vw;
+    }
+
+    * {
+        font-family: "Lexend";
+    }
+    html,
+    body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        color: var(--fg);
+        background: var(--bg);
+    }
+
+    .expandbutton {
+        position: fixed;
+        left: 1rem;
+        top: 1rem;
+        display: none;
+        z-index: 100;
+        color: var(--acc);
+    }
+
+    nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: var(--hsize);
+        height: 100%;
+        box-sizing: border-box;
+        padding: 1rem;
+        border-right: 2px solid var(--fg);
+        overflow-y: scroll;
+        overflow-wrap: break-word;
+        overflow-x: clip;
+        z-index: 50;
+        background: var(--bg);
+
+        .buttons {
+            display: flex;
+            flex-flow: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: var(--acc);
+        }
+
+        .head {
+            display: flex;
+            flex-flow: row;
+            justify-content: flex-start;
+            align-items: center;
+
+            img {
+                width: 3rem;
+                padding-right: 1rem;
+            }
+
+            h1 {
+                margin: 0;
+                color: var(--acc);
+            }
+
+            h2 {
+                margin: 0;
+                font-size: 1rem;
+            }
+        }
+
+        .links {
+            margin-top: 2rem;
+            ul {
+                list-style: none;
+                padding: 0;
+
+                li {
+                    padding-top: 0.5rem;
+                    padding-bottom: 0.5rem;
+                    display: flex;
+                    flex-flow: row;
+                    justify-content: flex-start;
+                    align-items: center;
+                    gap: 0.5rem;
+                    border-top: 1px solid var(--alt);
+                }
+                li:first-of-type {
+                    border-top: none;
+                }
+            }
+        }
+    }
+
+    .content {
+        position: absolute;
+        left: var(--hsize);
+        width: calc(100vw - var(--hsize));
+        padding: 2rem;
+        box-sizing: border-box;
+        hyphens: auto;
+    }
+
+    @media (max-width: 1024px) {
+        :root {
+            --hsize: 30%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        :root {
+            --hsize: 40%;
+        }
+    }
+
+    @media (max-width: 512px) {
+        nav {: 
+            .head {
+                display: block;
+            }
+        }
+    }
 </style>
+
+<style is:inline>
+    pre {
+        padding: 1rem;
+        border-radius: 1rem;
+    }
+    .title {
+        font-size: 2rem;
+        color: var(--acc);
+        font-weight: bolder;
+        margin: 0;
+    }
+    .subtitle {
+        font-size: 1.5rem;
+        color: var(--alt);
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .content {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: normal;
+        }
+        p {
+            font-weight: 300;
+        }
+
+        a {
+            color: var(--acc);
+        }
+
+        img {
+            width: 5rem;
+            height: 5rem;
+            object-fit: cover;
+            border-radius: 100rem;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        thead th {
+            text-align: left;
+            padding: 0.5rem;
+        }
+
+        tbody td {
+            padding: 0.5rem;
+            border: 1px solid var(--acc);
+            border-spacing: 0;
+            margin: 0;
+        }
+    }
+</style>
+
+<script is:inline>
+    var darkMode = false;
+
+    var setMode = (mode) => {
+        const root = document.querySelector(":root");
+        const button = document.querySelectorAll(".darkbutton ion-icon");
+        darkMode = mode;
+
+        if (darkMode) {
+            button.forEach((el) => (el.name = "moon"));
+            root.style.setProperty("--bg", "#202020");
+            root.style.setProperty("--fg", "#ffffff");
+            root.style.setProperty("--acc", "#3d7adb");
+        } else {
+            button.forEach((el) => (el.name = "sunny"));
+            root.style.setProperty("--bg", "#ffffff");
+            root.style.setProperty("--fg", "#202020");
+            root.style.setProperty("--acc", "#2065d7");
+        }
+
+        if (localStorage) {
+            localStorage.setItem("darkMode", mode ? "true" : "false");
+        }
+    };
+
+    window.onload = () => {
+        if (window.matchMedia) {
+            const query = window.matchMedia("(prefers-color-scheme: dark)");
+
+            if (!localStorage || !localStorage.getItem("darkMode")) {
+                darkMode = query.matches;
+                setMode(darkMode);
+            }
+
+            query.onchange = (e) => {
+                darkMode = e.matches;
+                setMode(e.matches);
+            };
+        }
+
+        if (localStorage && localStorage.getItem("darkMode")) {
+            setMode(localStorage.getItem("darkMode") == "true");
+        }
+
+        if (localStorage && localStorage.getItem("collapsed") == "true") {
+            collapse();
+        }
+    };
+
+    var hsize = 0;
+
+    var collapse = () => {
+        const root = document.querySelector(":root");
+        const nav = document.querySelector("nav");
+        const expand = document.querySelector(".expandbutton");
+        nav.style.display = "none";
+        expand.style.display = "block";
+        hsize = window.getComputedStyle(root).getPropertyValue("--hsize");
+        root.style.setProperty("--hsize", "0%");
+        localStorage.setItem("collapsed", "true");
+    };
+
+    var expand = () => {
+        const root = document.querySelector(":root");
+        const nav = document.querySelector("nav");
+        const expand = document.querySelector(".expandbutton");
+        nav.style.display = "block";
+        expand.style.display = "none";
+        root.style.setProperty("--hsize", hsize);
+        localStorage.setItem("collapsed", "false");
+    };
+</script>
