@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.3",
-    "astro": "^5.1.1"
+    "astro": "^5.1.1",
+    "ionicons": "^7.4.0"
   },
   "devDependencies": {
+    "@mdx-js/language-server": "^0.5.1",
+    "@mdx-js/typescript-plugin": "^0.0.7",
     "prettier": "^3.4.2",
     "prettier-plugin-astro": "^0.14.1"
   }
