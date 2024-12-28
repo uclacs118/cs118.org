@@ -59,7 +59,7 @@ const pageTitle = title ? title : frontmatter.title;
             });
         </script>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" type="image/png" href="/favicon.png" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="mask-icon" href="/favicon.ico" />
@@ -145,6 +145,11 @@ const pageTitle = title ? title : frontmatter.title;
             border-spacing: 0;
             margin: 0;
         }
+
+        a.anchor-link {
+            color: var(--alt);
+            margin-right: 0.25rem;
+        }
     }
 </style>
 
@@ -152,21 +157,18 @@ const pageTitle = title ? title : frontmatter.title;
     html,
     body {
         margin: 0;
-        width: 100%;
-        height: 100%;
         color: var(--fg);
         background: var(--bg);
         font-family: "Lexend";
     }
 
     .content {
-        position: fixed;
+        position: absolute;
         left: var(--hsize);
         width: calc(100% - var(--hsize));
         padding: 2rem;
         box-sizing: border-box;
         hyphens: auto;
-        overflow-y: scroll;
-        height: 100%;
+        margin: 0;
     }
 </style>
