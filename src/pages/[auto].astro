@@ -1,0 +1,32 @@
+---
+import type { GetStaticPaths } from "astro";
+
+export const links: any = {
+    'form': 'http://google.com',
+    'laform': 'https://ucla.edu',
+}
+
+export const getStaticPaths = (() => {
+    return Object.keys(links).map(link => { return {params: {auto: link}}});
+}) satisfies GetStaticPaths;
+
+const { auto } = Astro.params;
+---
+
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="refresh" content=`0; url=${links[auto]}` />
+        <script is:inline type="text/javascript">
+            window.location.href = links[auto];
+        </script>
+        <title>Page Redirection</title>
+    </head>
+    <body>
+        <!-- Note: don't tell people to `click` the link, just tell them that it is a link. -->
+        If you are not redirected automatically, follow this <a
+            href={links[auto]}>link to example</a
+        >.
+    </body>
+</html>

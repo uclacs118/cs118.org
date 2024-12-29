@@ -1,19 +1,53 @@
 ---
+import { DateTime } from "luxon";
+
 interface Props {
-    title: String
+    title: String;
+    dueDate: string;
+    link: string;
 }
 
-const { title } = Astro.props;
+const { title, dueDate, link } = Astro.props;
+const due = DateTime.fromISO(dueDate, { zone: "-00:00" });
 ---
 
-<div class="item">
+<div class="assignment">
     <hr />
-
-    <h2>{title}</h2> 
+    <a class="item" href={link}>
+        <div class="header">
+            <h2><b>{title}</b></h2>
+            <h3>Due on {due.toFormat("EEEE, MMMM dd 'at' h:mm a")}</h3>
+        </div>
+        <ion-icon name="arrow-forward-outline"></ion-icon>
+    </a>
+    <slot />
 </div>
 
 <style>
+    .assignment {
+        margin-bottom: 2rem;
+    }
     .item {
-        margin-top: 2rem;
+        display: flex;
+        flex-flow: row;
+        justify-content: space-between;
+        align-items: center;
+
+        .header {
+            color: var(--fg);
+            h2,
+            h3 {
+                margin: 0;
+                margin-bottom: 0.5rem;
+            }
+
+            h3 {
+                color: var(--alt);
+            }
+        }
+
+        ion-icon {
+            font-size: 2rem;
+        }
     }
 </style>

@@ -1,0 +1,13 @@
+---
+import Assignment from "../../components/Assignment.astro";
+import type { MarkdownInstance } from 'astro';
+interface Frontmatter {
+    title: string;
+    dueDate: string;
+}
+
+const homeworks = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("./homework*.mdx", { eager: true }));
+---
+
+{homeworks.map(homework => <Assignment title={homework.frontmatter.title!} dueDate={homework.frontmatter.dueDate!} link={homework.url!} />)}
+{homeworks.length == 0 ? <p>No homework is available yet-check back later!</p> : null}

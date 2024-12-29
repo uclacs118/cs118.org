@@ -59,7 +59,7 @@ const links = [
                             <a href={link}>
                                 <li style="color: var(--acc); font-weight: bolder;">
                                     <ion-icon name={icon} size="large" />
-                                    {name}
+                                    <span>{name}</span>
                                 </li>
                             </a>
                         );
@@ -71,7 +71,7 @@ const links = [
                                         name={icon + "-outline"}
                                         size="large"
                                     />
-                                    {name}
+                                    <span>{name}</span>
                                 </li>
                             </a>
                         );
@@ -184,11 +184,16 @@ const links = [
                     padding-top: 0.5rem;
                     padding-bottom: 0.5rem;
                     display: flex;
-                    flex-flow: row;
+                    flex-flow: row wrap;
                     justify-content: flex-start;
                     align-items: center;
                     gap: 0.5rem;
                     border-top: 1px solid var(--alt);
+                    
+                    span {
+                        hyphens: auto;
+                        min-width: 0;
+                    }
                 }
                 li:first-of-type {
                     border-top: none;

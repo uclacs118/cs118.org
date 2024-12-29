@@ -1,51 +1,42 @@
 # cs118.org
-Homepage for CS 118
 
-# Astro Starter Kit: Basics
+A website containing all class materials for CS 118.
 
-```sh
-npm create astro@latest -- --template basics
+= Syllabus
+- Schedule
+    - Weekly class material incl. discussions/activites
+- Projects
+- Homeworks
+- Quick Links (incl. a URL shortener)
+
+Created with Astro.
+
+# Usage
+```bash
+$ npm run build # build code to ./dist directory
+$ npm run dev -- --host # create development server at port 4321
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+# Content Management
+All user generated content should be modified in the `.mdx` files + `public` and `src/assets` folders.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Syllabus
+The syllabus is located in `src/pages/index.mdx`.
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
+## Schedule
+The schedule is located in `src/pages/schedule.mdx`. Please note that changing the due dates/other metadata
+for items in homework and projects don't modify this page. Future iterations may do this automatically.
 
-## 🚀 Project Structure
+## Homeworks/Projects
+Each are in their respective folder under `src/pages`. To create an assignment, create some file `assignment[number].mdx`.
+For example, to create Project 2, create the file `src/pages/projects/project2.mdx`. 
 
-Inside of your Astro project, you'll see the following folders and files:
+All assignments must have the due date and title in the frontmatter. See `src/pages/projects/project0.mdx` for an example. 
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+To create a draft assignment that doesn't show up, prepend the filename with `draft_`. This will still be accessible in the
+live site from its url, so don't commit any drafts to the main branch.
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## URL Shortening
+In `src/pages/[auto].astro`, create a URL mapping by modifying the `links` variable in the frontmatter.
 
-## 🧞 Commands
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

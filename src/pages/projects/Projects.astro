@@ -1,0 +1,12 @@
+---
+import Assignment from "../../components/Assignment.astro";
+import type { MarkdownInstance } from 'astro';
+interface Frontmatter {
+    title: string;
+    dueDate: string;
+}
+
+const projects = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("./project*.mdx", { eager: true }));
+---
+
+{projects.map(project => <Assignment title={project.frontmatter.title!} dueDate={project.frontmatter.dueDate!} link={project.url!} />)}

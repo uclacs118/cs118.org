@@ -75,11 +75,6 @@ const pageTitle = title ? title : frontmatter.title;
             type="module"
             src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
         ></script>
-        <script
-            is:inline
-            nomodule=""
-            src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
-        ></script>
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -93,8 +88,10 @@ const pageTitle = title ? title : frontmatter.title;
     <body>
         <Navigation />
         <div class="content">
-            <br />
-            <slot />
+            <div class="container">
+                <br />
+                <slot />
+            </div>
         </div>
     </body>
 </html>
@@ -126,12 +123,17 @@ const pageTitle = title ? title : frontmatter.title;
         h6 {
             font-weight: normal;
         }
-        p {
+        p, ul, ol {
             font-weight: 300;
         }
 
         table {
             border-collapse: collapse;
+            display: block;
+            overflow-x: auto;
+            width: 100%;
+            font-weight: 300;
+            padding-left: 1px;
         }
 
         thead th {
@@ -142,13 +144,24 @@ const pageTitle = title ? title : frontmatter.title;
         tbody td {
             padding: 0.5rem;
             border: 1px solid var(--acc);
-            border-spacing: 0;
             margin: 0;
         }
 
         a.anchor-link {
             color: var(--alt);
             margin-right: 0.25rem;
+        }
+
+        blockquote {
+            color: var(--alt);
+            border-left: 4px solid var(--alt);
+            padding-left: 0.5rem;
+            letter-spacing: -1px;
+            font-style: italic;
+
+            > :last-child {
+                margin-bottom: 0;
+            }
         }
     }
 </style>
@@ -160,15 +173,33 @@ const pageTitle = title ? title : frontmatter.title;
         color: var(--fg);
         background: var(--bg);
         font-family: "Lexend";
+        height: 100%;
     }
 
     .content {
         position: absolute;
-        left: var(--hsize);
+        left: calc(var(--hsize));
         width: calc(100% - var(--hsize));
         padding: 2rem;
         box-sizing: border-box;
         hyphens: auto;
         margin: 0;
+        container-type: inline-size;
+    }
+
+    .container {
+        --wsize: 0%;
+        margin-left: var(--wsize);
+        width: calc(100% - 2 * var(--wsize));
+        overflow-x: scroll;
+        box-sizing: border-box;
+
+        @container (min-width: 1024px) {
+            --wsize: 20%;
+        }
+
+        @container (min-width: 1440px) {
+            --wsize: 25%;
+        }
     }
 </style>

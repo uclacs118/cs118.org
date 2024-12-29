@@ -1,11 +1,17 @@
 ---
 layout: ../../layouts/Layout.astro
-title: "CS 118: Projects"
+title: "Projects"
 ---
 
 import Assignment from '../../components/Assignment.astro';
+import Projects from './Projects.astro';
+import * as H from '../../components/helpers/index.astro';
 
-<span class="title">Projects</span>
-<br />
+<H.Title>Projects</H.Title>
+<br/>
 
-<Assignment />
+<Projects />
+
+## Helpful Resources
+- [Professor Smallberg's Guide to Interpreting Sanitizer Messages](http://web.cs.ucla.edu/classes/fall24/cs31/sanitizer.html)
+
