@@ -1,14 +1,12 @@
 ---
 import Layout from "./Layout.astro";
 import * as H from "../components/helpers/index.astro";
-import { DateTime } from "luxon";
-
+import moment from "moment";
 const { title, dueDate } = Astro.props.frontmatter;
-const due = DateTime.fromISO(dueDate, { zone: "-00:00" });
 ---
 
 <Layout title={title}>
     <H.Title>{title}</H.Title>
-    <H.Subtitle>Due on {due.toFormat("EEEE, MMMM d 'at' h:mm a")}</H.Subtitle>
+    <H.Subtitle>Due on {moment.utc(dueDate).format(H.format)}</H.Subtitle>
     <slot />
 </Layout>

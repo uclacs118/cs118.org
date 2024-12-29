@@ -1,5 +1,6 @@
 ---
-import { DateTime } from "luxon";
+import moment from "moment";
+import { format } from "./helpers/index.astro";
 
 interface Props {
     title: String;
@@ -8,7 +9,6 @@ interface Props {
 }
 
 const { title, dueDate, link } = Astro.props;
-const due = DateTime.fromISO(dueDate, { zone: "-00:00" });
 ---
 
 <div class="assignment">
@@ -16,7 +16,7 @@ const due = DateTime.fromISO(dueDate, { zone: "-00:00" });
     <a class="item" href={link}>
         <div class="header">
             <h2><b>{title}</b></h2>
-            <h3>Due on {due.toFormat("EEEE, MMMM dd 'at' h:mm a")}</h3>
+            <h3>Due on {moment.utc(dueDate).format(format)}</h3>
         </div>
         <ion-icon name="arrow-forward-outline"></ion-icon>
     </a>
