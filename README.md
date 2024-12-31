@@ -2,7 +2,7 @@
 
 A website containing all class materials for CS 118.
 
-= Syllabus
+- Syllabus
 - Schedule
     - Weekly class material incl. discussions/activites
 - Projects
