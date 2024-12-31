@@ -102,6 +102,8 @@ const pageTitle = title ? title : frontmatter.title;
         --fg: #202020;
         --acc: #2065d7;
         --alt: #888888;
+        --good: #6aa84f;
+        --bad: #cc0000;
     }
 
     pre {
@@ -112,6 +114,10 @@ const pageTitle = title ? title : frontmatter.title;
     a {
         color: var(--acc);
         text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 
     .content {
@@ -185,14 +191,15 @@ const pageTitle = title ? title : frontmatter.title;
         hyphens: auto;
         margin: 0;
         container-type: inline-size;
+        overflow: visible;
     }
 
     .container {
         --wsize: 0%;
         margin-left: var(--wsize);
         width: calc(100% - 2 * var(--wsize));
-        overflow-x: scroll;
         box-sizing: border-box;
+        overflow: visible;
 
         @container (min-width: 1024px) {
             --wsize: 20%;

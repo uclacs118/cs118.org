@@ -1,0 +1,35 @@
+---
+import type { MarkdownInstance } from "astro";
+import * as H from "../../components/helpers/index.astro";
+import Week from "../../components/Week.astro";
+import Layout from "../../layouts/Layout.astro";
+
+const weeks = [];
+const names: string[] = [];
+for (let i = 1; i <= 10; i++) {
+    weeks.push(`week${i}`);
+    names.push(`Week ${i}`);
+}
+weeks.push("finals");
+names.push("Finals");
+
+const contents: MarkdownInstance<any>[][] = [];
+const files = Object.values(
+    import.meta.glob<MarkdownInstance<any>>("./*/*.mdx", { eager: true }),
+);
+
+for (let week of weeks) {
+    contents.push(files.filter((file) => file.file.includes(week + "/")));
+}
+---
+
+<Layout title="Schedule">
+    <H.Title>Schedule</H.Title>
+    <br />
+
+    {
+        weeks.map((week, i) => (
+            <Week id={week} name={names[i]} days={contents[i]} />
+        ))
+    }
+</Layout>

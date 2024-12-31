@@ -10,3 +10,4 @@ const projects = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("
 ---
 
 {projects.map(project => <Assignment title={project.frontmatter.title!} dueDate={project.frontmatter.dueDate!} link={project.url!} />)}
+{projects.length == 0 ? <p>No projects are available yet-check back later!</p> : null}

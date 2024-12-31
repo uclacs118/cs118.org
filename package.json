@@ -21,6 +21,7 @@
   "devDependencies": {
     "@mdx-js/language-server": "^0.5.1",
     "@mdx-js/typescript-plugin": "^0.0.7",
+    "fs-extra": "^11.2.0",
     "prettier": "^3.4.2",
     "prettier-plugin-astro": "^0.14.1"
   }

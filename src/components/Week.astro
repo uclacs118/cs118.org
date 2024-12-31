@@ -1,0 +1,198 @@
+---
+import type { MarkdownInstance } from "astro";
+
+import moment from "moment";
+import { formatDay } from "./helpers/index.astro";
+
+interface Props {
+    id: string;
+    name: string;
+    days: MarkdownInstance<any>[];
+}
+
+const { id, name, days } = Astro.props;
+const startWeek = 1;
+
+const pDays: (MarkdownInstance<any> & { moment: moment.Moment })[] = [];
+let day0;
+
+if (days && days.length > 0) {
+    for (let day of days) {
+        const date = day.file.split("/").at(-1)!.split(".")[0];
+
+        pDays.push(Object.assign({}, day, { moment: moment.utc(date) }));
+    }
+    day0 = pDays[0];
+}
+---
+
+{
+    day0 ? (
+        <table id={id} class="sch">
+            <tbody>
+                <tr>
+                    <td id={id + "button"}>
+                        <ion-icon name="add" />
+                        {name}
+                    </td>
+                    <td>
+                        <b>{pDays[0].moment.format(formatDay)}</b>
+                        <day0.default />
+                    </td>
+                </tr>
+                {pDays.slice(1).map((day) => (
+                    <tr>
+                        <td />
+                        <td>
+                            <b>{day.moment.format(formatDay)}</b>
+                            <day.default />
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    ) : null
+}
+
+<script is:inline define:vars={{ id, startWeek }}>
+    const isCurWeek = () => {
+        const currentDate = new Date();
+        const januaryFirst = new Date(currentDate.getFullYear(), 0, 1);
+        const daysToNextMonday =
+            januaryFirst.getDay() === 1 ? 0 : (7 - januaryFirst.getDay()) % 7;
+        const nextMonday = new Date(
+            currentDate.getFullYear(),
+            0,
+            januaryFirst.getDate() + daysToNextMonday,
+        );
+
+        const num =
+            currentDate < nextMonday
+                ? 52
+                : currentDate > nextMonday
+                  ? Math.ceil(
+                        (currentDate - nextMonday) / (24 * 3600 * 1000) / 7,
+                    )
+                  : 1;
+        const curWeek = num - startWeek + 1;
+
+        let idWeek = parseInt(id.at(-1));
+        idWeek = isNaN(idWeek) ? 11 : idWeek;
+
+        return idWeek == curWeek || (curWeek > 10 && idWeek == 11);
+    };
+    const label = document.querySelector(`#${id}button`);
+    const button = document.querySelector(`#${id}button ion-icon`);
+
+    const nodes = document.querySelectorAll(`#${id} td`);
+
+    if (!isCurWeek()) {
+        button.setAttribute("name", "remove");
+        nodes.forEach((node) => {
+            if (node.id != `${id}button`)
+                node.setAttribute("style", "display: none");
+        });
+    }
+
+    label?.addEventListener("click", () => {
+        if (button?.getAttribute("name") == "add") {
+            button.setAttribute("name", "remove");
+            nodes.forEach((node) => {
+                if (node.id != `${id}button`)
+                    node.setAttribute("style", "display: none");
+            });
+        } else {
+            button.setAttribute("name", "add");
+            nodes.forEach((node) => {
+                if (node.id != `${id}button`)
+                    node.setAttribute("style", "display: table-cell");
+            });
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const targetId = window.location.hash.slice(1);
+        if (targetId == id) {
+            button.setAttribute("name", "add");
+            nodes.forEach((node) => {
+                if (node.id != `${id}button`)
+                    node.setAttribute("style", "display: table-cell");
+            });
+        }
+    });
+</script>
+
+<style>
+    .sch {
+        &:target {
+        }
+        display: table;
+
+        border-top: 1px solid var(--alt);
+
+        td {
+            border: none;
+
+            &:first-of-type {
+                font-weight: 900;
+                vertical-align: top;
+                display: flex;
+                flex-flow: row;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 0.25rem;
+                white-space: nowrap;
+                ion-icon {
+                    color: var(--acc);
+                    font-size: 1.5rem;
+                    min-width: 1.5rem;
+                }
+                cursor: pointer;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+
+                width: 1%;
+            }
+
+            padding: 1rem;
+
+            ul.links {
+                list-style: none;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 1rem;
+                padding: 0;
+                margin: 0;
+                margin-top: 1rem;
+            }
+
+            p {
+                margin-bottom: 0;
+            }
+        }
+
+        tr {
+            td:nth-of-type(2) {
+                border-bottom: 1px solid var(--alt);
+            }
+
+            &:first-of-type td {
+                padding-top: 1rem;
+            }
+
+            &:last-of-type {
+                td:nth-of-type(2) {
+                    border-bottom: none;
+                }
+            }
+        }
+
+        &:first-of-type {
+            border-top: none;
+        }
+    }
+</style>
