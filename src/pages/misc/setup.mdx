@@ -1,0 +1,108 @@
+---
+layout: ../../layouts/Post.astro
+title: "Environment Setup"
+---
+
+# Overview
+
+Welcome to CS 118! This document will help you setup your environment so you
+can easily work on the projects this quarter. We'll go over the setup for 
+Windows and macOS (with Visual Studio Code as an IDE). If you’re using Linux 
+(or any other operating system/IDE), we’ll assume you know what you’re doing. 
+Nonetheless, feel free to attend TA office hours if you need any help.
+
+# Setting up WSL (Windows Only)
+
+WSL stands for Windows Subsystem for Linux—this essentially creates a Linux virtual machine that’s deeply integrated into your Windows system. If you’re on Windows, **please use WSL**. We’ve had students who used MinGW and other runtimes—they had a much harder time developing their projects. 
+
+These steps were verified to work on Windows 11 x64 23H2. They may work on previous versions of Windows (down to Windows 10), but it’s not guaranteed. Please seek help in office hours if you get stuck.
+
+Here are the steps to get WSL set up:
+
+1. Go to the Microsoft Store and search for Ubuntu (feel free to install any distro, but we’ve just tested with Ubuntu). Install it.  
+2. Go to Control Panel (Win \+ R, type `control`, hit enter) \> Programs and Features \> Turn Windows features on or off. Select Windows Subsystem for Linux.   
+3. Reboot your computer.  
+4. Go to your command prompt and enter the following commands:  
+   `wsl.exe --update`  
+   `wsl.exe --install Ubuntu`  
+5. Reboot your computer.  
+6. Go to your command prompt and enter `ubuntu`. Follow the prompts to set up your UNIX username and password.  
+7. Once you’re in your Ubuntu install, run the following commands:  
+   `sudo apt update`  
+   `sudo apt install -y make`
+
+You’ve now got a working WSL install\!
+
+# Setting up Command Line Tools \+ Extras (macOS Only)
+
+macOS uses the Darwin kernel—which is based on BSD[^1] (a cousin of Linux). As such, a lot of APIs are similar—which makes macOS a fairly compatible development machine right out of the box. However, there are a couple of other tools you need to install first.
+
+1. Open Terminal.  
+2. Install the Command Line Tools by entering `xcode-select --install`. Follow the instructions.  
+3. Install Homebrew, a package manager for macOS. Follow the instructions at [https://brew.sh](https://brew.sh).
+
+# Installing Docker
+
+We'll be using Docker, which is a form of containerization software that creates
+isolated environments according to certain specifications, to replicate our
+autograding environment. Feel free to read more about it [here](https://www.ibm.com/topics/docker). All you really need to know is that it’s very similar to a virtual machine. 
+
+Let’s install Docker on your system. Head over to [https://www.docker.com](https://www.docker.com) and click on the install button for your machine. Follow the installation instructions. (**On Windows, make sure the WSL 2 option is selected.** If you forgot to do this/you already have Docker Desktop installed, visit [this page for more information](https://docs.docker.com/desktop/wsl/#turn-on-docker-desktop-wsl-2).)
+
+If you're on macOS, a nice alternative to Docker Desktop is
+[OrbStack](https://orbstack.dev)-highly recommended, and works exactly the same
+as Docker Desktop.
+
+# Installing OpenSSL 3
+
+In Project 2, you’ll be using `libcrypto` from OpenSSL 3 to write a makeshift
+TLS-like layer to add security to our quarter-long project. We won’t be doing that now, but we’d like to make sure you’ve got it installed beforehand.
+
+If you haven’t already, on WSL (or any Debian based system), run `sudo apt install -y libssl-dev`. 
+
+On macOS, run:  
+```bash
+$ brew install openssl
+$ sudo ln -s (brew --prefix)/Cellar/openssl@3/3.4.0/include/openssl
+/usr/local/include/
+$ sudo ln -s (brew --prefix)/Cellar/openssl@3/3.4.0/lib/libcrypto.a /usr/local/lib
+```
+Notes:
+- You may have to change the version number in the commands provided above.
+3.4.0 is the latest version provided by Homebrew as of January 1st, 2025.
+- You also may have to create the directories `/usr/local/lib` and
+`/usr/local/include` before running the above commands.
+- On Intel machines, Homebrew may have already linked these directories. That's
+  okay.
+
+# Installing Visual Studio Code
+
+As said in the overview, the exact IDE you use really isn’t that important. However, we’ll provide instructions here as official support (Visual Studio Code (VSC) also has great WSL support for Windows users).
+
+Head over to [https://code.visualstudio.com](https://code.visualstudio.com) to download and install the appropriate version of VSC. Follow the instructions and any prompts. 
+
+Launch VSC. Follow these instructions if you’re on WSL:
+
+1. On first launch, VSC will recommend installing the WSL extension. (If the prompt doesn’t show up, install it in the Extensions tab.) Follow the prompts to install it and restart VSC.   
+2. In the bottom, left-hand corner of your window, there should be a colored remote connect button. Select it and click on Connect to WSL.  
+3. This will open up a new window that’s connected to your WSL installation\! You’ll have to repeat step 2 any time you open up a new VSC workspace.
+
+In your VSC terminal (open it up by pressing `` Ctrl + ` ``. Note that it's the same for macOS), clone our [**Starter Code**](https://github.com/CS118F24/project0starter) using Git. Launch the repo in a new workspace by running `code project0starter`. 
+
+Now, follow these steps to set up code completion:
+
+1. Select the file `project > client.c` in the left hand side navigator. VSC will prompt you to install the C/C++ extension. (If it doesn’t prompt you, check in the Extensions tab.)   
+2. Once it’s done installing, restart VSC.  
+3. Select the same file. There might be a warning in the bottom right corner to install a new compiler. Follow those steps and restart VSC.  
+4. Add the directive `#include <openssl/evp.h>`. If there’s a red squiggly line under it, you don’t have OpenSSL in your include path.   
+   1. VSC may prompt you to fix this issue. Follow its suggestion.   
+   2. Please visit office hours if you’re still unable to fix this issue.  
+5. **Remove `#include <openssl/evp.h>`. We’re just using this line to test your
+include path.**
+
+
+And that's it! You should be set to start on the projects this quarter.
+
+
+
+[^1]:  Saying Darwin is a kernel that’s based on BSD is a bit of an oversimplification and honestly kind of inaccurate. Check out [this Wikipedia article](https://en.wikipedia.org/wiki/Darwin_\(operating_system\)) for more information.
