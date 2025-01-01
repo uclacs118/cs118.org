@@ -1,0 +1,10 @@
+---
+import Layout from "./Layout.astro";
+import * as H from "../components/helpers/index.astro";
+const { title } = Astro.props.frontmatter;
+---
+
+<Layout title={title}>
+    <H.Title>{title}</H.Title>
+    <slot />
+</Layout>
