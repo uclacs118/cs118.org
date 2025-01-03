@@ -63,9 +63,8 @@ If you haven’t already, on WSL (or any Debian based system), run `sudo apt ins
 On macOS, run:  
 ```bash
 $ brew install openssl
-$ sudo ln -s (brew --prefix)/Cellar/openssl@3/3.4.0/include/openssl
-/usr/local/include/
-$ sudo ln -s (brew --prefix)/Cellar/openssl@3/3.4.0/lib/libcrypto.a /usr/local/lib
+$ sudo ln -s $(brew --prefix)/Cellar/openssl@3/3.4.0/include/openssl /usr/local/include/
+$ sudo ln -s $(brew --prefix)/Cellar/openssl@3/3.4.0/lib/libcrypto.a /usr/local/lib
 ```
 Notes:
 - You may have to change the version number in the commands provided above.
