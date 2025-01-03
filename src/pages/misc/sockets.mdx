@@ -213,9 +213,9 @@ fcntl(sockfd, F_SETFL, flags);
 
 ```c
 while (true) {
-	/* Do some processing here */
+  /* Do some processing here */
 	
-	int bytes_recvd = recvfrom(sockfd, client_buf, BUF_SIZE, 
+  int bytes_recvd = recvfrom(sockfd, client_buf, BUF_SIZE, 
 	                        // socket  store data  how much
 	                           0, (struct sockaddr*) &clientaddr, 
 	                           &clientsize);
