@@ -1,7 +1,215 @@
 ---
 layout: ../../layouts/Assigment.astro
 title: "Project 0: Environment Setup, Sockets"
-dueDate: 2025-01-17 23:59:00
+dueDate: 2025-01-15 23:59:00
 ---
 
-# Quick Links 
+# Quick Links
+- **[Starter Code](https://github.com/uclacs118/project0starter)**
+- **[Environment Setup](/misc/setup)**
+- **[Using the Local Autograder](/misc/autograder)**
+- **[Socket Programming Tips](/misc/sockets)**
+- **[libsocket](/misc/libsocket)**
+
+# Overview
+
+Welcome to CS 118\! We hope you have a fun experience working on our projects this quarter. To make things easier, we’ve designed a local environment that replicates the Gradescope autograder. In other classes, you might have used the autograder and submitted hundreds of times to perfect your solution. Since you can run the exact environment on your machine, you’ll have a much better (and faster) time making improvements to your solution. 
+
+To get started, please review the **[Environment Setup](/misc/setup)** and
+**[Using the Local Autograder](/misc/autograder)** pages.
+
+This project is meant to introduce you to socket programming basics. It is one of three in this class. They will all build on top of each
+other. **It’s important that you finish this project in order to work on the
+next one.** (If you’re not able to finish by the deadline, we do plan on
+releasing linkable shared binaries.)
+
+# Notices
+
+1. If you’re using GitHub or a similar tool to track your work, please make sure that your repository is **set to private**.   
+2. As per the syllabus, the use of AI assisted tools is not allowed. Again, we can’t prove that such tools were used, but we do reserve the right to ask a couple questions about your solution and/or add project related questions to the exam.  
+3. In the provided autograding Docker container, there are reference binaries. Please do not reverse engineer the binaries and submit that code—which would be obvious and clear academic dishonesty. Remember, we do manually inspect your code.
+4. This project must be done **individually**.
+
+# Motivation
+
+You may be familiar with the program `netcat`. Essentially, this program takes input from standard input and sends it to a network host of your choosing. It will also listen for input from said network host and output it on standard output.
+
+Here’s an example of two hosts communicating with `netcat`: 
+
+| Host 1 (Client) | Host 2 (Server) |
+| :---- | :---- |
+| `host1:~/project0 $ nc -4u localhost 8080 `<br />`> Message 1 `<br /><br /><br />`Message 2 `<br />`> Message 3 `<br />`> Message 4 `<br />`> George Varghese `<br /><br /><br /><br /><br /><br />`Lixia Zhang `<br />`Songwu Lu` | `host2:~/project0 $ nc -4ul 8080 `<br /><br />`Message 1 `<br />`> Message 2 `<br /><br /><br /><br /><br />`Message 3 `<br />`Message 4 `<br />`George Varghese `<br />`> Lixia Zhang `<br />`> Songwu Lu` <br /><br /><br />|
+
+(Lines starting with \> represent input into standard input (what you type). The extra lines between the messages are to show which messages happen in what sequence. These both don’t actually show in the real prompt.)
+
+Here’s a diagram that (hopefully) makes it a bit more clear as to what these programs are doing. 
+![](/imgs/bi.svg)
+
+Your goal is to create two programs (aptly named client and server) that do the exact same thing as the example above: 
+
+| Host 1 (Client) | Host 2 (Server) |
+| :---- | :---- |
+| `host1:~/project0 $ ./client localhost 8080 `<br />`> Message 1 `<br /><br /><br />`Message 2` | `host2:~/project0 $ ./server 8080 `<br /><br />`Message 1 `<br />`> Message 2` <br /><br />|
+
+# Specification
+
+We're now ready to start your first 118 project! If you haven't already, please
+clone the **[Starter Code](https://github.com/uclacs118/project0starter)**. 
+
+Create two programs written in C/C++ (up to version 17). Both programs will use
+[BSD sockets](https://en.wikipedia.org/wiki/Berkeley_sockets) using IPv4 and UDP
+to listen/connect. While you may make both programs multi-threaded, it’s not
+recommended. Use [**non-blocking file
+descriptors**](/misc/sockets#aside-using-non-blocking-sockets) to help.
+
+## Libraries
+Our **[Socket Programming Tips](/misc/sockets)** will show you how to use the
+socket APIs in the standard way. However, for this project, you'll be using our
+very own `libsocket`. It works just like the regular socket APIs-the only
+changes
+you'll need to make are to replace the `socket`, `bind`, `recvfrom`, `sendto`
+calls with ones prepended with `s_`. See **[libsocket](/misc/libsocket)** for
+more info. **Note: `libsocket` is only available in the Docker container.**
+No other third party libraries are allowed.
+
+
+
+
+## Server
+
+The first program, `server`, takes one argument: the port number. The usage of `server` is as follows:
+
+`./server <port>`
+
+`server` will listen on the given port until a client establishes a UDP connection. We know a connection has been established as soon as the client has sent over data. **The server does not have to accept any other connections.** Once this connection is established, it will:
+
+1. start reading from the socket and output its contents to standard output.   
+2. At the same time, it will start reading from standard input and forwarding its contents to the newly connected client. 
+
+Even though `server` is doing two things at the same time, it’s possible to keep it single threaded. All you have to do is make both standard input and the socket **non-blocking**. 
+
+Here’s some example pseudocode for `server`:
+
+```
+Set up socket
+Make socket non-blocking
+Make standard input non-blocking
+
+Infinite loop:
+	recvfrom client
+	if no data has been received and client has not connected:
+		continue
+
+	// Now, the client has connected (data has been sent at some point) 
+	Set client connected to true
+
+	if data has been received:
+		write to standard out
+
+	read from standard in
+	if data available from standard in:
+		sendto client
+```
+
+## Client
+
+The second program, `client`, takes two arguments: the hostname and the port number. The usage of `client` is as follows:
+
+`./client <hostname> <port>`
+
+**Note:** While we ask you to accept a hostname, we’ll only test you on `localhost`. In short, your logic can literally check if the second argument is “`localhost`” and use the IP “`127.0.0.1`”—otherwise, pass in the second argument verbatim to `inet_addr`. 
+
+`client` will connect to the server over a UDP connection. **The client can always assume that the server has already started and is immediately ready for sending/receiving. We will always test it such that the server has started much before the client.** Immediately, it will:
+
+1. start reading from the socket and output its contents to standard output.   
+2. At the same time, it will start reading from standard input and forwarding its contents to the server. 
+
+Just like `server`, even though `client` is doing two things at the same time, it’s possible to keep it single threaded. All you have to do is make both standard input and the socket **non-blocking**. 
+
+Here’s some example pseudocode for `client`:
+
+```
+Set up socket
+Make socket non-blocking
+Make standard input non-blocking
+
+Infinite loop:
+	recvfrom server
+
+	if data has been received:
+		write to standard out
+
+	read from standard in
+	if data available from standard in:
+		sendto server
+```
+
+Note that the code for the client is very similar to the server, but it doesn’t worry about whether or not it’s connected.
+
+# Potential Improvements
+
+To make your life easier before you attempt Project 1, try to find a way to abstract your “listen loop” code into another file. After all, both the client and server use very similar code.
+
+# Common Problems (list will be frequently updated)
+
+* Don’t ever use `printf`. Just write directly to standard output.  
+* Don’t ever use `fgets`. Just read directly from standard input.  
+* Don’t ever use `strlen`. We’re working with raw bytes, not C strings. There’s no null terminator.  
+* If you want to write out debugging messages, use `fprintf` to `stderr`.  
+* Test on ports \>=1024. Under that requires root access.  
+* You must use a buffer size of 1024 bytes. We won’t send nor accept datagrams any larger than that.
+* If you're getting segmentation faults, try adding `-g -fsanitize=address` to
+  your `Makefile`'s `CPPFLAGS` variable. Follow [Professor Smallberg's Guide to
+Interpreting Sanitizer
+Messages](http://web.cs.ucla.edu/classes/fall24/cs31/sanitizer.html).
+
+# Autograder Test Cases
+Note: Gradescope is the ultimate source of authority for your score. While the
+local autograder tries its best to replicate Gradescope's environment, it
+doesn't always match up (computer performance, kernel configuration, etc). 
+
+## 0\. Compilation 
+
+This test case passes if:
+
+1. Your code compiles,  
+2. yields two executables named `server` and `client`,  
+3. and has no files that aren’t source code.
+
+## 1\. Data Transport 
+
+1. **Data Transport (Your Client \<-\> Your Server): Small, ASCII only file (10
+KB)<br />`test_self_ascii` (10 points)**  
+   This test case runs your server executable then your client executable. It
+will then input 10 KB of random data (ASCII only) in both programs’ stdin and check if the output on the respective other side matches.
+
+2. **Data Transport (Your Client \<-\> Your Server): Small file (10 KB)<br />
+`test_self` (10 points)**  
+   Same as 1, but could be any sort of data (just completely random bytes).
+
+3. **Data Transport (Your Client \<-\> Reference Server): Small file (10 KB)<br />
+`test_client_normal` (20 points)**  
+   Same as 2, but uses the reference server instead.
+
+4. **Data Transport (Your Client \<-\> Reference Server): Small file (10 KB)<br />
+`test_client_only` (20 points)**  
+   Same as 3, but inputs only 1 byte in the reference server.
+
+5. **Data Transport (Reference Client \<-\> Your Server): Small file (10 KB)<br />
+`test_server_normal` (20 points)**  
+   Same as 2, but uses the reference client instead.
+
+6. **Data Transport (Reference Client \<-\> Your Server): Small file (10 KB)<br />
+`test_server_only` (20 points)**  
+   Same as 5, but inputs only 1 byte in the reference client.
+
+# Submission Requirements
+
+Submit a ZIP file, GitHub repo, or Bitbucket repo to Gradescope by the posted deadline. You have unlimited submissions; we’ll choose your best scoring one. As per the syllabus, remember that all code is subject to manual inspection.
+
+In your ZIP file, include all your source code \+ a Makefile that generates two
+executables named `server` and `client`. **Do not include any other files; the
+autograder will reject submissions with those.** If you’re using the starter
+repository, the `helper` tool has a `zip` method that automatically creates a compatible ZIP file.
+
+

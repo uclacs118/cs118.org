@@ -1,0 +1,74 @@
+---
+layout: ../../layouts/Post.astro
+title: "libsocket"
+---
+
+# Overview
+`libsocket` is meant to work exactly the same as the regular socket APIs when
+using it under IPv4 and UDP. However, under the hood, it uses UNIX sockets to
+communicate. As such, the only supported address is `127.0.0.1` (or
+`localhost`). Placing any other address in `s_sendto` does nothing. `s_recvfrom`
+will always return an address from `127.0.0.1`.
+
+If you follow the [Socket Programming Tips](/misc/sockets) for UDP, the only change
+you'll need to make is to replace the `socket`, `bind`, `recvfrom`, `sendto`
+calls with ones prepended with `s_`.
+
+# `s_socket`
+```c
+int s_socket(int domain, int type, int protocol);
+```
+## Parameters
+- `int domain`: Only supports `AF_INET` (IPv4).
+- `int type`: Only supports `SOCK_DGRAM` (connectionless datagrams).
+
+## Returns
+`int`: Returns the file descriptor of the created socket or `-1` if an error
+occured. Check `errno` for the specific error.
+
+# `s_bind`
+```c
+int s_bind(int sock, const struct sockaddr* addr, socklen_t len);
+```
+## Parameters
+- `int sock`: Socket to bind address to 
+- `const struct sockaddr* addr`: Only supports addresses of type `sockaddr_in`.
+- `socklen_t len`: Unused; here for compatibility with the standard socket API.
+
+## Returns
+`int`: Returns `0` on success or `-1` if an error
+occured. Check `errno` for the specific error.
+
+# `s_recvfrom`
+```c
+ssize_t s_recvfrom(int sock, void* buf, size_t len, int flags, struct sockaddr* addr, socklen_t* addrlen);
+```
+## Parameters
+- `int sock`: Socket to bind address to 
+- `void* buf`: Buffer to write data to
+- `size_t len`: Max size of buffer in bytes
+- `int flags`: See the man page for `recvfrom`
+- `struct sockaddr* addr`: Will write out the address the data was
+received from (always `127.0.0.1` + port).
+- `socklen_t addrlen`: Unused; here for compatibility with the standard socket API.
+
+## Returns
+`ssize_t`: Returns the number of bytes received or `-1` if an error
+occured. Check `errno` for the specific error.
+
+# `s_sendto`
+```c
+ssize_t s_sendto(int sock, const void* buf, size_t len, int flags, const struct sockaddr* addr, socklen_t addrlen);
+```
+## Parameters
+- `int sock`: Socket to bind address to 
+- `void* buf`: Buffer to read data from
+- `size_t len`: Size of data to read in bytes 
+- `int flags`: See the man page for `recvfrom`
+- `struct sockaddr* addr`: Only supports `sockaddr_in` addresses. The
+`in_addr` field is ignored.
+- `socklen_t addrlen`: Unused; here for compatibility with the standard socket API.
+
+## Returns
+`ssize_t`: Returns the number of bytes sent or `-1` if an error
+occured. Check `errno` for the specific error.

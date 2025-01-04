@@ -1,0 +1,53 @@
+---
+layout: ../../layouts/Post.astro
+title: "Using the Local Autograder"
+---
+
+After setting up your environment in [**Environment Setup**](/misc/setup), we
+can now demonstrate how to use the local autograding harness. Make sure Docker
+Desktop is running (or OrbStack if on macOS). If you haven’t already, clone the [**Starter
+Code**](https://github.com/uclacs118/project0starter) onto your machine.
+
+# Autograding
+In the main directory, there's a `helper` tool we'll be using to interface with
+the local autograder. To start, run `./helper run`. This will pull the Docker
+image from our registry, build your submission (in the `project` directory), and run the autograding code.
+
+After it’s completed, you’ll see JSON formatted output of your results. You
+should be failing all the test cases since there’s only the starter code. See
+[Autograder Test Cases](/projects/project0/#autograder-test-cases) for more info. 
+This is also available in `results > results.json`.
+
+You may also see the output of `stderr` for each run. Each file in the `results` directory 
+will have the test case name (example: `test_self_ascii`) appended with either 
+`refserver`, `refclient`, `yourserver`, and `yourclient`.
+
+# Custom Testing
+You may run each test case individually. For example, take this test case from
+Project 0:
+1. **Data Transport (Your Client \<-\> Your Server): Small, ASCII only file (10
+KB)<br />`test_self_ascii` (10 points)**
+
+To test just this test case, run `./helper test test_self_ascii`. You may test
+compilation by either running `./helper test compile` or `./helper compile` (the
+former runs the compilation code within the autograder and the latter just runs
+`make`. Only the latter will show the compilation output).
+
+Another way to run tests is to make your own. Run `./helper interactive`. This
+will drop you into the autograding harness's shell. **Running `./helper
+interactive` in another terminal window will use the same autograder-if you want
+to test two binaries against each other, this is the best way to do it.**
+
+In the `/autograder` directory, there are three important subdirectories.
+
+One of them is `/autograder/source`. This is where all the autograding logic
+resides. In the `src` folder, there are the reference binaries. Feel free to
+test your solutions against them. 
+
+Another is `/autograder/submission`. This is linked directly to the `project` directory on your local machine (any file you change in `project` changes in `submission` in the autograder and vice-versa).
+
+The last one is `/autograder/results`. Just like `submission`, it’s linked to the `results` directory on your local machine.
+
+# `helper`
+We may want to update the `helper` script to add more helpful utilities. Run
+`git pull origin main` to update it.
