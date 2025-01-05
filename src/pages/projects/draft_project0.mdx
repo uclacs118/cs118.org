@@ -162,6 +162,8 @@ To make your life easier before you attempt Project 1, try to find a way to abst
   your `Makefile`'s `CPPFLAGS` variable. Follow [Professor Smallberg's Guide to
 Interpreting Sanitizer
 Messages](http://web.cs.ucla.edu/classes/fall24/cs31/sanitizer.html).
+* If the autograder sees no data being sent/received, make sure you're using `libsocket`'s `s_recvfrom` and not regular `recvfrom` (along with the other 3 calls).
+* The `Makefile` is designed for running using the `tester` script. Running this directly outside of the `tester` is unsupported, and may get errors like `ld: library 'socket' not found`. Use `tester interactive` instead to manually test your code.
 
 # Autograder Test Cases
 Note: Gradescope is the ultimate source of authority for your score. While the
@@ -205,7 +207,7 @@ will then input 10 KB of random data (ASCII only) in both programs’ stdin and 
 
 # Submission Requirements
 
-Submit a ZIP file, GitHub repo, or Bitbucket repo to Gradescope by the posted deadline. You have unlimited submissions; we’ll choose your best scoring one. As per the syllabus, remember that all code is subject to manual inspection.
+Submit a ZIP file, GitHub repo, or Bitbucket repo to Gradescope by the posted deadline. You have unlimited submissions; we’ll choose your best scoring one. **Make sure that you choose the best scoring one as your active submission.** As per the syllabus, remember that all code is subject to manual inspection.
 
 In your ZIP file, include all your source code \+ a Makefile that generates two
 executables named `server` and `client`. **Do not include any other files; the
