@@ -108,7 +108,8 @@ Infinite loop:
 
 	read from standard in
 	if data available from standard in:
-		sendto client
+        while no error sending:
+            sendto client
 ```
 
 ## Client
@@ -141,7 +142,8 @@ Infinite loop:
 
 	read from standard in
 	if data available from standard in:
-		sendto server
+        while no error sending:
+            sendto server
 ```
 
 Note that the code for the client is very similar to the server, but it doesn’t worry about whether or not it’s connected.
