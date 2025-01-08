@@ -1,0 +1,21 @@
+---
+layout: ../../layouts/Assigment.astro
+title: "Homework 1: Sockets, HTTP, DNS"
+dueDate: 2025-01-21 23:59:00
+---
+
+# Question 1: Modified Sockets
+
+In Project 0, you're using UDP to facilitate communication between a server and client. In particular, you're interfacing with the datagram sockets API. Let's say Project 0 used TCP as the communication primitive-interfacing with the stream sockets API instead. 
+
+1. For the client and server, what API calls would you use? List down the exact functions you'd call for both programs to set up the connection? Which functions would go in the `while` loop? Feel free to write pseudocode.
+
+2. In Project 0, we make both the socket and `stdin` non-blocking. When switching to the stream API, what do we need to change? (Hint: what happens to `accept` when it's non-blocking?)
+
+3. Let's say that the server and client communicate over some proxy. This means that there's some intermediate process that takes the data from server and forwards it to client and vice-versa. Let's say that this proxy was poorly programmed, and randomly flips bits when it forwards data. Both TCP and UDP have checksums that try to detect these bit errors. Which protocol would you prefer to use to communicate between the server and client?
+
+# Question 2: PTTH
+
+Assume there's some protocol called Protocol for Transferring Text Hyperly (PTTH). PTTH is similar to HTTP/1.1 (with pipelining, no cookies), except for a couple differences:
+- PTTH is stateful; for GET requests, servers keep track of which clients (based on IP address) request what data (based on the path) and keep the timestamp.
+- 
