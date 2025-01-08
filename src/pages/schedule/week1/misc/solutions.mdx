@@ -1,0 +1,48 @@
+## Solutions to LA Activities
+
+### Activity 1: Socket Icebreaker
+
+Once connected, we need to create a socket
+
+### Platform Questions
+
+#### Packet Switching
+Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 Bytes, the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0ms.
+
+
+1. How much time (in ms) does it take for the first packet to be fully sent by node A? 8. Rate link is 1 Mbps, or 1,000,000 bits / second, and we are sending a single 1000 byte, or 8000 bit packet. Since size = rate * time, or time = size / rate, we get 0.008 seconds, or 8 milliseconds.
+
+2. How much time (in ms) does it take for the first bit of the first packet to be received by node B? 3. The time for the first bit of the first packet to be received by node B is the time it takes for data to propagate from node A to B, so this is just the propagation time of 3 ms.
+
+3. How much time (in ms) does it take for the last byte of the first packet to be received by node B? 11. We add 1 and 2 together: once the last bit is sent at 8 ms, it takes an additional 3ms for it to arrive at node B.
+
+4. How much time (in ms) does it take for the last packet to be fully sent into the wire by node A? 24. Similarly to 1, we are sending packets sequentially for a total of 3000 Bytes = 24000 bits sent, and can calculate that way. Alternatively, since one packet takes 8 ms to transmit, we can just multiply by 3 to get 24 ms.
+
+5. Yes/No: Do packets queue up at Node B? I.e. When node B transmits packet 1, does it already have the entirety of packet 2 stored and ready to transmit before node B finishes transmitting packet 1? No. The transmission rate out of B is greater than the transmission rate into B, therefore, data will not be able to queue up beyond the minimum required for the store-and-forward paradigm of packet forwarding.
+
+6. At what time does Node B finish transmitting Packet 3? 35. It takes 24 ms for A to transmit all 3 packets, and with the propagation delay, it arrives at 27 ms at B. At 5 Mbps, it takes 8000/5000000 = 1.6 ms to transmit this packet, for a total time of 28.6 ms.
+
+7. At what time does Node C fully received packet 3? 31.6. Add the 3 ms propagation delay from question 6.
+
+8. % time wasted: It takes 24 ms to transfer to node A, then 6 ms to get to node C, since as soon as any bit arrives at B, it is immediately forwarded to C, and with no queueing due to the faster B-C link speed. This gives for a total of 30 ms if streamed. (31.6 - 30)/31.6 = 5%.
+
+9. Now, let's keep everything the same, except we are now sending from node C to node A. Time for first packet to fully arrive at node B from C: 1.6ms (transmission delay) + 3 ms (propagation delay) = 4.6 ms. At this time, node B can start transmitting this packet to Node A, and by the time it finishes transmitting packet 1, packet 2 will have already fully arrived. As seen in 4, this will take another 24 ms. Lastly, once packet 3 is sent from Node B, it will take another 3 ms in propagation to arrive at Node A, taking a total of 4.6 + 24 + 3 = 31.6 ms.
+
+10.
+    Here are 2 ways to view the solution: conceptually, and more mathematically. Either is correct, and we don't expect answers this thorough.
+
+    Conceptual: Essentially, this comes down to the concept of a bottleneck link: this bottleneck link has packets speed through the network to right before it, then queue up, and after this bottleneck, it speeds through the network to the destination. Since propagation speed is fixed (it doesn't matter which way you go, it always take 6 ms), we only need to worry about transmission speed. For transmission speed, there is a "buffer" time before the first packet is fully received by the bottlenecked link, the bottlenecked link sending all of the packets, and then a "buffer" time from the last byte received from the bottlenecked link to the end of the transmission. Assuming the bottlenecked link has the same speed bidirectionally (which is not always the case), the middle transmission time is identical in both directions: the node receives the first packet (or starts with all packets already) and transmits continuously until done. The non-bottlenecked link will transmit immediately upon receiving a packet, and then either the bottleneck delay has already finished, so only one link packet transmission counts towards the overall delay, or the bottleneck is ahead, in which case the non-bottlenecked link will send one packet, and the bottleneck begins, with the non-bottlenecked link finishing transmission and propagation first before the bottlenecked link finishes, so in this case, only one link packet transmission from the non-bottlenecked link counts. This "symmetry" is why the overall time to transmit the 3 packets is the same in either direction.
+
+    Mathematical: Let L be the packet size in bits, AB and BC represent the link transmission speeds where AB < BC, and P be the propagation delay.
+    - For a link speed X, it takes packet size / X time to transmit.
+    - A to C:
+        - The time for the first packet to go from Node A to Node B is L/AB + P.
+        - After the first packet is sent, the second packet can begin transmitting on link AB immediately after the first packet finishes transmitting on AB, which takes L/AB time, and similarly the third packet. This, it takes 3L/AB + P for the third packet to arrive at Node B.
+        - At Node B, since AB < BC, each packet will have been transmitted out to Node C as soon as it was received. As such, the final packet is sent over, taking L/BC + P time to transmit from Node B to Node C.
+        - In total, from A to C, it takes 3L/AB + P + L/BC + P = 3L/AB + L/BC + 2P.
+    - C to A:
+        - The time for the first packet to go from Node C to Node B is L/BC + P.
+        - Once this first packet is sent, the second and third packet can begin being sent. However, since AB < BC, the first packet will not finish transmitting from B to A by the time the second packet finishes arriving at B, so we do not take into account any additional AB transmission delay.
+        - Once the first packet arrives at Node B, Node B will then start transmitting packet 1, and then 2 and 3 immediately afterward since it has already been received. This will then take 3L/AB time to transmit, and P time for the data to propagate to Node A
+        - In total, from C to A, it takes L/BC + P + 3L/AB + P = 3L/AB + L/BC + 2P.
+    - As shown, with symmetric link rates, identical packet sizes, and identical propagation delays, the total time it takes for all 3 packets to transmit in either direction is equal. Using similar math, you can show that the propagation delays need not be identical for all links, and for any number of packets.
