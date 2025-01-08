@@ -20,7 +20,7 @@ Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that
 
 5. Yes/No: Do packets queue up at Node B? I.e. When node B transmits packet 1, does it already have the entirety of packet 2 stored and ready to transmit before node B finishes transmitting packet 1? No. The transmission rate out of B is greater than the transmission rate into B, therefore, data will not be able to queue up beyond the minimum required for the store-and-forward paradigm of packet forwarding.
 
-6. At what time does Node B finish transmitting Packet 3? 35. It takes 24 ms for A to transmit all 3 packets, and with the propagation delay, it arrives at 27 ms at B. At 5 Mbps, it takes 8000/5000000 = 1.6 ms to transmit this packet, for a total time of 28.6 ms.
+6. At what time does Node B finish transmitting Packet 3? 28.6. It takes 24 ms for A to transmit all 3 packets, and with the propagation delay, it arrives at 27 ms at B. At 5 Mbps, it takes 8000/5000000 = 1.6 ms to transmit this packet, for a total time of 28.6 ms.
 
 7. At what time does Node C fully received packet 3? 31.6. Add the 3 ms propagation delay from question 6.
 
