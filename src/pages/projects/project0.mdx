@@ -81,10 +81,10 @@ The first program, `server`, takes one argument: the port number. The usage of `
 
 `./server <port>`
 
-`server` will listen on the given port until a client establishes a UDP connection. We know a connection has been established as soon as the client has sent over data. **The server does not have to accept any other connections.** Once this connection is established, it will:
+`server` will accept UDP datagrams on the given port. We know that the client is ready to receive data as soon as it sends over its first datagram. **The server does not have to accept datagrams from any other client from this point forward.** Now, the server will:
 
 1. start reading from the socket and output its contents to standard output.   
-2. At the same time, it will start reading from standard input and forwarding its contents to the newly connected client. 
+2. At the same time, it will start reading from standard input and forwarding its contents to the client. 
 
 Even though `server` is doing two things at the same time, it’s possible to keep it single threaded. All you have to do is make both standard input and the socket **non-blocking**. 
 
@@ -97,10 +97,10 @@ Make standard input non-blocking
 
 Infinite loop:
 	recvfrom client
-	if no data has been received and client has not connected:
+	if no data has been received and client has not sent over a datagram yet:
 		continue
 
-	// Now, the client has connected (data has been sent at some point) 
+	// Now, we know "who" the client is and can start sending data over
 	Set client connected to true
 
 	if data has been received:
@@ -120,7 +120,7 @@ The second program, `client`, takes two arguments: the hostname and the port num
 
 **Note:** While we ask you to accept a hostname, we’ll only test you on `localhost`. In short, your logic can literally check if the second argument is “`localhost`” and use the IP “`127.0.0.1`”—otherwise, pass in the second argument verbatim to `inet_addr`. 
 
-`client` will connect to the server over a UDP connection. **The client can always assume that the server has already started and is immediately ready for sending/receiving. We will always test it such that the server has started much before the client.** Immediately, it will:
+`client` will send datagrams to the server over UDP. **The client can always assume that the server has already started and is immediately ready for sending/receiving. We will always test it such that the server has started much before the client.** Immediately, it will:
 
 1. start reading from the socket and output its contents to standard output.   
 2. At the same time, it will start reading from standard input and forwarding its contents to the server. 
@@ -146,7 +146,7 @@ Infinite loop:
             sendto server
 ```
 
-Note that the code for the client is very similar to the server, but it doesn’t worry about whether or not it’s connected.
+Note that the code for the client is very similar to the server, but it doesn’t worry about whether or not the server has already sent over data.
 
 # Potential Improvements
 
