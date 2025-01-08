@@ -6,6 +6,10 @@ Once connected, we need to create a socket
 
 ### Platform Questions
 
+#### Unit Conversion
+
+120 kilobits / second * 1 megabit / 1000 kilobits * 1 gigabit / 1000 megabit * 1 bit / 8 bytes = 0.000015 gigabytes / second * 60 seconds / 1 minute * 60 minutes / 1 hour * 24 hours / 1 day = 1.296 gigabytes / day, 2/3rds of that is 0.864 gigabytes per 2/3rds of a day.
+
 #### Packet Switching
 Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 Bytes, the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0ms.
 
@@ -24,7 +28,7 @@ Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that
 
 7. At what time does Node C fully received packet 3? 31.6. Add the 3 ms propagation delay from question 6.
 
-8. % time wasted: It takes 24 ms to transfer to node A, then 6 ms to get to node C, since as soon as any bit arrives at B, it is immediately forwarded to C, and with no queueing due to the faster B-C link speed. This gives for a total of 30 ms if streamed. (31.6 - 30)/31.6 = 5%.
+8. % time wasted: It takes 24 ms to transfer to node A, then 6 ms to get to node C, since as soon as any bit arrives at B, it is immediately forwarded to C, and with no queueing due to the faster B-C link speed. This gives for a total of 30 ms if streamed. (31.6 - 30)/31.6 = 5%. Notice how even with just 3 packets, the percent of time "wasted" is quite low.
 
 9. Now, let's keep everything the same, except we are now sending from node C to node A. Time for first packet to fully arrive at node B from C: 1.6ms (transmission delay) + 3 ms (propagation delay) = 4.6 ms. At this time, node B can start transmitting this packet to Node A, and by the time it finishes transmitting packet 1, packet 2 will have already fully arrived. As seen in 4, this will take another 24 ms. Lastly, once packet 3 is sent from Node B, it will take another 3 ms in propagation to arrive at Node A, taking a total of 4.6 + 24 + 3 = 31.6 ms.
 
