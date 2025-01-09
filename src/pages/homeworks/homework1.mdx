@@ -1,0 +1,87 @@
+---
+layout: ../../layouts/Assigment.astro
+title: "Homework 1: Sockets, Network Basics, HTTP"
+dueDate: 2025-01-21 23:59:00
+---
+
+Submit your homework solution PDF to Gradescope in any format you please;
+however, make sure that each **question part** is on its own page.
+
+# Question 1: Modified Sockets (20 points)
+
+In Project 0, you're using UDP to facilitate communication between a server and client. In particular, you're interfacing with the datagram sockets API. Let's say Project 0 used TCP as the communication primitive-interfacing with the stream sockets API instead. 
+
+1. **(10 points)** For the client and server, what API calls would you use? List down the exact functions you'd call for both programs to set up the connection? Which functions would go in the `while` loop? Feel free to write pseudocode. 
+
+2. **(7 points)** In Project 0, we make both the socket and `stdin` non-blocking. When switching to the stream API, what do we need to change? (Hint: what happens to `accept` when it's non-blocking?) 
+
+3. **(3 points)** Let's say that the server and client communicate over some proxy. This means that there's some intermediate process that takes the data from server and forwards it to client and vice-versa. Let's say that this proxy was poorly programmed, and randomly flips bits when it forwards data. Which protocol would you prefer to use to communicate between the server and client? 
+
+
+# Question 2: Layering (20 points)
+Consider a scenario where a user on a computer (Host \\(A\\)) wants to send a file to another computer (Host \\(B\\))
+over the Internet. The file is first broken down into segments by the transport layer, then into packets by
+the network layer, and finally into frames by the link layer before being transmitted over the medium.
+
+1. **(10 points)** List the order of headers from innermost to outermost as they are added to the data from the application
+layer to the link layer on Host \\(A\\).
+
+2. **(5 points)** At which layer will the forwarding decision (selecting the next hop) be made for the packet?
+
+3. **(5 points)** When the frames reach Host \\(B\\) and are being processed for the destination application, which layer
+will first remove its corresponding header?
+
+# Question 3: Packeting (20 points)
+
+Two hosts, \\(A\\) and \\(B\\) are separated by \\(2500 \\;\rm km\\) and are
+connected by a direct link of \\(R = 5 \\;\rm Mbps\\).
+Suppose the propagation speed over the link is \\(2.5 \cdot 10^8\\;\rm m/s\\).
+
+1. **(5 points)** Consider sending a file of \\(10 \\;\rm KB\\) from Host \\(A\\) to Host \\(B\\). Suppose the file is sent continuously as one
+large message. What is the maximum number of bits that will be in the link at any given time?
+
+2. **(5 points)** How long does it take for \\(B\\) to receive the last bit of the file, assuming it is sent continuously?
+
+3. **(10 points)** Suppose now the file is broken up into **10** packets with each packet
+containing \\(1\\;\rm KB\\). Suppose that each
+packet is acknowledged by the receiver and the transmission time of an acknowledgment packet is negligible. 
+Finally, assume that the sender cannot send a packet until the preceding one is acknowledged.
+How long does it take for \\(B\\) to receive the last bit of the file?
+
+Note: An acknowledgment is a separate, very small packet that the receiver sends back to the sender
+indicating a data packet has been received.
+
+# Question 4: Delay (20 points)
+
+![](/imgs/hw1p4.svg)
+
+Consider sending **4** packets from Node \\(A\\) to Node \\(B\\) via **2** routers \\(R_1\\) and \\(R_2\\).
+The packet length is \\(125\\;\\rm bytes\\) each (i.e. \\(1000\\;\rm bits\\)).
+The propagation delay of all the **3** links is \\(5\\;\rm ms\\). Links
+\\(A −R_1\\) and \\(R_2 −B\\)’s bandwidth is \\(2\\;\rm Mbps\\), and link \\(R_1
+−R_2\\)’s bandwidth is \\(1\\;\rm Mbps\\). Assume \\(A\\) starts
+transmitting the first packet at time \\(T = 0\\;\rm s\\).
+
+1. **(5 points)** What is the time gap between the first and second packets when they arrive at
+\\(R_2\\)? (i.e. What is the time gap
+between receiving the last bit of the first packet and the last bit of 2nd
+packet?)
+
+2. **(5 points)** What is the time gap between the first and second packets when they arrive at
+\\(B\\)?
+
+3. **(10 points)** When will \\(B\\) receive all the **4** packets?
+
+# Question 5: HTTP (20 points)
+
+Suppose within your Web browser you click on a link to obtain a Web page from Server \\(S\\), and the browser
+already obtained \\(S\\)’s IP address. Suppose that the Web page associated with the link is a small HTML file,
+consisting only of references to **50** very small objects on the same server. Let \\(\mathrm\{RTT\}_0\\) denote the \\(\rm RTT\\) between
+the local host and the server containing the object. How much time elapses (in terms of \\(\mathrm\{RTT\}_0\\)) from when
+you click on the link until your host receives all the objects, if you are using:
+
+1. **(7 points)** HTTP/1.0 without parallel TCP connections?
+
+2. **(7 points)** HTTP/1.0 with parallel TCP connections? The maximum number of parallel connections is **15**.
+
+3. **(6 points)** HTTP/1.1 without parallel connections, but with pipelining?
