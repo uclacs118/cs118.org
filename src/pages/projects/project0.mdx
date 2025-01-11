@@ -163,7 +163,7 @@ To make your life easier before you attempt Project 1, try to find a way to abst
 * If you're getting segmentation faults, try adding `-g -fsanitize=address` to
   your `Makefile`'s `CPPFLAGS` variable. Follow [Professor Smallberg's Guide to
 Interpreting Sanitizer
-Messages](http://web.cs.ucla.edu/classes/fall24/cs31/sanitizer.html).
+Messages](/misc/sanitizer).
 * If the autograder sees no data being sent/received, make sure you're using `libsocket`'s `s_recvfrom` and not regular `recvfrom` (along with the other 3 calls). Run this command to check if you're using any non-`libsocket` calls.   
     `grep -nE '\b=?(socket|recvfrom|sendto|bind)\b' **/*.c`   
     (This will show comments with these calls, so feel free to ignore those lines.)
