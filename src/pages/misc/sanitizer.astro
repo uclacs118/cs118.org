@@ -1,0 +1,245 @@
+---
+import Post from "../../layouts/Post.astro"
+---
+
+<Post title="Interpreting Sanitizer Messages">
+Credit due to Professor David Smallberg
+<p>
+When you build your program with Address Sanitizer, the compiler inserts extra code to
+check for certain types of undefined behavior.  That code can't catch
+everything, but does a good job of catching most problems.  When it
+detects an issue, it terminates your program and writes a lot of
+diagnostic output.  Let's see how to read it.
+</p>
+<p>
+Suppose we have the following program:
+</p>
+<pre>	double myFunction(double a[], int k)
+	&#x7B;
+	    return a[k];
+	}
+	
+	int main()
+	&#x7B;
+	    double x[10];
+	    double y[20];
+	    double z[30];
+	    x[5] = myFunction(y, 22);
+	    z[5] = x[5];
+	    if (x[5] != z[5])
+	        return 1;
+	}
+</pre>
+<p>
+If we run this, we get a wall of text starting with the following
+perhaps.  (If you run it, some of the numbers might be different, but the
+relationships between them will be the same.)
+</p>
+<pre>=================================================================
+<span style="color:#C33820;font-weight:bold">==14177==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffcfbd6c3f0 at ...</span>
+<span style="color:#5330E1;font-weight:bold">READ of size 8 at 0x7ffcfbd6c3f0 thread T0</span>
+    #0 0x4009bb in myFunction(double*, int) (/tmp/a.out+0x4009bb)
+    #1 0x400a98 in main (/tmp/a.out+0x400a98)
+    #2 0x7ff6f49ec554 in __libc_start_main (/usr/lib64/libc.so.6+0x22554)
+    #3 0x400878  (/tmp/a.out+0x400878)
+
+<span style="color:#33BD26;font-weight:bold">Address 0x7ffcfbd6c3f0 is located in stack of thread T0 at offset 320 in frame</span>
+    #0 0x4009df in main (/tmp/a.out+0x4009df)
+
+  This frame has 3 object(s):
+    [32, 112) 'x' (line 8)
+    [144, 304) 'y' (line 9) <span style="color:#33BD26;font-weight:bold">&lt;== Memory access at offset 320 overflows this variable</span>
+    [368, 608) 'z' (line 10)
+</pre>
+<p style="margin-bottom: 0">
+Let's see what this is telling us.
+<span style="color:#C33820;font-weight:bold">stack-buffer-overflow</span>
+usually means we tried to access an element past the end of a local array.
+<span style="color:#5330E1;font-weight:bold">READ of size 8</span> means we
+tried to get the value of some 8-byte object.
+(<span style="color:#5330E1;font-weight:bold">WRITE of size 8</span> would
+mean we tried to store a value into an 8-byte object.)  What follows is a
+<em>stack trace</em> showing what function we were in when the bad event
+occurred, what function called it, what function called the function that
+called it, etc.  From
+</p>
+<pre style="margin-top: 0; margin-bottom: 0">    #0 ... in myFunction(double*, int) ...
+    #1 ... in main ...
+    ...
+</pre>
+<p style="margin-top: 0">
+we see that we were in myFunction when the bad event occurred, and myFunction
+was directly called from main.
+</p>
+<p style="margin-bottom: 0">
+Now, we have
+</p>
+<pre style="margin-top: 0; margin-bottom: 0">    <span style="color:#C33820;font-weight:bold">... on address 0x7ffcfbd6c3f0 ...</span>
+    ...
+    <span style="color:#33BD26;font-weight:bold">Address 0x7ffcfbd6c3f0 is located ... at offset 320 in frame</span>
+    ... in main ...
+</pre>
+<p style="margin-top: 0; margin-bottom: 0">
+telling us that the address that we tried to access is among the local
+variables of main, at "offset 320", and the objects in main, with their
+offsets, are listed here:
+</p>
+<pre style="margin-top: 0; margin-bottom: 0">  This frame has 3 object(s):
+    [32, 112) 'x' (line 8)
+    [144, 304) 'y' (line 9)
+    [368, 608) 'z' (line 10)
+</pre>
+<p style="margin-top: 0">
+This tells us that the array <code>x</code> occupies offsets 32 up to but not
+including 112, a range of 112−32 = 80 bytes.  Since <code>x</code> has
+10 elements and doubles are 8 bytes long, this makes sense.  Similarly
+<code>y</code> occupies offsets 144 up to but not including 304, which is 160
+bytes, which is 20 doubles.
+</p>
+<p style="margin-bottom: 0">
+We see now that
+</p>
+<pre style="margin-top: 0; margin-bottom: 0">    <span style="color:#5330E1;font-weight:bold">READ of size 8 at 0x7ffcfbd6c3f0 ...</span>
+    ...
+    <span style="color:#33BD26;font-weight:bold">Address 0x7ffcfbd6c3f0 is located ... at offset 320 in frame</span>
+    ...
+    [144, 304) 'y' (line 9) <span style="color:#33BD26;font-weight:bold">&lt;== Memory access at offset 320 overflows this variable</span>
+</pre>
+<p style="margin-top: 0">
+brings it all together.  Offset 320 is 320−144 = 176 bytes from the
+start of <ocde>y, and 176 bytes divided by 8 bytes per double is 22
+doubles: We were trying to get a value from y[22], but <code>y</code> has
+only 20 elements.
+</ocde></p>
+<p>
+Here's another example.  The program is
+</p>
+<pre>    #include &lt;iostream&gt;
+    #include &lt;cstring&gt;
+    using namespace std;
+    
+    void anotherFunction(const char* s)
+    &#x7B;
+        for (int k = strlen(s); k &gt;= 0; k--)
+            cout &lt;&lt; s[k-1] &lt;&lt; endl;
+    }
+    
+    int main()
+    &#x7B;
+        anotherFunction("Hi");
+    }
+</pre>
+<p>
+and it produces something starting with
+</p>
+<pre>i
+H
+=================================================================
+<span style="color:#C33820;font-weight:bold">==46331==ERROR: AddressSanitizer: global-buffer-overflow on address 0x00000040121f ...</span>
+<span style="color:#5330E1;font-weight:bold">READ of size 1 at 0x00000040121f ...</span>
+    #0 ... in anotherFunction(char const*) ...
+    #1 ... in main ...
+    ...
+
+<span style="color:#33BD26;font-weight:bold">0x00000040121f is located 45 bytes to the right of global variable '*.LC0' defined in 'myTestProgram.cpp' (0x4011e0) of size 18</span>
+  '*.LC0' is ascii string 'myTestProgram.cpp'
+<span style="color:#33BD26;font-weight:bold">0x00000040121f is located 1 bytes to the left of global variable '*.LC1' defined in 'myTestProgram.cpp' (0x401220) of size 3</span>
+  '*.LC1' is ascii string 'Hi'
+</pre>
+<p>
+Here we tried to read something of size 1 (probably a char) when we were in
+<code>anotherFunction</code>.  A
+<span style="color:#C33820;font-weight:bold">global-buffer-overflow</span>
+usually means we tried to access an element past the end of a global array
+(as opposed to a local array, which causes a
+<span style="color:#C33820;font-weight:bold">stack-buffer-overflow</span>).
+The global array is either something we declared outside of any function or
+something the compiler set up for us, usually an array to hold the text of a
+string literal.
+</p><p>
+From the two green messages, the bad access is 45 bytes beyond the start of
+some C string <code>myTestProgram.cpp</code> (18 bytes counting the zero byte)
+the compiler apparently set up with the name of the source file; that bad
+access position is also 1 byte before the start of "Hi".  Of the two ways of
+looking at it, it's a lot likelier the incorrect code asked to look one byte
+before the 'H' of "Hi" than look way past the end of a string our code
+never even mentions.  Indeed, when <code>k</code> is 0, <code>s[k-1]</code>
+tries to access s[-1], one position before the 'H'.
+</p><p>
+How about this:
+</p>
+<pre>	int main()
+	&#x7B;
+	    int* p = nullptr;
+	    *p = 42;
+	    return *p;
+	}
+</pre>
+<p>
+It produces
+</p>
+<pre>myBadPtr.cpp:4:5: <span style="color:#C33820;font-weight:bold">runtime error:</span> store to null pointer of type 'int'
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+<span style="color:#C33820;font-weight:bold">==1225==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 ...</span>
+==1225==The signal is caused by a WRITE memory access.
+==1225==Hint: address points to the zero page.
+    #0 ... in main ...
+</pre>
+<p>
+Even if it didn't directly tell you about trying to store through a null
+pointer, you could tell from the fact that you tried to WRITE (as opposed to
+READ) involving the unknown address 0x000000000000; on most machines, the null
+pointer is represented by address 0x000000000000 (and the runtime system
+prevents you from ever actually reading from or storing into that address).
+</p><p>
+Here's another one:
+</p>
+<pre>struct Blah
+&#x7B;
+	double x[10];
+	double y;
+};
+
+int main()
+&#x7B;
+	Blah* bp = new Blah;
+	delete bp;
+	bp-&gt;y = 42;
+}
+</pre>
+<p>
+It produces
+</p>
+<pre><span style="color:#C33820;font-weight:bold">==30268==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000000070 ...</span>
+<span style="color:#5330E1;font-weight:bold">WRITE of size 8 at 0x602000000070 ...</span>
+    ... in main ...
+
+<span style="color:#33BD26;font-weight:bold">0x602000000070 is located 80 bytes inside of 88-byte region [0x602000000020,0x602000000078)</span>
+    ...
+</pre>
+<p>
+The <span style="color:#C33820;font-weight:bold">heap-use-after-free</span>
+error means you tried to follow a pointer to an object that has already been
+deleted.  The <span style="color:#5330E1;font-weight:bold">WRITE of size
+8</span> in the code above is consistent with trying to store into a double.
+The y member of a Blah object comes after the 10-double x member, so is 80
+(10*8) bytes from the start of a Blah object.
+</p><p>
+If the main routine above were instead
+</p>
+<pre>int main()
+&#x7B;
+	Blah* bp = new Blah;
+	delete bp;
+	delete bp;
+}
+</pre>
+<p>
+we'd get 
+</p>
+<pre><span style="color:#C33820;font-weight:bold">==30268==ERROR: AddressSanitizer: ==33125==ERROR: AddressSanitizer: attempting double-free on 0x608000000020 ...</span>
+    ...
+</pre>
+indicating the attempt to delete an object that has already been deleted.
+</Post>
