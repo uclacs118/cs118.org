@@ -1,5 +1,250 @@
 ---
 layout: ../../layouts/Assigment.astro
 title: "Project 1: Transport"
-dueDate: 2025-01-20 23:59:00
+dueDate: 2025-02-19 23:59:00
 ---
+
+# Quick Links
+
+[**Starter Code**](https://github.com/uclacs118/project1starter)  
+[**Using the Local Autograder**](/misc/autograder)
+
+# Overview
+
+In Project 0, you implemented a bidirectional pipe between two processes over the network. Congrats\! Here’s a fun challenge: try sending over 200 MB of data using your programs. 
+
+Firstly, I would create a file containing 200 MB of random data:
+
+`host0:~/project0 $ head -c 200000000 /dev/urandom > test.bin`
+
+Then, I would run both my client and server and pass `test.bin` into each of them while saving each program’s output.  
+ 
+
+| Client | Server |
+| :---- | :---- |
+| `host0:~/project0 $ ./client localhost 8080 < test.bin > client.bin` | `host0:~/project0 $ ./server 8080 < test.bin > client.bin` |
+
+Once I’m confident that both processes have finished sending to each other (\~ 5 seconds), I can use the `diff` command to make sure that `client.bin` and `server.bin` are the same as `test.bin`.
+
+`host0:~/project0 $ diff test.bin client.bin`  
+`Binary files test.bin and client.bin differ`
+
+`host0:~/project0 $ diff test.bin server.bin`  
+`Binary files test.bin and server.bin differ`
+
+What’s going on? If we look at the current directory, we can see that not only do the bytes differ, but the file sizes are completely different.
+
+`host0:~/project0 $ ls -la`  
+`-rw-r--r--   1 tianyuan  staff  192929280 Oct  8 14:48 client.bin`  
+`-rw-r--r--   1 tianyuan  staff  192977408 Oct  8 14:48 server.bin`  
+`-rw-r--r--   1 tianyuan  staff  200000000 Oct  8 14:48 test.bin`
+
+Why does this happen? In Project 0, we used the User Datagram Protocol (UDP) to send data over the network. This protocol attempts *best effort delivery*—meaning that UDP will attempt to send your data over the network, but has no guarantee that it will actually get to the destination. *Most* of the time, the data makes it through (as seen in Project 0), but this is clearly not the case *all* the time (especially for larger amounts of data). Note that this is even over the same host—imagine how much worse the error would be over the actual internet with many routers across the network.
+
+In this project, you’ll be creating a reliability layer on top of UDP. At a high level, this layer will split data into chunks called packets and label them with numbers (so we know which go in what order). This layer will attempt to guarantee 3 main things:
+
+1. packets will be sent from one end to the other,  
+2. dropped packets will be retransmitted, and  
+3. packets will be exported (in this case, written to standard output) in order.
+
+# Notices
+
+1. If you’re using GitHub or a similar tool to track your work, please make sure that your repository is **set to private**.
+2. As per the syllabus, the use of AI assisted tools is not allowed. Again, we can’t prove that such tools were used, but we do reserve the right to ask a couple questions about your solution and/or add project related questions to the exam.  
+3. In the provided autograding Docker container, there are reference binaries. Please do not reverse engineer the binaries and submit that code—which would be obvious and clear academic dishonesty. Remember, we do manually inspect your code.  
+4. This project is two of three in this class. They will all build on top of each other. **It’s important that you finish this project in order to work on the next one.** (If you’re not able to finish by the deadline, we do plan on releasing linkable shared binaries.)
+5. This project must be done in groups of up to **3 people**.
+
+# Setup
+Clone the [**Starter Code**](https://github.com/uclacs118/project1starter). The `helper` tools work exactly the same as Project 0—see [**Using the Local Autograder**](/misc/autograder) for more info.
+
+# Specification
+
+Create two programs (a server and a client) written in C/C++ (up to version 17). Both programs will use [BSD sockets](https://en.wikipedia.org/wiki/Berkeley_sockets) using IPv4 and UDP to listen/connect. The expected behavior is the exact same as Project 0, but with different inner logic. See the [Project 0 specification](/projects/project0) for more information.
+
+## Quick Info
+
+* Sequence numbers are in packets; start with 1
+* Must perform an integrity check (XOR all bytes, must be 0)  
+* Maximum Window Size of 16      packets  
+* Fixed retransmission delay of **1** **second**  
+* NACKs are calculated by taking the difference between the current packet number and the latest contiguous packet number 
+* Must retransmit after **3** **duplicate NACK differences**
+
+## Packet Layout
+
+Data sent/received from/to the socket will be in the following byte format:
+
+```
+  Bytes
+ 0 1 2 3 
++-+-+-+-+
+|SEQ|LEN|  F:
++-+-+-+-+        Bits
+| U |N|F|   0 1 2 3 4 5 6 7 
++-+-+-+-+  +-+-+-+-+-+-+-+-+
+|PAYLOAD|  |P|A| (U)NUSED  |
+|<=1016 |  +-+-+-+-+-+-+-+-+
++-+-+-+-+
+
+```
+
+## Field Descriptions
+
+* Sequence Number (SEQ; 2 bytes)  
+  This number represents the packet number. When sending data, the first packet number should be 1. For example, if there are 2000 bytes in stdin, the first packet (SEQ = 1) has the first 1016 bytes and the second has the last 984 bytes.
+
+* Negative Acknowledgement Number ((N)ACK; 2 bytes)  
+  The number helps notify the sender of any loss; it represents the latest contiguous packet received relative to the current packet. **If the receiver has received all packets up to the SEQ in a received packet, the (N)ACK field should be 0.** 
+
+  However, let's say that packets 25, 28, and 29 are missing and the receiver just received packet 30. **The receiver should respond with the (N)ACK field set to 30 - (25 - 1) = 6 since 25 - 1 = 24 is the latest contiguous packet received relative to the current packet.** (Consequently, if the receiver just received packet 25, but has packets  up to 30, the (N)ACK field should be set to -5).
+
+* Length (L; 2 bytes)  
+  This field represents the length of the payload field. If the payload is 1000 bytes long, this field will store a value of 1000\.
+
+* Flags (F; 1 byte)  
+  This single byte holds various packet metadata. The (P)arity flag is set to ensure data integrity. **Taking the XOR of all the bits in a packet should yield 0.** If not, this packet is invalid and should be dropped. The N(A)CK flag is set when the receiver would like to notify the sender of loss; in other words, when the NACK number is not 0, this flag should be set. 
+
+  The P flag is the least significant bit, and the A flag is the second-least significant bit. You may access their values like so:  
+  `uint8_t flag; // Flag value from some packet`  
+  `bool parity = flag & 1;`  
+  `bool nack = (flag >> 1) & 1;`
+
+* Unused (U)  
+  We don’t use this space in the packet. Keep it as null bytes. 
+
+## Reading/Sending Packets
+
+Note that the layout suggests that the largest packet size is 1024 bytes (or maximum length 1012 bytes). In order to read in a packet, you may do the following:
+
+```c
+#define MSS 1016 // MSS = Maximum Segment Size (aka max length)
+typedef struct {
+    uint16_t seq; 
+    uint16_t length;  
+    uint16_t unused;  
+    int8_t nack;
+    uint8_t flags;  
+    uint8_t payload[0];  
+} packet;
+
+// Assume the socket has been set up with all other variables
+char buf[sizeof(packet) + MSS] = {0};
+packet* pkt = buf;
+int bytes_recvd = recvfrom(sockfd, pkt, sizeof(packet) + MSS, 0, (struct sockaddr*) &server_addr, &s);
+
+uint16_t seq = ntohl(pkt->seq); // Make sure to convert to little endian
+```
+
+
+In short, instead of passing in a pointer to some `char` buffer, you’re more than welcome to pass in a pointer to a packet struct. You may also perform something similar with `sendto`.
+
+## General Operation
+
+### NACK difference
+From now on, we'll refer to the number SEQ - (N)ACK as the NACK difference. This represents the earliest packet that hasn't been acknowledged.
+
+### Sending Data
+
+Read as much as you can from standard input and place it in a new packet’s payload. Send the packet over the socket, but keep it in a *sending buffer*. Keep doing this until you’ve reached the **maximum window size** **of 16 packets**. You may only keep sending once you receive acknowledgement of packets (which reduces the amount of packets in your window). 
+
+### Receiving Data
+
+Once you receive a new packet, check if the N(A)CK flag is set. If it is, do a linear scan of all the packets in the sending buffer. Any packet with a SEQ less than or equal to the NACK difference is assumed to be acknowledged. You may remove them from the sending buffer. This reduces the amount of packets in your window and should let you send more packets if needed.
+
+Also, place the packet in a *receiving buffer*. Do a linear scan of all the packets in the receiving buffer starting with the next SEQ you expect and write their contents to standard output.  
+For example, if you have packets:
+
+* SEQ 30
+* SEQ 31
+* SEQ 33
+* SEQ 34
+* SEQ 35
+
+you’d write out the contents of packets SEQ 30 and 31 and remove them from the receiving buffer. SEQ 33, 34, and 35 remain in the buffer.
+
+Finally, send an negative acknowledgement. You may do this by sending it with another data packet (with NACK set and flag), or you may send a dedicated NACK packet (if you have no more data to send or reached your maximum window size). Dedicated NACK packets have a SEQ of 0 and should not go in the send buffer. The NACK number you use is based on the packet you just received.
+
+### Retransmission
+
+After **1 second** of receiving any NACKs from the receiver (or no sort of data at all), retransmit the packet with the lowest sequence number in the sending buffer. Reset this timer as soon as you receive a packet with a new NACK difference.
+
+After **3** packets in a row with the same NACK difference, retransmit the packet with the lowest sequence in the sending buffer. Do not reset the timer.
+
+# Potential Improvements
+
+In Project 2, you’ll be adding a security layer on top of this reliability layer. Currently, the reliability layer gets its data directly from the socket/standard output. Can you think of a way to modularize this (e.g. using function pointers to change what you input into the reliability layer)?
+
+# Common Problems (list will be frequently updated)
+
+* Make sure that **every** number (SEQs, lengths, etc.) is in network order/big endian.
+* There’s no need to preserve the packet boundaries; if you read in 1024 bytes, and you receive a packet that’s only 1000 bytes, you don’t need to save the bottom 24 bytes to place at the beginning of the next packet.
+
+  UDP only sends datagrams—if the datagram is less than the amount of bytes you read in, that’s all you receive. The next packet will be read in the next time you call `recvfrom`. 
+
+  (The same goes for reading in less than the packet size. If you receive a packet that’s 1024 bytes long, and you only allocate a buffer that’s 500 bytes, those extra 524 bytes are gone forever; the next call to `recvfrom` will move on to the next packet).  
+* Remember to use non-blocking calls so you don’t need to multithread your solution.  
+
+# Autograder Test Cases
+
+Note: Gradescope is the ultimate source of authority for your score. While the local autograder tries its best to replicate Gradescope’s environment, it doesn’t always match up (computer performance, kernel configuration, etc). This is especially true for Project 1, where testcases are terminated after a certain interval.
+
+## 0\. Compilation 
+
+This test case passes if:
+
+1. Your code compiles,  
+2. yields two executables named `server` and `client`,  
+3. and has no files that aren’t source code/text.
+
+## 1\. Reliable Data Transport 
+
+1. **Reliable Data Transport (Your Client \<-\> Your Server): Small file (1 KB): `test_self` (10 points)**  
+   This test case runs your server executable then your client executable. It will then input 20 KB of random data in both programs’ stdin and check if the output on the respective other side matches. You'll receive partial credit based on the percent difference.
+
+2. **Reliable Data Transport (Your Client \<-\> Your Server): Medium file (50 KB), Drop (5%): `test_self_drop` (5 points)**  
+   Same as 1, but passes your solution through a proxy. This proxy will drop 5% of packets and may reorder the rest. **Timeout: 30 seconds.**
+
+3. **Reliable Data Transport (Your Client \<-\> Reference Server): Small file (1 KB): `test_client` (10 points)**  
+   Same as 1, but uses the reference server instead.
+
+4. **Reliable Data Transport (Reference Client \<-\> Your Server): Small file (1 KB): `test_server` (10 points)**  
+   Same as 1, but uses the reference client instead.
+
+5. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (50 KB), Drop (5%): `test_client_drop` (10 points)**  
+   Same as 2, but uses the reference server instead. **Timeout: 30 seconds.**
+
+6. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (50 KB), Drop (5%): `test_server_drop` (10 points)**  
+   Same as 2, but uses the reference client instead. **Timeout: 30 seconds.**
+
+7. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (50 KB), Corrupt (5%): `test_client_int` (5 points)**  
+   Same as 2, but uses the reference server instead, no drops, and randomly chooses packets to flip one bit. **Timeout: 30 seconds.**
+
+8. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (50 KB), Corrupt (5%): `test_server_int` (5 points)**  
+   Same as 2, but uses the reference client instead, no drops, and randomly chooses packets to flip one bit. **Timeout: 30 seconds.**
+
+9. **Reliable Data Transport (Your Client \<-\> Reference Server): Large file (500 KB), Drop (1%): `test_client_drop_large` (5 points)**  
+   This test case uses a substantially larger file, so we decrease the drop rate to 1%. **Timeout: 60 seconds.**
+
+10. **Reliable Data Transport (Reference Client \<-\> Your Server): Large file (500 KB), Drop (1%): `test_server_drop_large` (5 points)**  
+   Same as 7, but uses the reference client instead. **Timeout: 60 seconds.**
+
+11. **Reliable Data Transport (Your Client \<-\> Reference Server): Ginormous file (2 MB): `test_ginormous` (15 points)**  
+   We don’t want to keep the autograder running too long, so this test case only tests the client. **Timeout: 60 seconds.**
+
+## Description of Work (10 points)
+
+This is new for Project 1\. We ask you to include a file called `README.md` that contains a quick description of:
+
+1. the design choices you made,  
+2. any problems you encountered while creating your solution, and  
+3. your solutions to those problems.
+
+This is not meant to be comprehensive; less than 300 words will suffice.
+
+# Submission Requirements
+
+Submit a ZIP file, GitHub repo, or Bitbucket repo to Gradescope by the posted deadline. You have unlimited submissions; we’ll choose your best scoring one. **Make sure that you choose the best scoring one as your active submission.** As per the syllabus, remember that all code is subject to manual inspection.
+
+In your ZIP file, include all your source code \+ `README.md` \+ a `Makefile` that generates two executables named `server` and `client`. **Do not include any other files; the autograder will reject submissions with those.** If you’re using the starter repository, the `helper` tool has a zip method that automatically creates a compatible ZIP file.
+
