@@ -232,47 +232,39 @@ This test case passes if:
 ## 2\. Reliable Data Transport 
 
 1. **Reliable Data Transport (Your Client \<-\> Your Server): Small file (10 KB):   
-   `TestRDT.test_self` (10 points)**  
+   `TestRDT.test_self` (20 points)**  
    This test case runs your server executable then your client executable. It will then input 20 KB of random data in both programs’ stdin and check if the output on the respective other side matches. You'll receive partial credit based on the percent difference.
 
 2. **Reliable Data Transport (Your Client \<-\> Your Server): Medium file (100 KB), Drop (5%):   
-   `TestRDT.test_self_drop` (5 points)**  
+   `TestRDT.test_self_drop` (20 points)**  
    Same as 1, but passes your solution through a proxy. This proxy will drop 5% of packets and may reorder the rest. **Timeout: 30 seconds.**
 
 3. **Reliable Data Transport (Your Client \<-\> Reference Server): Small file (10 KB):   
-   `TestRDT.test_client` (10 points)**  
+   `TestRDT.test_client` (5 points)**  
    Same as 1, but uses the reference server instead.
 
 4. **Reliable Data Transport (Reference Client \<-\> Your Server): Small file (10 KB):   
-   `TestRDT.test_server` (10 points)**  
+   `TestRDT.test_server` (5 points)**  
    Same as 1, but uses the reference client instead.
 
-5. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (100 KB), Drop (5%):   
-   `TestRDT.test_client_drop` (10 points)**  
-   Same as 2, but uses the reference server instead. **Timeout: 30 seconds.**
+5. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (100 KB), Drop/Corrupt (5%):   
+   `TestRDT.test_client_drop` (5 points)**  
+   Same as 2, but uses the reference server instead. Randomly chooses packets to flip one bit. (Drop and corrupt events are independent.) **Timeout: 30 seconds.**
 
-6. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (100 KB), Drop (5%):   
-   `TestRDT.test_server_drop` (10 points)**  
-   Same as 2, but uses the reference client instead. **Timeout: 30 seconds.**
+6. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (100 KB), Drop/Corrupt (5%):   
+   `TestRDT.test_server_drop` (5 points)**  
+   Same as 5, but uses the reference client instead. **Timeout: 30 seconds.**
 
-7. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (100 KB), Corrupt (5%):   
-   `TestRDT.test_client_int` (5 points)**  
-   Same as 2, but uses the reference server instead, no drops, and randomly chooses packets to flip one bit. **Timeout: 30 seconds.**
-
-8. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (100 KB), Corrupt (5%):   
-   `TestRDT.test_server_int` (5 points)**  
-   Same as 2, but uses the reference client instead, no drops, and randomly chooses packets to flip one bit. **Timeout: 30 seconds.**
-
-9. **Reliable Data Transport (Your Client \<-\> Reference Server): Large file (500 KB), Drop (1%):   
+7. **Reliable Data Transport (Your Client \<-\> Reference Server): Large file (500 KB), Drop (1%):   
    `TestRDT.test_client_drop_large` (5 points)**  
    This test case uses a substantially larger file, so we decrease the drop rate to 1%. **Timeout: 60 seconds.**
 
-10. **Reliable Data Transport (Reference Client \<-\> Your Server): Large file (500 KB), Drop (1%):   
+8. **Reliable Data Transport (Reference Client \<-\> Your Server): Large file (500 KB), Drop (1%):   
     `TestRDT.test_server_drop_large` (5 points)**  
     Same as 7, but uses the reference client instead. **Timeout: 60 seconds.**
 
-11. **Reliable Data Transport (Your Client \<-\> Reference Server): Ginormous file (2 MB):   
-    `TestRDT.test_ginormous` (15 points)**  
+9. **Reliable Data Transport (Your Client \<-\> Reference Server): Ginormous file (2 MB):   
+    `TestRDT.test_ginormous` (5 points)**  
     We don’t want to keep the autograder running too long, so this test case only tests the client. **Timeout: 60 seconds.**
 
 ## Description of Work (10 points)
