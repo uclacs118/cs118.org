@@ -54,6 +54,9 @@ In this project, you’ll be creating a reliability layer on top of UDP. At a hi
 3. In the provided autograding Docker container, there are reference binaries. Please do not reverse engineer the binaries and submit that code—which would be obvious and clear academic dishonesty. Remember, we do manually inspect your code.  
 4. This project is two of three in this class. They will all build on top of each other. **It’s important that you finish this project in order to work on the next one.** (If you’re not able to finish by the deadline, we do plan on releasing linkable shared binaries.)
 5. This project must be done in groups of up to **3 people**.
+6. **Make sure to select your highest score as your active submission before the deadline.**
+7. **If you're in a group, use Gradescope's group feature to add your group members. Only one member must submit.**
+8. Use `./helper zip` to create your submission if you plan on submitting by ZIP file.
 
 # Setup
 Clone the [**Starter Code**](https://github.com/uclacs118/project1starter). The `helper` tools work exactly the same as Project 0—see [**Using the Local Autograder**](/misc/autograder) for more info.
@@ -67,10 +70,11 @@ Create two programs (a server and a client) written in C/C++ (up to version 17).
 ## Quick Info
 
 * Synchronize sequence numbers with SYN 
-* Must perform an integrity check (XOR all bytes, must be 0)  
+* Must perform an integrity check (XOR all bits, must be 0)  
 * Minimum/initial window size of 1; current window determined by receiver's Flow Window field
 * Fixed retransmission delay of **1** **second**  
 * Must retransmit after **3** **duplicate ACKs**
+* Maximum segment size of **1016 bytes**
 
 ## Packet Layout
 
@@ -118,7 +122,7 @@ Data sent/received from/to the socket will be in the following byte format:
 
 ## Reading/Sending Packets
 
-Note that the layout suggests that the largest packet size is 1024 bytes (or maximum length 1016 bytes). In order to read in a packet, you may do the following:
+Note that the layout suggests that the largest packet size is **1024 bytes (or maximum length 1016 bytes)**. In order to read in a packet, you may do the following:
 
 ```c
 #define MSS 1016 // MSS = Maximum Segment Size (aka max length)
@@ -279,7 +283,9 @@ This is not meant to be comprehensive; less than 300 words will suffice.
 
 # Submission Requirements
 
-Submit a ZIP file, GitHub repo, or Bitbucket repo to Gradescope by the posted deadline. You have unlimited submissions; we’ll choose your best scoring one. **Make sure that you choose the best scoring one as your active submission.** As per the syllabus, remember that all code is subject to manual inspection.
+Submit a ZIP file, GitHub repo, or Bitbucket repo to Gradescope by the posted deadline. You have unlimited submissions; we’ll accept your best scoring one (please do select it as your active submission). If you're in a group, use Gradescope's group feature to select your group members (only one member must submit). As per the syllabus, remember that all code is subject to manual inspection.
 
 In your ZIP file, include all your source code \+ `README.md` \+ a `Makefile` that generates two executables named `server` and `client`. **Do not include any other files; the autograder will reject submissions with those.** If you’re using the starter repository, the `helper` tool has a zip method that automatically creates a compatible ZIP file.
+
+
 
