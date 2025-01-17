@@ -62,14 +62,15 @@ Clone the [**Starter Code**](https://github.com/uclacs118/project1starter). The 
 
 Create two programs (a server and a client) written in C/C++ (up to version 17). Both programs will use [BSD sockets](https://en.wikipedia.org/wiki/Berkeley_sockets) using IPv4 and UDP to listen/connect. The expected behavior is the exact same as Project 0, but with different inner logic. See the [Project 0 specification](/projects/project0) for more information.
 
+**Note:** We won't be using `libsocket` for this project. Feel free to use the standard socket APIs.
+
 ## Quick Info
 
-* Sequence numbers are in packets; start with 1
+* Synchronize sequence numbers with SYN 
 * Must perform an integrity check (XOR all bytes, must be 0)  
-* Maximum Window Size of 16      packets  
+* Minimum/initial window size of 1; current window determined by receiver's Flow Window field
 * Fixed retransmission delay of **1** **second**  
-* NACKs are calculated by taking the difference between the current packet number and the latest contiguous packet number 
-* Must retransmit after **3** **duplicate NACK differences**
+* Must retransmit after **3** **duplicate ACKs**
 
 ## Packet Layout
 
@@ -79,11 +80,11 @@ Data sent/received from/to the socket will be in the following byte format:
   Bytes
  0 1 2 3 
 +-+-+-+-+
-|SEQ|LEN|  F:
+|SEQ|ACK|  F:
 +-+-+-+-+        Bits
-| U |N|F|   0 1 2 3 4 5 6 7 
+|LEN|W|F|   0 1 2 3 4 5 6 7 
 +-+-+-+-+  +-+-+-+-+-+-+-+-+
-|PAYLOAD|  |P|A| (U)NUSED  |
+|PAYLOAD|  |S|A|P|(U)NUSED |
 |<=1016 |  +-+-+-+-+-+-+-+-+
 +-+-+-+-+
 
@@ -92,45 +93,47 @@ Data sent/received from/to the socket will be in the following byte format:
 ## Field Descriptions
 
 * Sequence Number (SEQ; 2 bytes)  
-  This number represents the packet number. When sending data, the first packet number should be 1. For example, if there are 2000 bytes in stdin, the first packet (SEQ = 1) has the first 1016 bytes and the second has the last 984 bytes.
+  This number represents the packet number. When sending data, the first packet number should be randomized (e.g. 789). For example, if there are 2000 bytes in stdin, the first packet (SEQ = 789) has the first 1016 bytes and the second (SEQ = 790) has the last 984 bytes.
 
-* Negative Acknowledgement Number ((N)ACK; 2 bytes)  
-  The number helps notify the sender of any loss; it represents the latest contiguous packet received relative to the current packet. **If the receiver has received all packets up to the SEQ in a received packet, the (N)ACK field should be 0.** 
+* Acknowledgement Number (ACK; 2 bytes)  
+  This number represents the next packet that the receiver is expecting. For example, if the receiver has packets 3, 4, 7, and 8, the receiver will send a packet with ACK 5 (missing packets 5 and 6).
 
-  However, let's say that packets 25, 28, and 29 are missing and the receiver just received packet 30. **The receiver should respond with the (N)ACK field set to 30 - (25 - 1) = 6 since 25 - 1 = 24 is the latest contiguous packet received relative to the current packet.** (Consequently, if the receiver just received packet 25, but has packets  up to 30, the (N)ACK field should be set to -5).
-
-* Length (L; 2 bytes)  
+* Length (LEN; 2 bytes)  
   This field represents the length of the payload field. If the payload is 1000 bytes long, this field will store a value of 1000\.
 
-* Flags (F; 1 byte)  
-  This single byte holds various packet metadata. The (P)arity flag is set to ensure data integrity. **Taking the XOR of all the bits in a packet should yield 0.** If not, this packet is invalid and should be dropped. The N(A)CK flag is set when the receiver would like to notify the sender of loss; in other words, when the NACK number is not 0, this flag should be set. 
+* Flow Window (W; 1 byte)  
+  This field lets the sender know the maximum flow window the receiver can handle. For example, if the receiver sends an packet with this field set to 4, the sender should not send any more than 4 unacknowledged packets at a time. **Note:** the initial window size is always 1.
 
-  The P flag is the least significant bit, and the A flag is the second-least significant bit. You may access their values like so:  
+* Flags (F; 1 byte)  
+  This single byte holds various packet metadata. If the (S)YN flag is on, this means that this packet seeks to synchronize sequence numbers (by providing an initial one in the SEQ field). The (A)CK flag is on when the packet is carrying an acknowledgement. The (P)arity flag is set to ensure data integrity. **Taking the XOR of all the bits in a packet should yield 0.** If not, this packet is invalid and should be dropped. 
+
+  The S flag is the least significant bit, the A flag is the second-least significant bit, and the P flag is the third-least significant bit. You may access their values like so:  
   `uint8_t flag; // Flag value from some packet`  
-  `bool parity = flag & 1;`  
-  `bool nack = (flag >> 1) & 1;`
+  `bool seq = flag & 1;`  
+  `bool ack = (flag >> 1) & 1;`  
+  `bool parity = (flag >> 2) & 1;`
 
 * Unused (U)  
-  We don’t use this space in the packet. Keep it as null bytes. 
+  We don’t use this space in the packet. Keep it as zero. 
 
 ## Reading/Sending Packets
 
-Note that the layout suggests that the largest packet size is 1024 bytes (or maximum length 1012 bytes). In order to read in a packet, you may do the following:
+Note that the layout suggests that the largest packet size is 1024 bytes (or maximum length 1016 bytes). In order to read in a packet, you may do the following:
 
 ```c
 #define MSS 1016 // MSS = Maximum Segment Size (aka max length)
 typedef struct {
     uint16_t seq; 
+    uint16_t ack;
     uint16_t length;  
-    uint16_t unused;  
-    int8_t nack;
+    uint8_t window;
     uint8_t flags;  
     uint8_t payload[0];  
 } packet;
 
 // Assume the socket has been set up with all other variables
 char buf[sizeof(packet) + MSS] = {0};
-packet* pkt = buf;
+packet* pkt = (packet*) buf;
 int bytes_recvd = recvfrom(sockfd, pkt, sizeof(packet) + MSS, 0, (struct sockaddr*) &server_addr, &s);
 
 uint16_t seq = ntohl(pkt->seq); // Make sure to convert to little endian
@@ -141,16 +144,24 @@ In short, instead of passing in a pointer to some `char` buffer, you’re more t
 
 ## General Operation
 
-### NACK difference
-From now on, we'll refer to the number SEQ - (N)ACK as the NACK difference. This represents the earliest packet that hasn't been acknowledged.
+### Handshake
+The client and server will perform a “three way handshake.” This three way handshake is to ensure that both initial sequence numbers are in sync.
+
+1. Once the client connects, it sends a packet with the SYN flag set and a randomly chosen initial sequence number in SEQ.  
+2. The server responds with another packet with the SYN flag set, and a randomly chosen initial sequence number in SEQ. However, this packet also has the ACK flag set, and the ACK number set to the client’s SEQ \+ 1\.  
+3. The client finally responds with another packet. This packet has the ACK flag set, the ACK number set to the server’s SEQ \+ 1, and the SEQ incremented by 1 from the very first packet. 
+
+Please note that all of these packets may have real payloads. Pay attention to the length field to determine whether or not the packet contains data. While you should make the handshake retransmittable, for the sake of testing, we won't drop any handshake packets. **On the same note, even if there's no data available in standard input, you must send all 3 packets with empty payloads.**
+
+![handshake](/imgs/hs.svg)
 
 ### Sending Data
 
-Read as much as you can from standard input and place it in a new packet’s payload. Send the packet over the socket, but keep it in a *sending buffer*. Keep doing this until you’ve reached the **maximum window size** **of 16 packets**. You may only keep sending once you receive acknowledgement of packets (which reduces the amount of packets in your window). 
+Read as much as you can from standard input and place it in a new packet’s payload. Send the packet over the socket, but keep it in a *sending buffer*. Keep doing this until you’ve reached the receiver's window specified in the Flow Window field. Note that the default window size is 1, and it will never decrease in size. You may only keep sending once you receive acknowledgement of packets (which reduces the amount of packets in your window). 
 
 ### Receiving Data
 
-Once you receive a new packet, check if the N(A)CK flag is set. If it is, do a linear scan of all the packets in the sending buffer. Any packet with a SEQ less than or equal to the NACK difference is assumed to be acknowledged. You may remove them from the sending buffer. This reduces the amount of packets in your window and should let you send more packets if needed.
+Once you receive a new packet, check if the ACK flag is set. If it is, do a linear scan of all the packets in the sending buffer. Any packet with a SEQ less than the packet’s ACK is assumed to be acknowledged. You may remove them from the sending buffer. This reduces the amount of packets in your window and should let you send more packets if needed.
 
 Also, place the packet in a *receiving buffer*. Do a linear scan of all the packets in the receiving buffer starting with the next SEQ you expect and write their contents to standard output.  
 For example, if you have packets:
@@ -163,13 +174,20 @@ For example, if you have packets:
 
 you’d write out the contents of packets SEQ 30 and 31 and remove them from the receiving buffer. SEQ 33, 34, and 35 remain in the buffer.
 
-Finally, send an negative acknowledgement. You may do this by sending it with another data packet (with NACK set and flag), or you may send a dedicated NACK packet (if you have no more data to send or reached your maximum window size). Dedicated NACK packets have a SEQ of 0 and should not go in the send buffer. The NACK number you use is based on the packet you just received.
+Finally, send an acknowledgement. You may do this by sending it with another data packet (with ACK set and flag), or you may send a dedicated ACK packet (if you have no more data to send or reached your maximum window size). Dedicated ACK packets should not go in the send buffer. The ACK number you use is the SEQ that you expect next (after performing a linear scan of the receiving buffer).
 
 ### Retransmission
 
-After **1 second** of receiving any NACKs from the receiver (or no sort of data at all), retransmit the packet with the lowest sequence number in the sending buffer. Reset this timer as soon as you receive a packet with a new NACK difference.
+After **1 second** of not receiving any new ACKs from the receiver (or any sort of data at all), retransmit the packet with the lowest sequence number in the sending buffer. Reset this timer as soon as you receive a new ACK.
 
-After **3** packets in a row with the same NACK difference, retransmit the packet with the lowest sequence in the sending buffer. Do not reset the timer.
+After **3 duplicate acknowledgements** (all with the same ACK number), retransmit the packet with the lowest sequence in the sending buffer. Do not reset the timer.
+
+### Integrity Checking
+Occasionally, the autograder may choose to flip a random bit (and only one bit) when proxying packets between the server and client. (See the Autograder Test Cases for the exact rates.) You'll need to detect this and drop the packets accordingly. 
+
+For the receiver, XOR all the bits (including the parity bit) in each received packet. If this operation doesn't result in **0**, drop the packet.
+
+For the sender, with the parity bit 0, XOR all the bits in your packet (including the parity bit). If the operation results in **0**, send the packet. If not, flip the parity bit and send the packet.
 
 # Potential Improvements
 
@@ -177,7 +195,7 @@ In Project 2, you’ll be adding a security layer on top of this reliability lay
 
 # Common Problems (list will be frequently updated)
 
-* Make sure that **every** number (SEQs, lengths, etc.) is in network order/big endian.
+* Make sure that **every** number (SEQs, ACKs, lengths, etc.) is in network order/big endian.
 * There’s no need to preserve the packet boundaries; if you read in 1024 bytes, and you receive a packet that’s only 1000 bytes, you don’t need to save the bottom 24 bytes to place at the beginning of the next packet.
 
   UDP only sends datagrams—if the datagram is less than the amount of bytes you read in, that’s all you receive. The next packet will be read in the next time you call `recvfrom`. 
@@ -197,40 +215,65 @@ This test case passes if:
 2. yields two executables named `server` and `client`,  
 3. and has no files that aren’t source code/text.
 
-## 1\. Reliable Data Transport 
+## 1\. Handshake
+1. **Client SYN:  
+   `TestHandshake.test_client_syn` (5 points)**  
+   Runs your client against the reference server. If the reference server returns its own SYN-ACK packet, this test case passes. Note: no data is sent in these test cases.
 
-1. **Reliable Data Transport (Your Client \<-\> Your Server): Small file (1 KB): `test_self` (10 points)**  
+2. **Server SYN-ACK:  
+   `TestHandshake.test_server_synack` (5 points)**  
+   Same as 1, but with the reference client. If the client sends its own ACK packet, this test case passes. 
+
+3. **Client ACK:  
+   `TestHandshake.test_client_ack` (5 points)**  
+   Same as 2, but in response to the server SYN-ACK. This test case passes if some sort of response was sent after the SYN-ACK.
+
+
+## 2\. Reliable Data Transport 
+
+1. **Reliable Data Transport (Your Client \<-\> Your Server): Small file (10 KB):   
+   `TestRDT.test_self` (10 points)**  
    This test case runs your server executable then your client executable. It will then input 20 KB of random data in both programs’ stdin and check if the output on the respective other side matches. You'll receive partial credit based on the percent difference.
 
-2. **Reliable Data Transport (Your Client \<-\> Your Server): Medium file (50 KB), Drop (5%): `test_self_drop` (5 points)**  
+2. **Reliable Data Transport (Your Client \<-\> Your Server): Medium file (100 KB), Drop (5%):   
+   `TestRDT.test_self_drop` (5 points)**  
    Same as 1, but passes your solution through a proxy. This proxy will drop 5% of packets and may reorder the rest. **Timeout: 30 seconds.**
 
-3. **Reliable Data Transport (Your Client \<-\> Reference Server): Small file (1 KB): `test_client` (10 points)**  
+3. **Reliable Data Transport (Your Client \<-\> Reference Server): Small file (10 KB):   
+   `TestRDT.test_client` (10 points)**  
    Same as 1, but uses the reference server instead.
 
-4. **Reliable Data Transport (Reference Client \<-\> Your Server): Small file (1 KB): `test_server` (10 points)**  
+4. **Reliable Data Transport (Reference Client \<-\> Your Server): Small file (10 KB):   
+   `TestRDT.test_server` (10 points)**  
    Same as 1, but uses the reference client instead.
 
-5. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (50 KB), Drop (5%): `test_client_drop` (10 points)**  
+5. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (100 KB), Drop (5%):   
+   `TestRDT.test_client_drop` (10 points)**  
    Same as 2, but uses the reference server instead. **Timeout: 30 seconds.**
 
-6. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (50 KB), Drop (5%): `test_server_drop` (10 points)**  
+6. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (100 KB), Drop (5%):   
+   `TestRDT.test_server_drop` (10 points)**  
    Same as 2, but uses the reference client instead. **Timeout: 30 seconds.**
 
-7. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (50 KB), Corrupt (5%): `test_client_int` (5 points)**  
+7. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (100 KB), Corrupt (5%):   
+   `TestRDT.test_client_int` (5 points)**  
    Same as 2, but uses the reference server instead, no drops, and randomly chooses packets to flip one bit. **Timeout: 30 seconds.**
 
-8. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (50 KB), Corrupt (5%): `test_server_int` (5 points)**  
+8. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (100 KB), Corrupt (5%):   
+   `TestRDT.test_server_int` (5 points)**  
    Same as 2, but uses the reference client instead, no drops, and randomly chooses packets to flip one bit. **Timeout: 30 seconds.**
 
-9. **Reliable Data Transport (Your Client \<-\> Reference Server): Large file (500 KB), Drop (1%): `test_client_drop_large` (5 points)**  
+9. **Reliable Data Transport (Your Client \<-\> Reference Server): Large file (500 KB), Drop (1%):   
+   `TestRDT.test_client_drop_large` (5 points)**  
    This test case uses a substantially larger file, so we decrease the drop rate to 1%. **Timeout: 60 seconds.**
 
-10. **Reliable Data Transport (Reference Client \<-\> Your Server): Large file (500 KB), Drop (1%): `test_server_drop_large` (5 points)**  
-   Same as 7, but uses the reference client instead. **Timeout: 60 seconds.**
+10. **Reliable Data Transport (Reference Client \<-\> Your Server): Large file (500 KB), Drop (1%):   
+    `TestRDT.test_server_drop_large` (5 points)**  
+    Same as 7, but uses the reference client instead. **Timeout: 60 seconds.**
 
-11. **Reliable Data Transport (Your Client \<-\> Reference Server): Ginormous file (2 MB): `test_ginormous` (15 points)**  
-   We don’t want to keep the autograder running too long, so this test case only tests the client. **Timeout: 60 seconds.**
+11. **Reliable Data Transport (Your Client \<-\> Reference Server): Ginormous file (2 MB):   
+    `TestRDT.test_ginormous` (15 points)**  
+    We don’t want to keep the autograder running too long, so this test case only tests the client. **Timeout: 60 seconds.**
 
 ## Description of Work (10 points)
 
