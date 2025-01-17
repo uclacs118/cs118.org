@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/Assigment.astro
-title: "Project 1: Transport"
+title: "Project 1: Reliable Data Transfer"
 dueDate: 2025-02-19 23:59:00
 ---
 
@@ -71,10 +71,10 @@ Create two programs (a server and a client) written in C/C++ (up to version 17).
 
 * Synchronize sequence numbers with SYN 
 * Must perform an integrity check (XOR all bits, must be 0)  
-* Minimum/initial window size of 1; current window determined by receiver's Flow Window field
+* Minimum/initial window size of **1012 bytes**; current window determined by receiver's Flow Window field
 * Fixed retransmission delay of **1** **second**  
 * Must retransmit after **3** **duplicate ACKs**
-* Maximum segment size of **1016 bytes**
+* Maximum segment size of **1012 bytes**
 
 ## Packet Layout
 
@@ -84,12 +84,14 @@ Data sent/received from/to the socket will be in the following byte format:
   Bytes
  0 1 2 3 
 +-+-+-+-+
-|SEQ|ACK|  F:
+|SEQ|ACK|  
++-+-+-+-+        
+|LEN|WIN|   FLA:
 +-+-+-+-+        Bits
-|LEN|W|F|   0 1 2 3 4 5 6 7 
-+-+-+-+-+  +-+-+-+-+-+-+-+-+
-|PAYLOAD|  |S|A|P|(U)NUSED |
-|<=1016 |  +-+-+-+-+-+-+-+-+
+|FLA| U |   0 1 2 3 4 ... 
++-+-+-+-+  +-+-+-+-+-+-+-+...
+|PAYLOAD|  |S|A|P|(U)NUSED 
+|<=1012 |  +-+-+-+-+-+-+-+...
 +-+-+-+-+
 
 ```
@@ -97,7 +99,7 @@ Data sent/received from/to the socket will be in the following byte format:
 ## Field Descriptions
 
 * Sequence Number (SEQ; 2 bytes)  
-  This number represents the packet number. When sending data, the first packet number should be randomized (e.g. 789). For example, if there are 2000 bytes in stdin, the first packet (SEQ = 789) has the first 1016 bytes and the second (SEQ = 790) has the last 984 bytes.
+  This number represents the packet number. When sending data, the first packet number should be randomized (e.g. 789). For example, if there are 2000 bytes in stdin, the first packet (SEQ = 789) has the first 1012 bytes and the second (SEQ = 790) has the last 984 bytes.
 
 * Acknowledgement Number (ACK; 2 bytes)  
   This number represents the next packet that the receiver is expecting. For example, if the receiver has packets 3, 4, 7, and 8, the receiver will send a packet with ACK 5 (missing packets 5 and 6).
@@ -105,14 +107,14 @@ Data sent/received from/to the socket will be in the following byte format:
 * Length (LEN; 2 bytes)  
   This field represents the length of the payload field. If the payload is 1000 bytes long, this field will store a value of 1000\.
 
-* Flow Window (W; 1 byte)  
-  This field lets the sender know the maximum flow window the receiver can handle. For example, if the receiver sends an packet with this field set to 4, the sender should not send any more than 4 unacknowledged packets at a time. **Note:** the initial window size is always 1.
+* Flow Window (WIN; 2 bytes)  
+  This field lets the sender know the maximum flow window the receiver can handle in bytes. For example, if the receiver sends an packet with this field set to 2000, the sender should not send any more than 2000 unacknowledged bytes at a time. **Note:** the initial window size is always 1012 bytes, or the maximum segment size.
 
-* Flags (F; 1 byte)  
-  This single byte holds various packet metadata. If the (S)YN flag is on, this means that this packet seeks to synchronize sequence numbers (by providing an initial one in the SEQ field). The (A)CK flag is on when the packet is carrying an acknowledgement. The (P)arity flag is set to ensure data integrity. **Taking the XOR of all the bits in a packet should yield 0.** If not, this packet is invalid and should be dropped. 
+* Flags (FLA; 2 bytes)  
+  This field holds various packet metadata. If the (S)YN flag is on, this means that this packet seeks to synchronize sequence numbers (by providing an initial one in the SEQ field). The (A)CK flag is on when the packet is carrying an acknowledgement. The (P)arity flag is set to ensure data integrity. **Taking the XOR of all the bits in a packet should yield 0.** If not, this packet is invalid and should be dropped. 
 
   The S flag is the least significant bit, the A flag is the second-least significant bit, and the P flag is the third-least significant bit. You may access their values like so:  
-  `uint8_t flag; // Flag value from some packet`  
+  `uint16_t flag; // Flag value from some packet`  
   `bool seq = flag & 1;`  
   `bool ack = (flag >> 1) & 1;`  
   `bool parity = (flag >> 2) & 1;`
@@ -122,16 +124,17 @@ Data sent/received from/to the socket will be in the following byte format:
 
 ## Reading/Sending Packets
 
-Note that the layout suggests that the largest packet size is **1024 bytes (or maximum length 1016 bytes)**. In order to read in a packet, you may do the following:
+Note that the layout suggests that the largest packet size is **1024 bytes (or maximum length 1012 bytes)**. In order to read in a packet, you may do the following:
 
 ```c
-#define MSS 1016 // MSS = Maximum Segment Size (aka max length)
+#define MSS 1012 // MSS = Maximum Segment Size (aka max length)
 typedef struct {
     uint16_t seq; 
     uint16_t ack;
     uint16_t length;  
-    uint8_t window;
-    uint8_t flags;  
+    uint16_t window;
+    uint16_t flags; 
+    uint16_t unused;
     uint8_t payload[0];  
 } packet;
 
@@ -161,7 +164,7 @@ Please note that all of these packets may have real payloads. Pay attention to t
 
 ### Sending Data
 
-Read as much as you can from standard input and place it in a new packet’s payload. Send the packet over the socket, but keep it in a *sending buffer*. Keep doing this until you’ve reached the receiver's window specified in the Flow Window field. Note that the default window size is 1, and it will never decrease in size. You may only keep sending once you receive acknowledgement of packets (which reduces the amount of packets in your window). 
+Read as much as you can from standard input and place it in a new packet’s payload. Send the packet over the socket, but keep it in a *sending buffer*. Keep doing this until you’ve reached the receiver's window specified in the Flow Window field. Note that the default window size is 1012 bytes (the MSS), and it will never decrease in size. You may only keep sending once you receive acknowledgement of packets (which reduces the amount of bytes in your window). 
 
 ### Receiving Data
 
@@ -182,7 +185,7 @@ Finally, send an acknowledgement. You may do this by sending it with another dat
 
 ### Retransmission
 
-After **1 second** of not receiving any new ACKs from the receiver (or any sort of data at all), retransmit the packet with the lowest sequence number in the sending buffer. Reset this timer as soon as you receive a new ACK.
+After **1 second** of not receiving any new ACKs from the receiver, retransmit the packet with the lowest sequence number in the sending buffer. Reset this timer as soon as you receive a new ACK.
 
 After **3 duplicate acknowledgements** (all with the same ACK number), retransmit the packet with the lowest sequence in the sending buffer. Do not reset the timer.
 
