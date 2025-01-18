@@ -1,0 +1,68 @@
+---
+layout: ../../../../layouts/Post.astro
+title: "Week 2 Discussion Solutions"
+---
+
+## Activity
+
+On connection, you should receive the first flag.
+
+```
+socket // Create a socket
+
+connect 3 10.0.1.1 1111 // Connect to system
+
+recv 3 10000 // Receive data from server, second flag here
+send 3 NAME HERE // Send name
+recv 3 10000 // Receive data from server
+send 3 MAJOR HERE // Send major
+recv 3 10000 // Receive data from server
+send 3 PROF HERE // Send favorite professor
+recv 3 10000 // Receive data from server
+send 3 TALENT HERE // Send hidden talent
+recv 3 10000 // Receive data from server, third flag here
+
+socket // Create a new socket to listen
+bind 4 any 2222 // Bind the server socket to port 2222
+listen 4 // Start the server
+accept 4 // Accept the connection
+
+recv 5 10000 // Read the data sent by the server, fourth flag here
+```
+
+
+## Platform Questions
+
+### Sockets 1.1
+I would like to set up a TCP **server**, listening on port 8080 for any incoming connections, but not actually make any connections. In what order should I run the following syscalls, if needed? Answer in a comma separated list, like `cats,dogs,fish`.
+
+- `socket,bind,listen` - we need to create a socket, bind it to a port, and start the TCP listener
+### Socket 1.2
+My TCP server is already listening on port 8080. Which of the following syscalls, and in what order, can I use to receive some data from the next incoming connection, and then send some data back? Answer in a comma separated list, like `cats,dogs,fish`.
+
+- `accept,recv,send` - we accept the next connection, receive some data, and then send out some data using the TCP syscalls
+### Socket 2
+I would like to set up a TCP **client**, connecting to a server on port 8080 at 127.0.0.1, and sending an HTTP GET request and reading the response. In what order should I run the following syscalls, if needed? Answer in a comma separated list, like `cats,dogs,fish`.
+
+- `socket,connect,send,recv` - we create a socket, connect outbound to a server, then send and receive data using the TCP syscalls
+### Socket 3
+I would like to set up a **UDP** **server**, listening for any incoming UDP datagrams on port 8080, and reading the data of the first received UDP datagram. In what order should I run the following syscalls, if needed? Answer in a comma separated list, like `cats,dogs,fish`.
+
+- `socket,bind,recvfrom` - we create a socket, bind it to a port, and then attempt to read the next UDP packet that arrives on the bound port.
+
+### Protocols 1
+
+Which of the following protocols are used if I logged into gmail.com and sent an email to my friend? Answer as a sorted, comma separated list, like `1,2,3`
+
+1.  FTP
+2.  SMTP
+3.  SIP
+4.  DASH
+5.  HTTP
+6.  STIR/SHAKEN
+
+- `2,5`: When sending an email via the gmail.com interface, we use HTTP to visit the site and SMTP to actually send the email.
+
+### Unit Conversion
+
+120 kilobits / second * 1 megabit / 1000 kilobits * 1 gigabit / 1000 megabit * 1 bit / 8 bytes = 0.000015 gigabytes / second * 60 seconds / 1 minute * 60 minutes / 1 hour * 24 hours / 1 day = 1.296 gigabytes / day, 2/3rds of that is 0.864 gigabytes per 2/3rds of a day.
