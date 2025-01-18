@@ -1,10 +1,13 @@
 ---
 import Layout from "./Layout.astro";
 import * as H from "../components/helpers/index.astro";
-const { title } = Astro.props.frontmatter;
+
+const { title, frontmatter } = Astro.props;
+
+const pageTitle = title ? title : frontmatter.title;
 ---
 
-<Layout title={title}>
-    <H.Title>{title}</H.Title>
+<Layout title={pageTitle}>
+    <H.Title>{pageTitle}</H.Title>
     <slot />
 </Layout>

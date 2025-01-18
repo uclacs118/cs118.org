@@ -288,7 +288,7 @@ struct sockaddr_in clientaddr = {0}; // Same information, but about client
 socklen_t clientsize = sizeof(clientaddr);
 ```
 
-5. Listen for new clients. This will block the current thread until a client attempts to connect. This is the first part of the three way handshake. Feel free to put these steps in a loop to create an ever listening server.
+5. Listen for new clients by marking this socket as passive.
 
 ```c
 /* 5. Listen for new clients */
@@ -298,7 +298,7 @@ int did_find_client = listen(sockfd, 1);
 if (did_find_client < 0) return errno;
 ```
 
-6. Accept the client connection by creating a new socket for this client. This is the second and third parts of the three way handshake.
+6. Accept the client connection by creating a new socket for this client. This will block the current thread until a client attempts to connect. This is the second and third parts of the three way handshake. Feel free to put these steps in a loop to create an ever listening server.
 
 ```c
 /* 6. Accept client connection */
