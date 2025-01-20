@@ -4,6 +4,8 @@ title: "Project 1: Reliable Data Transfer"
 dueDate: 2025-02-19 23:59:00
 ---
 
+**Notice:** The autograder/starter code aren't quite ready yet. They'll be ready tomorrow.
+
 # Quick Links
 
 [**Starter Code**](https://github.com/uclacs118/project1starter)  
@@ -143,7 +145,7 @@ char buf[sizeof(packet) + MSS] = {0};
 packet* pkt = (packet*) buf;
 int bytes_recvd = recvfrom(sockfd, pkt, sizeof(packet) + MSS, 0, (struct sockaddr*) &server_addr, &s);
 
-uint16_t seq = ntohl(pkt->seq); // Make sure to convert to little endian
+uint16_t seq = ntohs(pkt->seq); // Make sure to convert to little endian
 ```
 
 
@@ -156,11 +158,12 @@ The client and server will perform a “three way handshake.” This three way h
 
 1. Once the client connects, it sends a packet with the SYN flag set and a randomly chosen initial sequence number in SEQ.  
 2. The server responds with another packet with the SYN flag set, and a randomly chosen initial sequence number in SEQ. However, this packet also has the ACK flag set, and the ACK number set to the client’s SEQ \+ 1\.  
-3. The client finally responds with another packet. This packet has the ACK flag set, the ACK number set to the server’s SEQ \+ 1, and the SEQ incremented by 1 from the very first packet. 
+3. The client finally responds with another packet. This packet has the ACK flag set, the ACK number set to the server’s SEQ \+ 1, and the SEQ set to 0 (unless there's a real payload, then increment SEQ by 1 from the original client's SEQ number). 
 
 Please note that all of these packets may have real payloads. Pay attention to the length field to determine whether or not the packet contains data. While you should make the handshake retransmittable, for the sake of testing, we won't drop any handshake packets. **On the same note, even if there's no data available in standard input, you must send all 3 packets with empty payloads.**
 
 ![handshake](/imgs/hs.svg)
+(Assumes there are payloads in each packet.)
 
 ### Sending Data
 
