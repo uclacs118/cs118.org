@@ -4,8 +4,6 @@ title: "Project 1: Reliable Data Transfer"
 dueDate: 2025-02-19 23:59:00
 ---
 
-**Notice:** The autograder/starter code aren't quite ready yet. They'll be ready tomorrow.
-
 # Quick Links
 
 [**Starter Code**](https://github.com/uclacs118/project1starter)  
@@ -167,7 +165,7 @@ Please note that all of these packets may have real payloads. Pay attention to t
 
 ### Sending Data
 
-Read as much as you can from standard input and place it in a new packet’s payload. Send the packet over the socket, but keep it in a *sending buffer*. Keep doing this until you’ve reached the receiver's window specified in the Flow Window field. Note that the default window size is 1012 bytes (the MSS), and it will never decrease in size. You may only keep sending once you receive acknowledgement of packets (which reduces the amount of bytes in your window). 
+Read as much as you can from standard input and place it in a new packet’s payload. Send the packet over the socket, but keep it in a *sending buffer*. Keep doing this until you’ve reached the receiver's window specified in the Flow Window field. Note that the default window size is 1012 bytes (the MSS), and it will never decrease in size (watch out for reordered packets). You may only keep sending once you receive acknowledgement of packets (which reduces the amount of bytes in your window). 
 
 ### Receiving Data
 
@@ -223,58 +221,59 @@ This test case passes if:
 
 1. Your code compiles,  
 2. yields two executables named `server` and `client`,  
-3. and has no files that aren’t source code/text.
+3. has a `README.md`,
+4. and has no files that aren’t source code/text.
 
 ## 1\. Handshake
 1. **Client SYN:  
-   `TestHandshake.test_client_syn` (5 points)**  
+   `handshake test_client_syn` (5 points)**  
    Runs your client against the reference server. If the reference server returns its own SYN-ACK packet, this test case passes. Note: no data is sent in these test cases.
 
 2. **Server SYN-ACK:  
-   `TestHandshake.test_server_synack` (5 points)**  
+   `handshake test_server_synack` (5 points)**  
    Same as 1, but with the reference client. If the client sends its own ACK packet, this test case passes. 
 
 3. **Client ACK:  
-   `TestHandshake.test_client_ack` (5 points)**  
+   `handshake test_client_ack` (5 points)**  
    Same as 2, but in response to the server SYN-ACK. This test case passes if some sort of response was sent after the SYN-ACK.
 
 
 ## 2\. Reliable Data Transport 
 
 1. **Reliable Data Transport (Your Client \<-\> Your Server): Small file (10 KB):   
-   `TestRDT.test_self` (20 points)**  
+   `rdt test_self` (20 points)**  
    This test case runs your server executable then your client executable. It will then input 20 KB of random data in both programs’ stdin and check if the output on the respective other side matches. You'll receive partial credit based on the percent difference.
 
 2. **Reliable Data Transport (Your Client \<-\> Your Server): Medium file (100 KB), Drop (5%):   
-   `TestRDT.test_self_drop` (20 points)**  
+   `rdt test_self_drop` (20 points)**  
    Same as 1, but passes your solution through a proxy. This proxy will drop 5% of packets and may reorder the rest. **Timeout: 30 seconds.**
 
 3. **Reliable Data Transport (Your Client \<-\> Reference Server): Small file (10 KB):   
-   `TestRDT.test_client` (5 points)**  
+   `rdt test_client` (5 points)**  
    Same as 1, but uses the reference server instead.
 
 4. **Reliable Data Transport (Reference Client \<-\> Your Server): Small file (10 KB):   
-   `TestRDT.test_server` (5 points)**  
+   `rdt test_server` (5 points)**  
    Same as 1, but uses the reference client instead.
 
 5. **Reliable Data Transport (Your Client \<-\> Reference Server): Medium file (100 KB), Drop/Corrupt (5%):   
-   `TestRDT.test_client_drop` (5 points)**  
+   `rdt test_client_drop` (5 points)**  
    Same as 2, but uses the reference server instead. Randomly chooses packets to flip one bit. (Drop and corrupt events are independent.) **Timeout: 30 seconds.**
 
 6. **Reliable Data Transport (Reference Client \<-\> Your Server): Medium file (100 KB), Drop/Corrupt (5%):   
-   `TestRDT.test_server_drop` (5 points)**  
+   `rdt test_server_drop` (5 points)**  
    Same as 5, but uses the reference client instead. **Timeout: 30 seconds.**
 
 7. **Reliable Data Transport (Your Client \<-\> Reference Server): Large file (500 KB), Drop (1%):   
-   `TestRDT.test_client_drop_large` (5 points)**  
+   `rdt test_client_drop_large` (5 points)**  
    This test case uses a substantially larger file, so we decrease the drop rate to 1%. **Timeout: 60 seconds.**
 
 8. **Reliable Data Transport (Reference Client \<-\> Your Server): Large file (500 KB), Drop (1%):   
-    `TestRDT.test_server_drop_large` (5 points)**  
+    `rdt test_server_drop_large` (5 points)**  
     Same as 7, but uses the reference client instead. **Timeout: 60 seconds.**
 
 9. **Reliable Data Transport (Your Client \<-\> Reference Server): Ginormous file (2 MB):   
-    `TestRDT.test_ginormous` (5 points)**  
+    `rdt test_ginormous` (5 points)**  
     We don’t want to keep the autograder running too long, so this test case only tests the client. **Timeout: 60 seconds.**
 
 ## Description of Work (10 points)
