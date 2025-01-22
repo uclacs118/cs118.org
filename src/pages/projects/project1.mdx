@@ -160,6 +160,8 @@ The client and server will perform a “three way handshake.” This three way h
 
 Please note that all of these packets may have real payloads. Pay attention to the length field to determine whether or not the packet contains data. While you should make the handshake retransmittable, for the sake of testing, we won't drop any handshake packets. **On the same note, even if there's no data available in standard input, you must send all 3 packets with empty payloads.**
 
+Also, when choosing your initial sequence number, try to keep it low (so you don't have to worry about sequence number wraparound. The reference solution starts at sequence numbers equal to or below 1000).
+
 ![handshake](/imgs/hs2.svg)  
 (Assumes there are payloads in each packet.)
 
