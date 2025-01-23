@@ -119,6 +119,8 @@ Data sent/received from/to the socket will be in the following byte format:
   `bool ack = (flag >> 1) & 1;`  
   `bool parity = (flag >> 2) & 1;`
 
+  **Note: do not make this field big endian**. We're defining significance not with respect to the integer abstraction.
+
 * Unused (U)  
   We don’t use this space in the packet. Keep it as zero. 
 
