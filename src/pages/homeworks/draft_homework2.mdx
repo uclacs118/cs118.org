@@ -1,0 +1,121 @@
+---
+layout: ../../layouts/Assigment.astro
+title: "Homework 2: HTTP, DNS, Error Recovery"
+dueDate: 2025-02-04 23:59:00
+---
+
+Submit your homework solution PDF to Gradescope in any format you please;
+however, make sure that each **question part** is on its own page.
+
+# Question 1: HTTP (25 points)
+
+1. **(9 points)** From class, we know that the `If-modified-since` header is used in HTTP Web Caching requests. Explain how this compares to the `If-None-Match` header. What header must the server send in responses to support `If-None-Match`? What benefits do we gain from this approach? (The [Mozilla docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching) are a great resource).
+
+2. **(8 points)** HTTP Cookies (among other features) add state to what otherwise would be a stateless protocol. When visiting Piazza via Bruin Learn (the left-hand side tab), the browser sends the stored cookies to Piazza-proving your identity. Let's say that Piazza set its cookies with the attribute `SameSite=Strict`. Would we still be able to access Piazza via Bruin Learn (meaning within the left-hand side tab)? What about `SameSite=Lax`? (Optional: by default, LTI integrations in Bruin Learn don't work in macOS Safari. Why is that?)
+
+3. **(8 points)** What improvements does HTTP/2 have over HTTP/1.1 to mitigate Head-of-Line blocking? Even with these mitigations, explain how HTTP/2 still suffers from HoL blocking. 
+
+# Question 2: DNS (25 points)
+
+Professor Paul Eggert is fed up with UCLA IT. His high performance websites at `web.cs.ucla.edu` require the lowest latency access from any global location. Relying on UCLA servers alone won’t do. He’s experimenting with switching to Flarecloud—a global CDN network. 
+To test this out, he asks his students to visit `beta.cs.ucla.edu`. This domain resolves to Flarecloud’s CDN servers (which caches his websites) instead of UCLA’s. 
+
+One of his students decided to perform `dig` queries on both those domains.
+
+```bash
+$ dig web.cs.ucla.edu
+[...]
+;; QUESTION SECTION:
+;web.cs.ucla.edu.	        IN      A
+
+;; ANSWER SECTION:
+web.cs.ucla.edu.	11702	IN	A	131.179.128.29
+
+$ dig beta.cs.ucla.edu
+[...]
+;; QUESTION SECTION:
+;beta.cs.ucla.edu.              IN      A
+
+;; ANSWER SECTION:
+beta.cs.ucla.edu.	11702	IN	CNAME   cdn.flarecloud.com
+cdn.flarecloud.com.	172800	IN	A       162.159.38.2
+```
+
+Assume that:
+- the student’s caching resolver is completely empty;
+- only iterative resolution is used;
+- `ns.ucla.edu` is the authoritative NS for all `ucla.edu` subdomains (there is no separate NS for `cs.ucla.edu`); and
+- it takes 
+    - **5** ms to contact the caching resolver,
+    - **60** ms for the caching resolver to contact the `root`, `com`, and `edu` nameservers, and
+    - **25** ms for the caching resolver to contact the Flarecloud and UCLA nameservers (all round trip).
+
+
+
+1. **(10 points)** How long does it take to resolve `web.cs.ucla.edu`? Show all the steps needed to resolve this query.
+
+2. **(15 points)** How about `beta.cs.ucla.edu`? (Caches are present from the previous request-this is only asked a second later). Show all the steps needed to resolve this query.
+
+# Question 3: Error Recovery (25 points)
+*This question was written by Professor George Varghese.*
+
+The figure below shows two examples of a Go-Back-N protocol working with a window size of **4** and a modulus of **4**. 
+Recall that if the modulus is **4**, all sequence numbers and \\(\rm ACK\\)s are incremented modulo **4**. We want to show
+that the modulus is too small. In both cases, the sender starts by sending the first **4** packets it is
+allowed to in its current window (\\(P_0\\) through \\(P_3\\)) without waiting for an \\(\rm ACK\\).
+
+![q4](/imgs/hw2p4.svg)
+
+1. **(5 points)** In case 1 shown on the left, the \\(\rm ACK\\) to the first data packet \\(P_0\\) is received.
+On receipt of \\(\mathrm\{ACK\}_1\\), the window slides, and the sender sends a different \\(P_0\\) from the one it
+sent earlier. 
+
+    What should the receiver ideally do in this case? Specify how the receiver number 
+    changes if it does, whether the data packet should be accepted, and what \\(\rm ACK\\) number should
+    be sent back.
+
+2. **(5 points)** In Case 2 shown on the right, the \\(\rm ACK\\) to the first data packet \\(P_0\\) is lost.
+After a timeout occurs, the sender retransmits the old \\(P_0\\). 
+
+    What should the receiver do in
+    this case? Specify how the receiver number changes if it does, whether the data packet should
+    be accepted, and what \\(\rm ACK\\) number should be sent back.
+
+3. **(5 points)** Argue from these 2 cases, that the modulus is too small to work correctly.
+
+4. **(5 points)** Using the ideas in this example, argue briefly why the modulus should be at
+least \\(w + 1\\), for a general window size of \\(w\\). (Try to make your argument general that works
+for any \\(w\\) not just **4**.)
+
+5. **(5 points)** Explain how this relates to the Alternating Bit protocol.
+
+# Question 4: KEEPALIVE (25 points)
+*This question was written by Professor George Varghese.*
+
+Songwu Lu has been consulting with an Internet Service Provider and finds that they use an unusual error recovery protocol shown in the figure below. 
+
+The protocol is very similar to Go-Back-N with numbered data packets; the key difference is that the sender does not normally send ACKs. The receiver sends a message called a **NACK** only if it detects an error in the received sequence or if it receives a so-called **KEEPALIVE** packet. 
+
+In the figure below, the sender sends off the first three data packets. The second one is lost; thus when the receiver gets the third packet, it detects an error and sends a **NACK** which contains the highest number the receiver has received in sequence. When **NACK** **1** gets to the sender, the sender retransmits data packets **2** and **3**. Periodically, based on a timer, the sender transmits a **KEEPALIVE** packet. The receiver always replies to a **KEEPALIVE** packet using a **NACK**.
+
+![er](/imgs/er.svg)
+
+1. **(5 points)** Why is the **KEEPALIVE** packet needed? What can go wrong if the sender does not send **KEEPALIVE** packets?
+
+2. **(5 points)** A **KEEPALIVE** packet is sent when a **KEEPALIVE** timer expires. The sender maintains the following property:  
+
+   *While there remains unacknowledged data, the KEEPALIVE timer is running.* 
+
+   Why does this property guarantee that any data packet given to the sender will eventually reach the receiver (as long as the link delivers most packets without errors)?
+
+3. **(5 points)** Under what conditions must the timer be stopped and started to maintain the property?
+
+4. **(10 points)** Consider sending a single data packet **D** that is lost. After that, no packets get lost. What is the worst-case latency before the receiver receives **D** and the sender knows the receiver has received **D**? 
+
+    Write your answer in terms of:
+    - packet roundtrips (\\(\rm RTT\\); assume no transmission delays), and 
+    - **KEEPALIVE** timer durations (\\(T\\)). 
+
+    Assume that \\(\mathrm\{RTT\} \<\< T\\).
+
+
