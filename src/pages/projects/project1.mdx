@@ -207,7 +207,9 @@ In Project 2, you’ll be adding a security layer on top of this reliability lay
 
 # Common Problems (list will be frequently updated)
 
-* Make sure that **every** number (SEQs, ACKs, lengths, etc.) is in network order/big endian.
+* What should I send as my flow window size? We recommend keeping it as `MAX_WINDOW` (defined in starter code as 40 times `MAX_PAYLOAD`) to keep it simple. 
+* The reference solution sets the flow window to `MAX_PAYLOAD`. Each time it receives a packet, it increments it by 500 bytes until it reaches `MAX_WINDOW`.
+* Make sure that **every** number (SEQs, ACKs, lengths, etc.), **except for `flags`** is in network order/big endian.
 * There’s no need to preserve the packet boundaries; if you read in 1024 bytes, and you receive a packet that’s only 1000 bytes, you don’t need to save the bottom 24 bytes to place at the beginning of the next packet.
 
   UDP only sends datagrams—if the datagram is less than the amount of bytes you read in, that’s all you receive. The next packet will be read in the next time you call `recvfrom`. 

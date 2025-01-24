@@ -11,7 +11,7 @@ however, make sure that each **question part** is on its own page.
 
 1. **(9 points)** From class, we know that the `If-modified-since` header is used in HTTP Web Caching requests. Explain how this compares to the `If-None-Match` header. What header must the server send in responses to support `If-None-Match`? What benefits do we gain from this approach? (The [Mozilla docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching) are a great resource).
 
-2. **(8 points)** HTTP Cookies (among other features) add state to what otherwise would be a stateless protocol. When visiting Piazza via Bruin Learn (the left-hand side tab), the browser sends the stored cookies to Piazza-proving your identity. Let's say that Piazza set its cookies with the attribute `SameSite=Strict`. Would we still be able to access Piazza via Bruin Learn (meaning within the left-hand side tab)? What about `SameSite=Lax`? (Optional: by default, LTI integrations in Bruin Learn don't work in macOS Safari. Why is that?)
+2. **(8 points)** HTTP Cookies (among other features) add state to what otherwise would be a stateless protocol. When visiting Piazza via Bruin Learn (the left-hand side tab), the browser sends the stored cookies to Piazza-proving your identity. Let's say that Piazza set its cookies with the attribute `SameSite=Strict`. Would we still be able to access Piazza inside an `iframe` within Bruin Learn (meaning Piazza is loaded cross-site)? What about `SameSite=Lax`? (Optional: by default, LTI integrations in Bruin Learn don't work in macOS Safari. Why is that?)
 
 3. **(8 points)** What improvements does HTTP/2 have over HTTP/1.1 to mitigate Head-of-Line blocking? Even with these mitigations, explain how HTTP/2 still suffers from HoL blocking. 
 
