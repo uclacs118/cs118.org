@@ -3,4 +3,171 @@ layout: ../../../../layouts/Post.astro
 title: "Week 3 Discussion Solutions"
 ---
 
-# NO
+## Activity 2: HTTP
+
+Lines prefixed with `>` are inputs, lines prefixed with `<` are outputted by the program. The below only shows the communication over nc/netcat - assume there is a `nc 10.0.2.2 80` command before each one.
+
+### Stage -1: Initial Connection
+```
+> GET /
+> 
+< Error: Use HTTP 1.1! You used HTTP/0.9 instead.
+> 
+```
+
+### Stage 0: Connecting using HTTP/1.1
+```
+> GET / HTTP/1.1
+> 
+< HTTP/1.1 404 NOT FOUND
+< Server: Werkzeug/3.1.3 Python/3.12.8
+< Date: Fri, 24 Jan 2025 03:12:29 GMT
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 89
+< Connection: close
+<
+< <p>Error: Host 'None' not found.</p> Did you mean 'sockets.net'? Set it as a Host header.
+```
+### Stage 1: Host header
+```
+> GET / HTTP/1.1
+> Host: sockets.net
+> 
+> HTTP/1.1 200 OK
+> Server: Werkzeug/3.1.3 Python/3.12.8
+> Date: Fri, 24 Jan 2025 03:15:17 GMT
+> Content-Type: text/html; charset=utf-8
+> Content-Length: 202
+> Set-Cookie: mycookie=chocolate_chip; Path=/
+> Connection: close
+> 
+> <h1>Welcome!</h1><h2>Flag: cs118{2.1:1n1t14l_c0nn3ct10n}</h2><p>Hello! You've successfully connected to my http server! Now, revisit the server, but following my instructions, including the cookie.</p>
+```
+### Stage 2: Cookies
+```
+> GET / HTTP/1.1
+> Host: sockets.net
+> Cookie: mycookie=chocolate_chip;
+>
+< HTTP/1.1 401 UNAUTHORIZED
+< Server: Werkzeug/3.1.3 Python/3.12.8
+< Date: Fri, 24 Jan 2025 03:18:15 GMT
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 219
+< Connection: close
+< 
+< <p>cs118{2.2:c00k13s} Om nom nom - thanks for the cookie! Remember to keep sending this cookie every time! That being said, I don't know who you are. Can you set a user agent? Just set it to your name or something.</p>
+```
+### Stage 3: User Agent Header
+```
+> GET / HTTP/1.1
+> Host: sockets.net
+> Cookie: mycookie=chocolate_chip;
+> User-Agent: Example
+>
+< HTTP/1.1 200 OK
+< Server: Werkzeug/3.1.3 Python/3.12.8
+< Date: Fri, 24 Jan 2025 03:20:47 GMT
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 129
+< Connection: close
+<
+< <p>cs118{2.3us34_4g3nt} Nice to meet you, Example!</p> Let's change paths, shall we? <a href="/new_path">Just click here!</a></p>
+```
+### Stage 4: Path Change
+```
+> GET /new_path HTTP/1.1
+> Host: sockets.net
+> Cookie: mycookie=chocolate_chip;
+> User-Agent: Example
+>
+< HTTP/1.1 200 OK
+< Server: Werkzeug/3.1.3 Python/3.12.8
+< Date: Fri, 24 Jan 2025 03:22:30 GMT
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 385
+< Connection: close
+```
+### Stage 5: POST Request
+```
+> POST /new_path HTTP/1.1
+> Host: sockets.net
+> Cookie: mycookie=chocolate_chip;
+> User-Agent: Example
+> Content-Type: application/x-www-form-urlencoded
+> Content-Length: 17
+>
+> favorite_pet=catz
+< HTTP/1.1 200 OK
+< Server: Werkzeug/3.1.3 Python/3.12.8
+< Date: Fri, 24 Jan 2025 03:26:50 GMT
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 108
+< Connection: close
+<
+< <p>I love that! Congrats on making it all the way through! Here is your final flag: cs118{2.5:http_guru}</p>
+```
+
+## Activity 3: DNS
+
+For this mini-activity, we will resolve a domain name ourselves! In order to do this, we will use the `dig` command-line tool. **You MUST use the Google Cloud Shell at https://shell.cloud.google.com/?show=terminal, or else some questions are unsolvable.**
+
+Using the dig command is simple:
+
+`dig [@dns resolver] <query> [record type]`. `[]` are optional parameters, `<>` are required parameters.
+
+For example, to lookup the `AAAA` record for `ctf.cs118.org`, you can use `dig ctf.cs118.org AAAA`. If you want to use cloudflare's DNS servers specifically (available at `1.1.1.1`), run `dig AAAA @1.1.1.1 ctf.cs118.org`. If you do not specify a record, `A` is used by default.
+
+Let's start simple: what is the value of the `A` record for `dns.cs118.org`? 127.0.0.21, run `dig dns.cs118.org`
+
+From 3.1, what is the IP address of the server that responded, and what transport layer protocol did it use? Respond like `IP:PROTOCOL`, like `127.0.0.1:ICMP`. 169.254.169.254:UDP, see under the server response for the IP and protocol.
+
+What type of DNS server did we contact in 3.1 and 3.2?
+1. Root
+2. TLD
+3. Authoritative
+4. Recursive - CORRECT
+5. Iterative
+6. ISP
+
+Now, it's time to resolve a domain from scratch! What is the type of DNS server we need to contact first?
+1. Root - CORRECT
+2. TLD
+3. Authoritative
+4. Recursive
+5. Iterative
+6. ISP
+
+Alright! Let's get started.
+
+The root name servers are available at `LETTER.root-servers.net` where LETTER is a letter `a-m`. Except since we are doing this manually, we can't resolve this. Instead, a text file with the IP address of the root DNS servers are distributed by hand to all resolvers that need it, and a copy of this file is attached.
+
+What is the IPv4 Address of the Root DNS server that is hosted by USC's Information Sciences Institute, or ISI? 170.247.170.2 - look this up or look in the provided file for the "Former ISI.EDU" Name Server.
+
+Let's query that server for `dns.cs118.org`, `A` record. What command should we run? `dig @170.247.170.2 dns.cs118.org A`, or any ordering of the last 3 arguments, and with/without the `A` argument.
+
+Run the command! Wait, we don't get the `A` record back! Instead, we only get the record for `org.`. What DNS server type did we just get redirected to?
+
+1. Root
+2. TLD - CORRECT
+3. Authoritative
+4. Recursive
+5. Iterative
+6. ISP
+
+Notice that in the authority section, we see that `org.` is redirected to some name servers such as `a0.org.afilias-nst.info.`, but in the additional section, we are also given the IP addresses of those name servers. What is the name of this technique? Glue or Glue Records
+
+Let's use one of the name servers (pick any of them) and query it for `dns.cs118.org`. What is the resulting response? Answer in the format `RECORD_TYPE:RES,RECORD_TYPE:RES`, like `AAAA:127.0.0.1,A:0.0.0.0,TXT:1.1.1.1`. Run `dig @199.19.56.1 dns.cs118.org`, resulting in 2 records: `NS:dakota.ns.cloudflare.com.,NS:rose.ns.cloudflare.com.?`, dots at the end optional, and either order works.
+
+Oops! In order to resolve this, and since we don't get the IP addresses automatically, we need to start over, but this time on the `.com` TLD. Go ahead and do this with `rose.ns.cloudflare.com` against the root DNS servers again. What is an IPv4 address of a TLD name server we can use when running the appropriate dig command? Run `dig @170.247.170.2 rose.ns.cloudflare.com`.
+
+Let's try again: query one of the `.com` TLD name servers for the IP address of `rose.ns.cloudflare.com`. What is the `hostname` of a name server for the `cloudflare.com` domain? Run `dig @192.41.162.30 rose.ns.cloudflare.com`, resulting in `ns[3-7].cloudflare.com.?`
+
+Now that we have the name server for cloudflare.com, *finally*, what is an IPv4 address for `rose.ns.cloudflare.com`? Run `dig @162.159.4.8 rose.ns.cloudflare.com`.
+
+We're done! Right?
+
+Oh right, we were resolving `rose.ns.cloudflare.com` just so we can continue resolving `dns.cs118.org` manually. Let's continue: resolve `dns.cs118.org` against the cs118.org name servers. What is the final result, and what is it's TTL? Answer in the format `IP:TTL`, like `1.1.1.1:100` Run `dig @108.162.192.141 dns.cs118.org`, resulting in `127.0.0.21:120`.
+
+## Platform Questions
+
