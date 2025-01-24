@@ -118,9 +118,11 @@ Using the dig command is simple:
 
 For example, to lookup the `AAAA` record for `ctf.cs118.org`, you can use `dig ctf.cs118.org AAAA`. If you want to use cloudflare's DNS servers specifically (available at `1.1.1.1`), run `dig AAAA @1.1.1.1 ctf.cs118.org`. If you do not specify a record, `A` is used by default.
 
-Let's start simple: what is the value of the `A` record for `dns.cs118.org`? 127.0.0.21, run `dig dns.cs118.org`
+Let's start simple: what is the value of the `A` record for `dns.cs118.org`?
+- 127.0.0.21, run `dig dns.cs118.org`
 
-From 3.1, what is the IP address of the server that responded, and what transport layer protocol did it use? Respond like `IP:PROTOCOL`, like `127.0.0.1:ICMP`. 169.254.169.254:UDP, see under the server response for the IP and protocol.
+From 3.1, what is the IP address of the server that responded, and what transport layer protocol did it use? Respond like `IP:PROTOCOL`, like `127.0.0.1:ICMP`.
+- 169.254.169.254:UDP, see under the server response when running the dig command for the IP and protocol.
 
 What type of DNS server did we contact in 3.1 and 3.2?
 1. Root
@@ -142,9 +144,11 @@ Alright! Let's get started.
 
 The root name servers are available at `LETTER.root-servers.net` where LETTER is a letter `a-m`. Except since we are doing this manually, we can't resolve this. Instead, a text file with the IP address of the root DNS servers are distributed by hand to all resolvers that need it, and a copy of this file is attached.
 
-What is the IPv4 Address of the Root DNS server that is hosted by USC's Information Sciences Institute, or ISI? 170.247.170.2 - look this up or look in the provided file for the "Former ISI.EDU" Name Server.
+What is the IPv4 Address of the Root DNS server that is hosted by USC's Information Sciences Institute, or ISI?
+- 170.247.170.2 - look this up or look in the provided file for the "Former ISI.EDU" Name Server.
 
-Let's query that server for `dns.cs118.org`, `A` record. What command should we run? `dig @170.247.170.2 dns.cs118.org A`, or any ordering of the last 3 arguments, and with/without the `A` argument.
+Let's query that server for `dns.cs118.org`, `A` record. What command should we run?
+- `dig @170.247.170.2 dns.cs118.org A`, or any ordering of the last 3 arguments, and with/without the `A` argument.
 
 Run the command! Wait, we don't get the `A` record back! Instead, we only get the record for `org.`. What DNS server type did we just get redirected to?
 
@@ -155,19 +159,157 @@ Run the command! Wait, we don't get the `A` record back! Instead, we only get th
 5. Iterative
 6. ISP
 
-Notice that in the authority section, we see that `org.` is redirected to some name servers such as `a0.org.afilias-nst.info.`, but in the additional section, we are also given the IP addresses of those name servers. What is the name of this technique? Glue or Glue Records
+Notice that in the authority section, we see that `org.` is redirected to some name servers such as `a0.org.afilias-nst.info.`, but in the additional section, we are also given the IP addresses of those name servers. What is the name of this technique?
+- Glue or Glue Records
 
-Let's use one of the name servers (pick any of them) and query it for `dns.cs118.org`. What is the resulting response? Answer in the format `RECORD_TYPE:RES,RECORD_TYPE:RES`, like `AAAA:127.0.0.1,A:0.0.0.0,TXT:1.1.1.1`. Run `dig @199.19.56.1 dns.cs118.org`, resulting in 2 records: `NS:dakota.ns.cloudflare.com.,NS:rose.ns.cloudflare.com.?`, dots at the end optional, and either order works.
+Let's use one of the name servers (pick any of them) and query it for `dns.cs118.org`. What is the resulting response? Answer in the format `RECORD_TYPE:RES,RECORD_TYPE:RES`, like `AAAA:127.0.0.1,A:0.0.0.0,TXT:1.1.1.1`.
+- Run `dig @199.19.56.1 dns.cs118.org`, resulting in 2 records: `NS:dakota.ns.cloudflare.com.,NS:rose.ns.cloudflare.com.?`, dots at the end optional, and either order works.
 
-Oops! In order to resolve this, and since we don't get the IP addresses automatically, we need to start over, but this time on the `.com` TLD. Go ahead and do this with `rose.ns.cloudflare.com` against the root DNS servers again. What is an IPv4 address of a TLD name server we can use when running the appropriate dig command? Run `dig @170.247.170.2 rose.ns.cloudflare.com`.
+Oops! In order to resolve this, and since we don't get the IP addresses automatically, we need to start over, but this time on the `.com` TLD. Go ahead and do this with `rose.ns.cloudflare.com` against the root DNS servers again. What is an IPv4 address of a TLD name server we can use when running the appropriate dig command?
+- Run `dig @170.247.170.2 rose.ns.cloudflare.com`.
 
-Let's try again: query one of the `.com` TLD name servers for the IP address of `rose.ns.cloudflare.com`. What is the `hostname` of a name server for the `cloudflare.com` domain? Run `dig @192.41.162.30 rose.ns.cloudflare.com`, resulting in `ns[3-7].cloudflare.com.?`
+Let's try again: query one of the `.com` TLD name servers for the IP address of `rose.ns.cloudflare.com`. What is the `hostname` of a name server for the `cloudflare.com` domain?
+- Run `dig @192.41.162.30 rose.ns.cloudflare.com`, resulting in `ns[3-7].cloudflare.com.?`
 
-Now that we have the name server for cloudflare.com, *finally*, what is an IPv4 address for `rose.ns.cloudflare.com`? Run `dig @162.159.4.8 rose.ns.cloudflare.com`.
+Now that we have the name server for cloudflare.com, *finally*, what is an IPv4 address for `rose.ns.cloudflare.com`?
+- Run `dig @162.159.4.8 rose.ns.cloudflare.com`.
 
 We're done! Right?
 
-Oh right, we were resolving `rose.ns.cloudflare.com` just so we can continue resolving `dns.cs118.org` manually. Let's continue: resolve `dns.cs118.org` against the cs118.org name servers. What is the final result, and what is it's TTL? Answer in the format `IP:TTL`, like `1.1.1.1:100` Run `dig @108.162.192.141 dns.cs118.org`, resulting in `127.0.0.21:120`.
+Oh right, we were resolving `rose.ns.cloudflare.com` just so we can continue resolving `dns.cs118.org` manually. Let's continue: resolve `dns.cs118.org` against the cs118.org name servers. What is the final result, and what is it's TTL? Answer in the format `IP:TTL`, like `1.1.1.1:100`
+- Run `dig @108.162.192.141 dns.cs118.org`, resulting in `127.0.0.21:120`.
 
 ## Platform Questions
 
+### DNS 1
+Which of the following statements about DNS is true?
+
+- A local DNS server never queries the root DNS server - INCORRECT, a local DNS server can run an iterative query.
+- A standard endpoint device (like your phone or laptop) never queries the root DNS server - CORRECT, endpoint devices only contact recursive DNS servers. This prevents the root DNS servers from getting spammed with billions of requests.
+- A recursive DNS server never queries the root DNS server - INCORRECT, that's the point of a recursive DNS server
+- Only authoritative DNS servers can respond to DNS queries - INCORRECT, DNS TTL caching means that any server can respond to DNS queries.
+- DNS uses caching to improve performance - CORRECT, that's the point of TTL.
+- DNS never uses TCP - INCORRECT, DNS uses TCP in some cases, such as if the response cannot fit in a single UDP packet, or if encrypting the DNS request.
+- In a single DNS query, some portions of the resolution process can be iterative while others can be recursive in order to resolve a hostname - CORRECT, see the [DNS Helper Slides](/dns-helper) for an example
+- Cache expiry of a given DNS record is renewed on every request. - INCORRECT, it is only updated on refetching the record, which does not always happen on every request.
+
+### DNS 2
+Why do the root DNS servers not have to keep track of all IP addresses on the internet? Answer in no more than 25 words.
+Iterative queries and pointers allow for DNS to act as a large distributed database.
+
+### DNS 3
+The user on host A wants to access `box.cs118.org` to do the LA activity for this class. Assume host A’s local DNS server cache is empty. The round trip time between host A and the local DNS server is 10 ms. The round trip time between the local DNS server to any DNS server in the hierarchy is 50 ms. Any domain under cs118.org is hosted by ns.cs118.org (one level below the authoritative server) which handles all subdomains of cs118.org. Ignoring any processing and queuing delays, how many ms will elapse from when the user requests `box.cs118.org` to when host A gets the IP address for `box.cs118.org`?
+
+160: The query goes host A --> local DNS Server (5ms) --> Root Name Server (30ms) --> local DNS server (55ms) --> TLD Name Server (80ms) --> local DNS Server (105ms) --> ns.cs118.org (130ms) --> local DNS Server (155ms) --> Host A (160ms)
+
+### DNS 4
+
+Continuing from DNS 3, the user on host B *also* wants to access `box.cs118.org` just moments after the query that host A made finishes (i.e. everything is still cached - assume TTLs are large enough so nothing has expired yet). Host B uses the same local DNS server as host A. The round trip time between any host in the network and the local DNS server is 10ms. The round trip time between the local DNS server to any DNS server in the hierarchy is 50 ms. Any domain under cs118.org is hosted by ns.cs118.org (one level below the authoritative server) which handles all subdomains of cs118.org. Ignoring any processing and queuing delays, how many ms will elapse from when the user requests `box.cs118.org` to when host B gets the IP address for `box.cs118.org`?
+
+10: The query goes host A --> local DNS Server (5ms) --> host A (10ms)
+
+### DNS 5
+
+Continuing from DNS 4, the user on host C wants to access `wikipedia.org` just moments after the query that host A AND host B made finishes (i.e. everything is still cached - assume TTLs are large enough so nothing has expired yet). Host C uses the same local DNS server as host A. The round trip time between any host in the network and the local DNS server is 10ms. The round trip time between the local DNS server to any DNS server in the hierarchy is 50 ms. Any domain under cs118.org is hosted by ns.cs118.org (one level below the authoritative server) which handles all subdomains of cs118.org. Ignoring any processing and queuing delays, how many ms will elapse from when the user requests `wikipedia.org` to when host C gets the IP address for `wikipedia.org`?
+
+110: The query goes host A --> local DNS Server (5ms) --> TLD Name Server (30ms) --> local DNS Server (55ms) --> wikipedia.org Name Server (80ms) --> local DNS Server (105ms) --> Host C (110ms)
+
+### HTTP Versions 1
+
+What is the first version of HTTP that allowed for virtual hosting, and what is the name of the header that allowed this to occur?
+
+Answer like `5,cats` for HTTP version 5 and header called `cats`.
+
+`1.1,host`
+
+### HTTP Versions 2
+
+Which of the following feature(s) does HTTP/1.1 support?
+1. Parallel Connections
+2. Persistent Connections
+3. Pipelining
+4. Multiplexing
+5. Server push
+6. Encryption
+
+Answer as a comma-separated list, like `1,2,3`.
+
+`1,2,3`
+
+### HTTP Versions 3
+
+Which of the following feature(s) does HTTP/2 support?
+1. Parallel Connections
+2. Persistent Connections
+3. Pipelining
+4. Multiplexing
+5. Server push
+6. Encryption
+
+Answer as a comma-separated list, like `1,2,3`.
+
+`1,2,3,4,5,6`
+
+### HTTP Versions 4
+
+Which of the following feature(s) does HTTP/1.0 support?
+1. Parallel Connections
+2. Persistent Connections
+3. Pipelining
+4. Multiplexing
+5. Server push
+6. Encryption
+
+Answer as a comma-separated list, like `1,2,3`.
+
+`1`
+
+### HTTP 1
+
+Which HTTP operation model typically consumes a larger amount of **server** resources for the same web page containing many small images and js/css files: nonpersistent HTTP with parallel TCP connections or a single persistent connection with pipelining? Why?
+
+Please note: you only get one submission, so make sure your answer is ready before submitting!
+
+Nonpersistent HTTP with parallel TCP connections: this requires opening a new TCP socket for every single object downloaded, allocating a new port and using more server resources than pipelining where only a single TCP socket is used.
+
+### HTTP 2
+
+Which of the following is found in **every** HTTP 1.0 and later **request** message?
+
+
+1. Human-readable status
+2. Nonce
+3. Port
+4. Method
+5. Path
+6. HTTP Version
+7. Host
+8. Status code
+9. Stream #
+10. Content Type
+11. HTML
+12. Body
+
+Answer in a list, such as `1,2,3`
+
+`4,5,6`
+
+### HTTP 3
+
+Which of the following is found in **every** HTTP 1.0 and later **response** message?
+
+
+1. Human-readable status
+2. Nonce
+3. Port
+4. Method
+5. Path
+6. HTTP Version
+7. Host
+8. Status code
+9. Stream #
+10. Content Type
+11. HTML
+12. Body
+
+`1,6,8`
