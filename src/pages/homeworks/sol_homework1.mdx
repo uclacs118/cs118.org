@@ -1,0 +1,177 @@
+---
+layout: ../../layouts/Assigment.astro
+title: "Homework 1: Sockets, Network Basics, HTTP"
+dueDate: 2025-01-21 23:59:00
+---
+
+Submit your homework solution PDF to Gradescope in any format you please;
+however, make sure that each **question part** is on its own page.
+
+# Question 1: Modified Sockets (20 points)
+
+In Project 0, you're using UDP to facilitate communication between a server and client. In particular, you're interfacing with the datagram sockets API. Let's say Project 0 used TCP as the communication primitive-interfacing with the stream sockets API instead. 
+
+1. **(10 points)** For the client and server, what API calls would you use? List down the exact functions you'd call for both programs to set up the connection. Which functions would go in the `while` loop? Feel free to write pseudocode. 
+
+    For the client:
+    1. Call `socket` to create a socket.
+    2. Call `connect` to connect to the server's socket.
+    3. In the `while` loop, you'd need to use the `recv` and `send` calls.
+
+    For the server:
+    1. Call `socket`.
+    2. Call `bind` to let the OS know about the address it'd like to use.
+    3. Call `listen` to mark the socket as passive; it can accept connections.
+    4. Call `accept` to accept a (single) client's connection.
+    5. In the `while` loop, you'd need to use the `recv` and `send` calls.
+
+2. **(7 points)** In Project 0, we make both the socket and `stdin` non-blocking. When switching to the stream API, what do we need to change? (Hint: what happens to `accept` when it's non-blocking?)
+    
+    For the client, it's important to note that `connect` is originally a blocking call. If the socket is made non-blocking, it could fail with `EAGAIN`, `EWOULDBLOCK`, or `EINPROGRESS`. Either make the socket non-blocking *after* the `connect` call, or place `connect` in its own loop. 
+
+    For the server, it's important to note that `accept` is originally a blocking call-just like `connect` for the client. Also, `accept` returns a new file descriptor. Make sure to make this non-blocking as well. (Instead of non-blocking, you may also place `MSG_DONTWAIT` as one of the flags for `recv`.)
+
+3. **(3 points)** Let's say that the server and client communicate over some proxy. This means that there's some intermediate process that takes the data from server and forwards it to client and vice-versa. Let's say that this proxy was poorly programmed, and randomly flips bits when it forwards data. Which protocol would you prefer to use to communicate between the server and client? 
+
+    While UDP and TCP have checksums that may detect corruption, UDP will simply drop corrupted packets. TCP has the ability to perform error recovery (retransmission), so TCP is preferred. (Technically, both TCP and UDP will not detect 100% of the corruption. Answers that mention this should receive full credit.)
+
+
+# Question 2: Layering (20 points)
+Consider a scenario where a user on a computer (Host \\(A\\)) wants to send a file to another computer (Host \\(B\\))
+over the Internet. The file is first broken down into segments by the transport layer, then into packets by
+the network layer, and finally into frames by the link layer before being transmitted over the medium.
+
+1. **(10 points)** List the order of headers from innermost to outermost as they are added to the data from the application
+layer to the link layer on Host \\(A\\).
+
+    - Application Header (Optional)
+    - Transport Header
+    - Network Header
+    - Link Header
+
+2. **(5 points)** At which layer will the forwarding decision (selecting the next hop) be made for the packet?
+
+    The network layer makes the forwarding decisions at each hop.
+
+3. **(5 points)** When the frames reach Host \\(B\\) and are being processed for the destination application, which layer
+will first remove its corresponding header?
+
+    The link layer header will be removed first.
+
+# Question 3: Packeting (20 points)
+
+Two hosts, \\(A\\) and \\(B\\) are separated by \\(2500 \\;\rm km\\) and are
+connected by a direct link of \\(R = 5 \\;\rm Mbps\\).
+Suppose the propagation speed over the link is \\(2.5 \cdot 10^8\\;\rm m/s\\).
+
+1. **(5 points)** Consider sending a file of \\(10 \\;\rm KB\\) from Host \\(A\\) to Host \\(B\\). Suppose the file is sent continuously as one
+large message. What is the maximum number of bits that will be in the link at any given time?
+
+    The propagation delay is:
+
+    $$\dfrac\{2.5\times 10^6 \\; \rm m\}\{2.5 \times 10^8\\; \rm \frac\{m\}\{s\}\}= 0.01 \\;\rm s$$
+
+    The number of bits in the pipe is our bandwidth times the amount of time:
+
+    $$5\times 10^6 \\;\mathrm\{\frac\{bits\}\{s\}\} \times 0.01\\; \mathrm\{s\} = 50000\\;\mathrm\{bits\}$$
+
+    Since the amount of bits in the pipe at a time (\\(50000\\)) is less than the total amount of bits sent (\\(80000\\)), we know that we will hit the maximum number of bits in the pipe.
+
+
+    Therefore, the maximum number of bits in the link at any time is \\(50000\\; \rm bits\\).
+
+2. **(5 points)** How long does it take for \\(B\\) to receive the last bit of the file, assuming it is sent continuously?
+
+    The transmission delay is:
+    $$\dfrac\{80000\\;\rm bits\}\{5\times 10^6\\;\rm\frac\{bits\}\{s\}\} = 0.016\\; \rm s$$
+
+    Hence, the total delay is $$0.016\\;\mathrm\{s\} + 0.01\\;\mathrm\{s\} = 0.026\\;\rm s$$
+
+    (Just the transmission delay of \\(0.016\\;\rm s\\) is also accepted.)
+
+3. **(10 points)** Suppose now the file is broken up into **10** packets with each packet
+containing \\(1\\;\rm KB\\). Suppose that each
+packet is acknowledged by the receiver and the transmission time of an acknowledgment packet is negligible. 
+Finally, assume that the sender cannot send a packet until the preceding one is acknowledged.
+How long does it take for \\(B\\) to receive the last bit of the file?
+
+    Note: An acknowledgment is a separate, very small packet that the receiver sends back to the sender
+    indicating a data packet has been received.
+
+    For each packet, the transmission delay is:
+
+    $$\dfrac\{8000\\;\rm bits\}\{5\times 10^6\\;\rm\frac\{bits\}\{s\}\} = 0.0016\\; \rm s$$
+
+    We know that the propagation delay is \\(0.01\\;\rm s\\)-both forward and backward. To send and acknowledge each packet, it takes:
+    $$0.0016\\;\mathrm\{s\} + 2\times 0.01\\;\mathrm\{s\} = 0.0216\\;\rm s$$
+
+    To send **10** packets, it takes \\(10\times 0.0216\\;\mathrm\{s\} = 0.216\\;\rm s\\). (Not counting the last acknowledgement is also accepted; i.e. \\(0.206\\;\rm s\\)).
+
+# Question 4: Delay (20 points)
+
+![](/imgs/hw1p4.svg)
+
+Consider sending **4** packets from Node \\(A\\) to Node \\(B\\) via **2** routers \\(R_1\\) and \\(R_2\\).
+The packet length is \\(125\\;\\rm bytes\\) each (i.e. \\(1000\\;\rm bits\\)).
+The propagation delay of all the **3** links is \\(5\\;\rm ms\\). Links
+\\(A −R_1\\) and \\(R_2 −B\\)’s bandwidth is \\(2\\;\rm Mbps\\), and link \\(R_1
+−R_2\\)’s bandwidth is \\(1\\;\rm Mbps\\). Assume \\(A\\) starts
+transmitting the first packet at time \\(T = 0\\;\rm s\\).
+
+1. **(5 points)** What is the time gap between the first and second packets when they arrive at
+\\(R_2\\)? (i.e. What is the time gap
+between receiving the last bit of the first packet and the last bit of 2nd
+packet?)
+
+    Referencing the table, we see that 12.5 ms - 11.5 ms = **1 ms**.
+
+2. **(5 points)** What is the time gap between the first and second packets when they arrive at
+\\(B\\)?
+
+    Referencing the table, we see that 18 ms - 17 ms = **1 ms**.
+
+3. **(10 points)** When will \\(B\\) receive all the **4** packets?
+
+    Referencing the table, we see that packet 4 completely arrives at \\(B\\) at **20 ms**.
+
+
+|Packet|Leaving A|Arriving R1|Leaving R1|Arriving R2|Leaving R2|Arriving B|
+|---|---|---|---|---|---|---|
+|1|0.5ms|5.5ms|6.5ms|11.5ms|12ms|17ms|
+|2|1ms  |6ms  |7.5ms|12.5ms|13ms|18ms|
+|3|1.5ms|6.5ms|8.5ms|13.5ms|14ms|19ms|
+|4|2ms  |7ms  |9.5ms|14.5ms|15ms|20ms|
+
+# Question 5: HTTP (20 points)
+
+Suppose within your Web browser you click on a link to obtain a Web page from Server \\(S\\), and the browser
+already obtained \\(S\\)’s IP address. Suppose that the Web page associated with the link is a small HTML file,
+consisting only of references to **50** very small objects on the same server. Let \\(\mathrm\{RTT\}_0\\) denote the \\(\rm RTT\\) between
+the local host and the server containing the object. How much time elapses (in terms of \\(\mathrm\{RTT\}_0\\)) from when
+you click on the link until your host receives all the objects, if you are using:
+
+1. **(7 points)** HTTP/1.0 without parallel TCP connections?
+
+    For each request, it takes \\(1\\;\mathrm\{RTT\}_0\\) for the TCP handshake, and \\(1\\;\mathrm\{RTT\}_0\\) for the HTTP request/response. 
+
+    Without parallel connections, we made a total of **51** connections, each taking \\(2\\;\mathrm\{RTT\}_0\\). (**1** connection for the HTML file and **50** to retrieve all the objects). 
+
+    Total: \\(102\\;\mathrm\{RTT\}_0\\).
+
+2. **(7 points)** HTTP/1.0 with parallel TCP connections? The maximum number of parallel connections is **15**.
+
+    With parallel connections, we instantiate a TCP connection for the HTML file (taking \\(2\\;\mathrm\{RTT\}_0\\)). Since we can only create **15** parallel connections at most for all **50** objects, we need **4** connection batches.
+
+    $$\mathrm\{ceil\}(\frac\{50\}\{15\}) = 4$$
+    Each batch takes \\(2\\;\mathrm\{RTT\}_0\\), for a total of \\(4\times 2\\;\mathrm\{RTT\}_0 = 8\\;\mathrm\{RTT\}_0\\). 
+
+    Adding the connection for the original HTML file, we have a total of \\(10\\;\mathrm\{RTT\}_0\\).
+
+3. **(6 points)** HTTP/1.1 without parallel connections, but with pipelining?
+
+    In a persistent connection, we need:
+    - \\(1\\;\mathrm\{RTT\}_0\\) to open the TCP connection, 
+    - \\(1\\;\mathrm\{RTT\}_0\\) to retrieve the web page, and another 
+    - \\(1\\;\mathrm\{RTT\}_0\\) to retrieve all 50 objects (not considering transmission delay). 
+
+    This yields a total of \\(3\\;\mathrm\{RTT\}_0\\).
