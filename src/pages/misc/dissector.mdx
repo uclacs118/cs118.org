@@ -1,0 +1,60 @@
+---
+layout: ../../layouts/Post.astro
+title: "Using the Wireshark Packet Dissector"
+---
+
+# Overview
+
+This Lua script plugin for Wireshark helps dissect packets defined in the [Project 1 spec](/projects/project1). It is useful for:
+
+- Verifying that packet fields are correctly aligned and assigned.
+- Ensuring you are sending the expected data to the reference implementation.
+- Comparing field values with those from the reference implementation.
+
+# Installation
+
+## Update the Helper Script
+
+First, apply the following [patch](/misc/dissector/helper.patch) to your `helper` script:
+
+1. Download the patch into the same directory as `helper`.
+2. Run:
+   ```sh
+   patch < helper.patch
+   ```
+
+This patch modifies your Docker container to share the same network as the host, enabling traffic inspection within the autograder container using a host Wireshark installation.
+
+## Install Wireshark
+
+Download and install Wireshark by following the instructions [here](https://www.wireshark.org/download.html).
+
+## Install the Lua Script Plugin
+
+Once Wireshark is installed, follow these steps to install the dissector plugin:
+
+1. Download the [Lua script](/misc/dissector/w25_118_p1_protocol.lua).
+2. Open Wireshark.
+3. Open the "About Wireshark" dialog:
+   - On Linux/Windows: Go to **Help → About Wireshark**.
+   - On macOS: Go to **Wireshark → About Wireshark**.
+4. Navigate to the **Folders** tab.
+5. Double-click the entry for **Personal Lua Plugins**.
+6. Copy the downloaded script into this folder.
+7. Press `Ctrl+Shift+L` to refresh the plugins.
+
+For reference, see the original instructions [here](https://www.quantulum.co.uk/blog/tldr-wireshark-udp-dissector/).
+
+# Usage Example
+
+1. Start Wireshark and begin a capture on the `Loopback: lo` interface.
+2. Run the autograder using the `helper` script.
+3. After execution, your screen should display captured packets like [such](/misc/dissector/example_use.png).
+
+Each test case typically uses a new port. To filter packets for individual tests, use the following Wireshark filter:
+
+```wireshark
+!dns && (udp.srcport == 8081 || udp.dstport == 8081)
+```
+
+This will exclude DNS traffic and focus on packets relevant to your tests.
