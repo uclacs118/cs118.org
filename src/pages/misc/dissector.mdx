@@ -25,6 +25,10 @@ First, apply the following [patch](/misc/dissector/helper.patch) to your `helper
 
 This patch modifies your Docker container to share the same network as the host, enabling traffic inspection within the autograder container using a host Wireshark installation.
 
+### Warning
+Using `--network host` removes network isolation, which may cause
+problems if your system have programs using the same ports as the autograder.
+
 ## Install Wireshark
 
 Download and install Wireshark by following the instructions [here](https://www.wireshark.org/download.html).
