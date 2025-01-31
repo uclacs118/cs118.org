@@ -4,7 +4,7 @@ import { format } from "./helpers/index.astro";
 
 interface Props {
     title: String;
-    dueDate: string;
+    dueDate: string | null;
     link: string;
 }
 
@@ -16,7 +16,7 @@ const { title, dueDate, link } = Astro.props;
     <a class="item" href={link}>
         <div class="header">
             <h2><b>{title}</b></h2>
-            <h3>Due on {moment.utc(dueDate).format(format)}</h3>
+            {dueDate ? <h3>Due on {moment.utc(dueDate).format(format)}</h3> : null}
         </div>
         <ion-icon name="arrow-forward-outline"></ion-icon>
     </a>
