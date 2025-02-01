@@ -94,7 +94,7 @@ for any \\(w\\) not just **4**.)
 
 Songwu Lu has been consulting with an Internet Service Provider and finds that they use an unusual error recovery protocol shown in the figure below. 
 
-The protocol is very similar to Go-Back-N with numbered data packets; the key difference is that the sender does not normally send ACKs. The receiver sends a message called a **NACK** only if it detects an error in the received sequence or if it receives a so-called **KEEPALIVE** packet. 
+The protocol is very similar to Go-Back-N with numbered data packets; the key difference is that the receiver does not normally send ACKs. The receiver sends a message called a **NACK** only if it detects an error in the received sequence or if it receives a so-called **KEEPALIVE** packet. 
 
 In the figure below, the sender sends off the first three data packets. The second one is lost; thus when the receiver gets the third packet, it detects an error and sends a **NACK** which contains the highest number the receiver has received in sequence. When **NACK** **1** gets to the sender, the sender retransmits data packets **2** and **3**. Periodically, based on a timer, the sender transmits a **KEEPALIVE** packet. The receiver always replies to a **KEEPALIVE** packet using a **NACK**.
 
