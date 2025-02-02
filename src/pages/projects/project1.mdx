@@ -117,7 +117,7 @@ Data sent/received from/to the socket will be in the following byte format:
 
   The S flag is the least significant bit, the A flag is the second-least significant bit, and the P flag is the third-least significant bit. You may access their values like so:  
   `uint16_t flag; // Flag value from some packet`  
-  `bool seq = flag & 1;`  
+  `bool syn = flag & 1;`  
   `bool ack = (flag >> 1) & 1;`  
   `bool parity = (flag >> 2) & 1;`
 
