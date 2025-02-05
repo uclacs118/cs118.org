@@ -33,15 +33,15 @@ Lines prefixed with `>` are inputs, lines prefixed with `<` are outputted by the
 > GET / HTTP/1.1
 > Host: sockets.net
 > 
-> HTTP/1.1 200 OK
-> Server: Werkzeug/3.1.3 Python/3.12.8
-> Date: Fri, 24 Jan 2025 03:15:17 GMT
-> Content-Type: text/html; charset=utf-8
-> Content-Length: 202
-> Set-Cookie: mycookie=chocolate_chip; Path=/
-> Connection: close
-> 
-> <h1>Welcome!</h1><h2>Flag: cs118{2.1:1n1t14l_c0nn3ct10n}</h2><p>Hello! You've successfully connected to my http server! Now, revisit the server, but following my instructions, including the cookie.</p>
+< HTTP/1.1 200 OK
+< Server: Werkzeug/3.1.3 Python/3.12.8
+< Date: Fri, 24 Jan 2025 03:15:17 GMT
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 202
+< Set-Cookie: mycookie=chocolate_chip; Path=/
+< Connection: close
+< 
+< <h1>Welcome!</h1><h2>Flag: cs118{2.1:1n1t14l_c0nn3ct10n}</h2><p>Hello! You've successfully connected to my http server! Now, revisit the server, but following my instructions, including the cookie.</p>
 ```
 ### Stage 2: Cookies
 ```
@@ -197,23 +197,6 @@ Which of the following statements about DNS is true?
 Why do the root DNS servers not have to keep track of all IP addresses on the internet? Answer in no more than 25 words.
 Iterative queries and pointers allow for DNS to act as a large distributed database.
 
-### DNS 3
-The user on host A wants to access `box.cs118.org` to do the LA activity for this class. Assume host A’s local DNS server cache is empty. The round trip time between host A and the local DNS server is 10 ms. The round trip time between the local DNS server to any DNS server in the hierarchy is 50 ms. Any domain under cs118.org is hosted by ns.cs118.org (one level below the authoritative server) which handles all subdomains of cs118.org. Ignoring any processing and queuing delays, how many ms will elapse from when the user requests `box.cs118.org` to when host A gets the IP address for `box.cs118.org`?
-
-160: The query goes host A --> local DNS Server (5ms) --> Root Name Server (30ms) --> local DNS server (55ms) --> TLD Name Server (80ms) --> local DNS Server (105ms) --> ns.cs118.org (130ms) --> local DNS Server (155ms) --> Host A (160ms)
-
-### DNS 4
-
-Continuing from DNS 3, the user on host B *also* wants to access `box.cs118.org` just moments after the query that host A made finishes (i.e. everything is still cached - assume TTLs are large enough so nothing has expired yet). Host B uses the same local DNS server as host A. The round trip time between any host in the network and the local DNS server is 10ms. The round trip time between the local DNS server to any DNS server in the hierarchy is 50 ms. Any domain under cs118.org is hosted by ns.cs118.org (one level below the authoritative server) which handles all subdomains of cs118.org. Ignoring any processing and queuing delays, how many ms will elapse from when the user requests `box.cs118.org` to when host B gets the IP address for `box.cs118.org`?
-
-10: The query goes host A --> local DNS Server (5ms) --> host A (10ms)
-
-### DNS 5
-
-Continuing from DNS 4, the user on host C wants to access `wikipedia.org` just moments after the query that host A AND host B made finishes (i.e. everything is still cached - assume TTLs are large enough so nothing has expired yet). Host C uses the same local DNS server as host A. The round trip time between any host in the network and the local DNS server is 10ms. The round trip time between the local DNS server to any DNS server in the hierarchy is 50 ms. Any domain under cs118.org is hosted by ns.cs118.org (one level below the authoritative server) which handles all subdomains of cs118.org. Ignoring any processing and queuing delays, how many ms will elapse from when the user requests `wikipedia.org` to when host C gets the IP address for `wikipedia.org`?
-
-110: The query goes host A --> local DNS Server (5ms) --> TLD Name Server (30ms) --> local DNS Server (55ms) --> wikipedia.org Name Server (80ms) --> local DNS Server (105ms) --> Host C (110ms)
-
 ### HTTP Versions 1
 
 What is the first version of HTTP that allowed for virtual hosting, and what is the name of the header that allowed this to occur?
@@ -266,9 +249,7 @@ Answer as a comma-separated list, like `1,2,3`.
 
 ### HTTP 1
 
-Which HTTP operation model typically consumes a larger amount of **server** resources for the same web page containing many small images and js/css files: nonpersistent HTTP with parallel TCP connections or a single persistent connection with pipelining? Why?
-
-Please note: you only get one submission, so make sure your answer is ready before submitting!
+(From W24 Midterm) Which HTTP operation model typically consumes a larger amount of **server** resources for the same web page containing many small images and js/css files: nonpersistent HTTP with parallel TCP connections or a single persistent connection with pipelining? Why?
 
 Nonpersistent HTTP with parallel TCP connections: this requires opening a new TCP socket for every single object downloaded, allocating a new port and using more server resources than pipelining where only a single TCP socket is used.
 

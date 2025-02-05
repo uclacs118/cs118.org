@@ -7,6 +7,6 @@ const { title, dueDate } = Astro.props.frontmatter;
 
 <Layout title={title}>
     <H.Title>{title}</H.Title>
-    <H.Subtitle>Due on {moment.utc(dueDate).format(H.format)}</H.Subtitle>
+    { dueDate ? <H.Subtitle>Due on {moment.utc(dueDate).format(H.format)}</H.Subtitle> : null }
     <slot />
 </Layout>

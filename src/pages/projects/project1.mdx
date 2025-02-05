@@ -9,6 +9,8 @@ dueDate: 2025-02-19 23:59:00
 [**Starter Code**](https://github.com/uclacs118/project1starter)  
 [**Using the Local Autograder**](/misc/autograder)
 
+**Note: If you pulled the starter code before January 24th at 7:50 pm, please pull the newest changes.**
+
 # Overview
 
 In Project 0, you implemented a bidirectional pipe between two processes over the network. Congrats\! Here’s a fun challenge: try sending over 200 MB of data using your programs. 
@@ -115,7 +117,7 @@ Data sent/received from/to the socket will be in the following byte format:
 
   The S flag is the least significant bit, the A flag is the second-least significant bit, and the P flag is the third-least significant bit. You may access their values like so:  
   `uint16_t flag; // Flag value from some packet`  
-  `bool seq = flag & 1;`  
+  `bool syn = flag & 1;`  
   `bool ack = (flag >> 1) & 1;`  
   `bool parity = (flag >> 2) & 1;`
 
