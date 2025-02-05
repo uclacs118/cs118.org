@@ -64,6 +64,8 @@ Recall that if the modulus is **4**, all sequence numbers and \\(\rm ACK\\)s are
 that the modulus is too small. In both cases, the sender starts by sending the first **4** packets it is
 allowed to in its current window (\\(P_0\\) through \\(P_3\\)) without waiting for an \\(\rm ACK\\).
 
+Note: In this image, Go-Back-N ACKs the next expected packet, which is different than the textbook. **Just for this question**, assume that's how Go-Back-N works.
+
 ![q4](/imgs/hw2p4.svg)
 
 1. **(5 points)** In case 1 shown on the left, the \\(\rm ACK\\) to the first data packet \\(P_0\\) is received.
@@ -87,7 +89,7 @@ After a timeout occurs, the sender retransmits the old \\(P_0\\).
 least \\(w + 1\\), for a general window size of \\(w\\). (Try to make your argument general that works
 for any \\(w\\) not just **4**.)
 
-5. **(5 points)** Explain how this relates to the Alternating Bit protocol.
+5. **(5 points)** Explain how this relates to the Alternating Bit protocol (also known as Stop-and-Wait).
 
 # Question 4: KEEPALIVE (25 points)
 *This question was written by Professor George Varghese.*
