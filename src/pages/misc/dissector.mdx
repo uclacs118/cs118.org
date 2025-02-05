@@ -15,19 +15,9 @@ This Lua script plugin for Wireshark helps dissect packets defined in the [Proje
 
 ## Update the Helper Script
 
-First, apply the following [patch](/misc/dissector/helper.patch) to your `helper` script:
+First, pull the `capture` [branch](https://github.com/uclacs118/project1starter/tree/capture). If you cannot pull it, just copy the `helper` script instead.
 
-1. Download the patch into the same directory as `helper`.
-2. Run:
-   ```sh
-   patch < helper.patch
-   ```
-
-This patch modifies your Docker container to share the same network as the host, enabling traffic inspection within the autograder container using a host Wireshark installation.
-
-### Warning
-Using `--network host` removes network isolation, which may cause
-problems if your system have programs using the same ports as the autograder.
+This version of the `helper` script has a new command that can run a test case while performing packet capture.
 
 ## Install Wireshark
 
@@ -51,13 +41,13 @@ For reference, see the original instructions [here](https://www.quantulum.co.uk/
 
 # Usage Example
 
-1. Start Wireshark and begin a capture on the `Loopback: lo` interface.
-2. Run the autograder using the `helper` script.
-3. After execution, your screen should display captured packets like [such](/misc/dissector/example_use.png).
+1. Run the autograder using the `helper` script with the `capture` command. `capture` command takes the same argument as the `test` command. For example, run `./helper capture handshake all` to run all `handshake` tests.
+2. After execution, in your `dumps` folder, you should have a file named `file-xxxx-testcase-name.pcap`. 
+3. Open this file with wireshark and you can look at the capture of your packets.
 
 Each test case typically uses a new port. To filter packets for individual tests, use the following Wireshark filter:
 
-```wireshark
+```bash
 !dns && (udp.srcport == 8081 || udp.dstport == 8081)
 ```
 
