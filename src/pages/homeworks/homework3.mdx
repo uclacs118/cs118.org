@@ -52,6 +52,8 @@ Consider the evolution of a TCP connection with the following characteristics. A
 
 **(25 points)** What are the values for \\(\tt cwnd\\) and \\(\tt ssthresh\\) when the sender receives the TCP **ACK with number 15**? Show your intermediate steps or your diagram in your solution.
 
+**Note:** In this question, we are taking the simplification that each TCP segment is exactly 1 byte, so that the integer parts of \\(\tt cwnd\\) and \\(\tt ssthresh\\) directly represent the number of segments. However, in practical TCP, \\(\tt cwnd\\) and \\(\tt ssthresh\\) are calculated in bytes, and the number of segments that can be sent is calculated by dividing \\(\tt cwnd\\) by the MSS and rounding down to the nearest integer.
+
 
 # Question 4: NAT (25 points)
 
