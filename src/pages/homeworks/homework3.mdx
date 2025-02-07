@@ -60,7 +60,7 @@ Network Address Translation (NAT) is the translation of an IP address used withi
 A NAT capable router essentially translates private IP address within a network to public IP addresses that can be visited publicly.
 A simple NAT-capable router will have mappings between the private addresses within the network to the public address(es) that it uses.
 Suppose that the router has a single public address \\(\tt 131.179.176.1\\) which it uses for all communication with hosts that are not part of the private network.
-The private network uses subnet \\(\tt 10.0/16\\).
+The private network uses subnet \\(\tt 10.0.0.0/25\\).
 The router multiplexes its public IP address(es) as needed and keeps track of the multiplexing in a NAT translation table.
 
 Assume that the router multiplexes the public address using ports starting from \\(\tt 8000\\) and then increments the port number by one for each new entry.
@@ -73,17 +73,19 @@ For example, if a host behind the router with address and port \\(\tt 10.0.0.5:5
 
 The next time the router will use port \\(\tt 8001\\) to establish a new connection and so on.
 
-1. **(15 points)** **Draw the resulting NAT Translation Table** at the end of the following message exchanges following the format of the above Table (including the original entry):
+1. **(5 points)** How many unique connections can this private network support?
+
+2. **(12 points)** **Draw the resulting NAT Translation Table** at the end of the following message exchanges following the format of the above Table (including the original entry):
 
     (1) \\(\tt 10.0.0.6:5000\\) sends a message to \\(\tt 172.217.11.78:80\\)
 
     (2) \\(\tt 10.0.0.10:6000\\) sends a message to \\(\tt 204.79.197.200:80\\)
 
-    (3) \\(\tt 10.0.1.101:6001\\) sends a message to \\(\tt 206.190.36.45:80\\)
+    (3) \\(\tt 10.0.0.101:6001\\) sends a message to \\(\tt 206.190.36.45:80\\)
 
     (4) \\(\tt 10.0.0.10:6000\\) sends a message to \\(\tt 204.79.197.200:80\\)
 
-    (5) \\(\tt 10.0.1.101:6001\\) sends a message to \\(\tt 172.217.11.78:80\\)
+    (5) \\(\tt 10.0.0.101:6001\\) sends a message to \\(\tt 172.217.11.78:80\\)
 
     (6) \\(\tt 10.0.0.7:7000\\) sends a message to \\(\tt 63.245.215.20:80\\)
 
@@ -92,10 +94,9 @@ The next time the router will use port \\(\tt 8001\\) to establish a new connect
     (8) \\(\tt 204.79.197.200:80\\) sends a message to \\(\tt 131.179.176.1:8003\\)
 
 
-2. **(10 points)** For simplicity, let's denote transport-layer messages in the format of \\(\tt MSG \<Sender, Receiver\>\\), where \\(\tt Sender\\) and \\(\tt Receiver\\) represent the IP-port pair of the message's sender and receiver respectively.
+3. **(8 points)** For simplicity, let's denote transport-layer messages in the format of \\(\tt MSG \<Sender, Receiver\>\\), where \\(\tt Sender\\) and \\(\tt Receiver\\) represent the IP-port pair of the message's sender and receiver respectively.
 
     For example, if a host in the private network with IP address and port \\(\tt 10.0.0.5:5000\\) sends a message to \\(\tt 132.239.8.45:80\\).
-
     Then from the router's point of view, we denote the message received at router and sent from the router as follows:
 
     - Message Received from Host: \\(\tt MSG \<10.0.0.5:5000, 132.239.8.45:80\>\\)
