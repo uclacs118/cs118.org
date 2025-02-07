@@ -7,8 +7,8 @@ interface Frontmatter {
 }
 
 
-let exams = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("./*.mdx", { eager: true }));
-exams = exams.filter(exam => exam.frontmatter.title! == "Midterm" || exam.frontmatter.title! == "Final");
+let exams = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("./midterm*.mdx", { eager: true }));
+exams.push(...Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("./final*.mdx", { eager: true })));
 
 ---
 
