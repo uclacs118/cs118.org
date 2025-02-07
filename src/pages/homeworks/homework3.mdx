@@ -21,8 +21,8 @@ It will be used for communication with a geosynchronous satellite network, for w
 # Question 2: GBN/SR/TCP (25 points)
 
 In this question you are comparing among the following three schemes:
-- **Go-Back-N:** cumulative ACK is used. The ACK number is the sequence number of corresponding segment (Figure 3.22 in the textbook).
-- **Selective Repeat:** individual ACK is used. The ACK number is the sequence number of corresponding segment (Figure 3.26 in the textbook).
+- **Go-Back-N:** cumulative ACK is used. The ACK number is the sequence number of corresponding segment.
+- **Selective Repeat:** individual ACK is used. The ACK number is the sequence number of corresponding segment.
 - **TCP:** cumulative ACK is used with no delayed ACK. The ACK number is the next expected sequence number.
 
 Assume that timeout values for all three protocols are sufficiently long, such that 8 consecutive data segments and their corresponding ACKs can be received (if not lost in the channel) by the receiving host (Host B) and the sending host (Host A), respectively.
@@ -51,8 +51,6 @@ Consider the evolution of a TCP connection with the following characteristics. A
 - The connection (already established) starts to transmit data at time \\(t = 0\\), and the **initial sequence number starts from 1**. TCP segment with **sequence number 6 is lost once** (i.e., it sees segment loss during its first transmission). No other segments are lost during transmissions.
 
 **(25 points)** What are the values for \\(\tt cwnd\\) and \\(\tt ssthresh\\) when the sender receives the TCP **ACK with number 15**? Show your intermediate steps or your diagram in your solution.
-
-**Note:** For simplicity, we assume that TCP sender does NOTHING when receiving 1st and 2nd duplicate ACKs, following the convention in the textbook, rather than the optimized behaviors described in RFC 5681, Section 3.2.
 
 
 # Question 4: NAT (25 points)
