@@ -61,13 +61,13 @@ packets start dropping). In the absence of packet losses caused by the links the
 the minimal value of \\(N\\) that allows Host \\(A\\) to achieve the maximum possible throughput without
 packet losses?
 
-To send at maximum throughput, we want the bottleneck \\(R_1-R_2\\) link to be at 100 percent utilization. Packets at \\(R_1\\)'s receiving buffer leave bounded by the transmission speed of the \\(R_1-R_2\\) link. By limiting \\(N\\) to send as many packets across this link within a packet round (the interval between sending the first bit of a packet and receiving its acknowledgement), we can send at the maximum throughput (with no packet losses).
+To send at maximum throughput, we want the bottleneck \\(R_1-R_2\\) link to be at **100** percent utilization. Packets at \\(R_1\\)'s receiving buffer leave bounded by the transmission speed of the \\(R_1-R_2\\) link. By limiting \\(N\\) to send as many packets across this link within a packet round (the interval between sending the first bit of a packet and receiving its acknowledgement), we can send at the maximum throughput (with no packet losses).
 
 From the previous part, a packet round is \\(22\\;\rm ms\\), and the transmission time across the \\(R_1-R_2\\) link is \\(4\\;\rm ms\\).
 
 \\(22 \\;\mathrm\{ms\} / 4 \\;\mathrm\{ms\} = 5.5\\) and rounding up yields a minimum of **6 packets**.
 
-Note that this would leads to a queue at \\(R1\\), but that is ok since the queue will never grow pass 6 packets as that is the maximum number of packets that is in-flight.
+Note that this would leads to a queue at \\(R_1\\), but that is okay since the queue will never grow pass 6 packets as that is the maximum number of packets that is in-flight.
 
 # Question 3: HTTP + TCP (25 points)
 
