@@ -190,7 +190,7 @@ To generate the Server Hello:
 3. Generate a public key. Please note that the `Public-Key` in `Server-Hello` is different from the `Public-Key` in your certificate. This public key must be generated yourself. We will refer to this public key as the server's **ephemeral public key**.
 4. Create a handshake signature over the received `Client-Hello`, `Nonce`, `Certificate`, and `Public-Key` appended to after each other using the given private key. The given private key is available by reading the file `server_key.bin` in the current working directory.
 
-We now have the client’s public key and our own. This is enough to derive a symmetric shared secret using Diffie-Hellman. Using HKDF, generate two other keys from the shared secret: an **ENC** key and a **MAC** key. The salt is the `Client-Hello` with the `Server-Hello` appended right after.
+We now have the client’s public key and our own ephemeral private key. This is enough to derive a symmetric shared secret using Diffie-Hellman. Using HKDF, generate two other keys from the shared secret: an **ENC** key and a **MAC** key. The salt is the `Client-Hello` with the `Server-Hello` appended right after.
 
 ### Finished 
 
@@ -200,7 +200,7 @@ On receiving the Server Hello, the client will verify that:
 2. The certificate has a valid DNS name. Check the DNS name that was passed into the client's arguments. If it does not match, exit with **status 2**.
 2. The Server Hello was indeed signed by the server. This is done by verifying the signature in the Server Hello message with the public key in the server’s certificate. If the signature fails to verify, exit with **status 3**.
 
-We now have the server’s ephemeral public key and our own. This is enough to derive a symmetric shared secret using Diffie-Hellman. Using HKDF, generate two other keys from the shared secret: an **ENC** key and a **MAC** key. These keys have their info strings as ENC and MAC respectively. The salt is the `Client-Hello` with the `Server-Hello` appended right after.
+We now have the server’s ephemeral public key and our own private key. This is enough to derive a symmetric shared secret using Diffie-Hellman. Using HKDF, generate two other keys from the shared secret: an **ENC** key and a **MAC** key. These keys have their info strings as ENC and MAC respectively. The salt is the `Client-Hello` with the `Server-Hello` appended right after.
 
 The client may now generate its finished message. The finished message contains a Transcript, which is the HMAC digest of the `Client-Hello` with the `Server-Hello` appended right after.
 
