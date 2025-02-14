@@ -163,12 +163,12 @@ Note that the length of the public key is not deterministic. Typically, the publ
 
 After receiving the Client Hello, the server will construct and send its own Server Hello message. This message contains its own nonce (independent from the client’s nonce), its certificate, a public key, and a signature over the rest of this message.
 
-The certificate contains two values: the associated DNS name (e.g. example.com), a public key, and a signature of your public key by the certificate authority. You’ll be able to access this certificate by reading the file `server_cert.bin` in the current working directory.
+The certificate contains three values: the associated DNS name (e.g. example.com), a public key, and a signature of your public key by the certificate authority. You’ll be able to access this certificate by reading the file `server_cert.bin` in the current working directory.
 ```
 DNS-NAME-TYPE = 0xA1
 DNS-Name = DNS-NAME-TYPE TLV-LENGTH *OCTET
 
-SIGNATURE-TYPE = 0x03
+SIGNATURE-TYPE = 0xA2
 Signature = SIGNATURE-TYPE TLV-LENGTH *OCTET
 
 CERTIFICATE-TYPE = 0xA0
@@ -177,15 +177,18 @@ Certificate = CERTIFICATE-TYPE TLV-LENGTH DNS-Name Public-Key Signature
 Note that the length of the certificate is not deterministic. Typically, the public key is 91 bytes, the signature is around 72 bytes, but it could be 70, 71, or 72 bytes long[^2]. The DNS name could be of any length.
 
 ```
+HANDSHAKE-SIGNATURE-TYPE = 0x21
+Handshake-Signature = HANDSHAKE-SIGNATURE-TYPE TLV-LENGTH *OCTET
+
 SERVER-HELLO-TYPE = 0x20
-Server-Hello = SERVER-HELLO-TYPE TLV-LENGTH Nonce Certificate Public-Key Signature
+Server-Hello = SERVER-HELLO-TYPE TLV-LENGTH Nonce Certificate Public-Key Handshake-Signature
 ```
 
 To generate the Server Hello:
 1. Generate a nonce.
 2. Copy the certificate into the `Server-Hello`.
 3. Generate a public key. Please note that the `Public-Key` in `Server-Hello` is different from the `Public-Key` in your certificate. This public key must be generated yourself. We will refer to this public key as the server's **ephemeral public key**.
-4. Create a signature over `Nonce`, `Certificate`, and `Public-Key` appended to after each other using the given private key. The given private key is available by reading the file `server_key.bin` in the current working directory.
+4. Create a handshake signature over the received `Client-Hello`, `Nonce`, `Certificate`, and `Public-Key` appended to after each other using the given private key. The given private key is available by reading the file `server_key.bin` in the current working directory.
 
 We now have the client’s public key and our own. This is enough to derive a symmetric shared secret using Diffie-Hellman. Using HKDF, generate two other keys from the shared secret: an **ENC** key and a **MAC** key. The salt is the `Client-Hello` with the `Server-Hello` appended right after.
 
