@@ -48,7 +48,7 @@ In this project, you’ll be implementing a security layer on top of the reliabi
 5. **Make sure to select your highest score as your active submission before the deadline.**
 6. **If you're in a group, use Gradescope's group feature to add your group members. Only one member must submit.**
 7. Use `./helper zip` to create your submission if you plan on submitting by ZIP file.
-8. A lot of material in this specification may seem foreign to you—that’s okay\! Make sure to review the [week 7 discussion slides](https://docs.google.com/presentation/u/0/d/1SZkgTgtq2ThsX17eb6RLZ9uy9ifoUFiKrYFW8CPwSJg/edit) which go over the intuition behind these new cryptographic protocols.
+8. A lot of material in this specification may seem foreign to you—that’s okay\! Make sure to review the [week 7 discussion slides](https://docs.google.com/presentation/d/1kHKFecNftGPrMaIlRibFqmuWp2Dg9BrOafag8T9lhwI) which go over the intuition behind these new cryptographic protocols.
 
 # Setup
 Clone the [**Starter Code**](https://github.com/uclacs118/project2starter). The `helper` tools work exactly the same as Projects 0 and 1—see [**Using the Local Autograder**](/misc/autograder) for more info.
@@ -234,7 +234,7 @@ DATA-TYPE = 0x50
 Data = DATA-TYPE TLV-LENGTH IV Ciphertext MAC
 
 ```
-You’ll have to do some math to determine how much plaintext to encrypt. [See the discussion slides on CBC and PKCS \#7 padding](https://docs.google.com/presentation/d/1SZkgTgtq2ThsX17eb6RLZ9uy9ifoUFiKrYFW8CPwSJg). For example, to fill up a packet’s payload as much as possible:
+You’ll have to do some math to determine how much plaintext to encrypt. [See the discussion slides on CBC and PKCS \#7 padding](https://docs.google.com/presentation/d/1kHKFecNftGPrMaIlRibFqmuWp2Dg9BrOafag8T9lhwI/edit#slide=id.g3385b3cf7c1_0_834). For example, to fill up a packet’s payload as much as possible:
 
 * The max payload size is 1012\.  
 * This leaves 1012 \- 3 (Data message header) \- 18 (IV message) \- 34 (MAC message) \- 3 (Ciphertext message header) \= 950 bytes for the ciphertext.  
@@ -243,9 +243,9 @@ You’ll have to do some math to determine how much plaintext to encrypt. [See t
 * The max plaintext size is 943 bytes. 
 * \\(L_\{\mathrm\{plaintext\}\} = \left\lfloor\dfrac\{L_\{\mathrm\{payload\}\} - 60\}\{16\}\right\rfloor \cdot 16 - 1\\)
 
-Generate an initialization vector (random bytes, just like a nonce) and encrypt the appropriate amount of plaintext using the **ENC** key. Create an HMAC digest of your IV \+ ciphertext (append the two in that order without the TLV headers) using the **MAC** key.
+Generate an initialization vector (random bytes, just like a nonce) and encrypt the appropriate amount of plaintext using the **ENC** key. Create an HMAC digest of your `IV` \+ `Ciphertext` using the **MAC** key.
 
-When receiving data, firstly verify its integrity by calculating the HMAC digest of the received IV \+ ciphertext. If the digest matches the MAC code in the received Data message (exact memory comparison), proceed. If not, exit with **status 5**. 
+When receiving data, firstly verify its integrity by calculating the HMAC digest of the received `IV` \+ `Ciphertext`. If the digest matches the MAC code in the received Data message (exact memory comparison), proceed. If not, exit with **status 5**. 
 
 Decrypt the ciphertext using the IV and output it to standard output.
 
