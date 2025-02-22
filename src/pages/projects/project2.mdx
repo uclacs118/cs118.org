@@ -4,7 +4,7 @@ title: "Project 2: Security"
 dueDate: 2025-03-19 23:59:00
 ---
 
-**Note: The autograder/starter code is not available yet. It will be available tomorrow.**
+**Note: The autograder/starter code is now available. However, the `libsecurity` and `libtransport` docs aren't quite ready. They'll be available later today.**
 
 # Quick Links
 
@@ -165,7 +165,7 @@ Note that the length of the public key is not deterministic. Typically, the publ
 
 After receiving the Client Hello, the server will construct and send its own Server Hello message. This message contains its own nonce (independent from the client’s nonce), its certificate, a public key, and a signature over the rest of this message.
 
-The certificate contains three values: the associated DNS name (e.g. example.com), a public key, and a signature of your public key by the certificate authority. You’ll be able to access this certificate by reading the file `server_cert.bin` in the current working directory.
+The certificate contains three values: the associated DNS name (e.g. example.com), a public key, and a signature of the `DNS-Name` and the `Public-Key` appended after each other by the certificate authority. You’ll be able to access this certificate by reading the file `server_cert.bin` in the current working directory.
 ```
 DNS-NAME-TYPE = 0xA1
 DNS-Name = DNS-NAME-TYPE TLV-LENGTH *OCTET
@@ -283,7 +283,7 @@ This test case passes if:
    Malformed message: **15 points**
 
 3. **Handshake: Finished: `test_finished` (25 points)**  
-   Same as 1, but assessing valid Finished messages and the client’s ability to verify information in the Server Hello. Log messages that test your client with bad CA public keys are appended with **`badcert`**. Log messages that test your client with bad server private keys (an impostor) are appended with **`badpriv`**.
+   Same as 1, but assessing valid Finished messages and the client’s ability to verify information in the Server Hello. Log messages that test your client with bad CA public keys are appended with **`badcert`**. Log messages that test your client with bad server private keys (an impostor) are appended with **`badpriv`**. Log messages that test your client with a mismatched DNS name are appended with **`badname`**.
 
    Malformed message: **5 points**  
    Correct message, but does not perform certificate verification: **10 points**  
