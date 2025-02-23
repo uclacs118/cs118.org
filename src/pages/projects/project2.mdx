@@ -1,15 +1,17 @@
 ---
 layout: ../../layouts/Assigment.astro
 title: "Project 2: Security"
-dueDate: 2025-03-19 23:59:00
+dueDate: 2025-03-20 23:59:00
 ---
-
-**Note: The autograder/starter code is now available. However, the `libsecurity` and `libtransport` docs aren't quite ready. They'll be available later today.**
 
 # Quick Links
 
 [**Starter Code**](https://github.com/uclacs118/project2starter)  
-[**Using the Local Autograder**](/misc/autograder)
+[**Using the Local Autograder**](/misc/autograder)   
+[**Using the Local Autograder (...for Project 2)**](/misc/autograder2)  
+[**libtransport**](/misc/libtransport)  
+[**libsecurity**](/misc/libsecurity)  
+[**TLV Helpers**](/misc/tlv)  
 
 # Overview
 
@@ -51,7 +53,7 @@ In this project, you’ll be implementing a security layer on top of the reliabi
 8. A lot of material in this specification may seem foreign to you—that’s okay\! Make sure to review the [week 7 discussion slides](https://docs.google.com/presentation/d/1kHKFecNftGPrMaIlRibFqmuWp2Dg9BrOafag8T9lhwI) which go over the intuition behind these new cryptographic protocols.
 
 # Setup
-Clone the [**Starter Code**](https://github.com/uclacs118/project2starter). The `helper` tools work exactly the same as Projects 0 and 1—see [**Using the Local Autograder**](/misc/autograder) for more info.
+Clone the [**Starter Code**](https://github.com/uclacs118/project2starter). The `helper` tools work exactly the same as Projects 0 and 1—see [**Using the Local Autograder**](/misc/autograder) and [**Using the Local Autograder (...for Project 2)**](/misc/autograder2) for more info.
 
 # Specification
 
@@ -252,6 +254,8 @@ Decrypt the ciphertext using the IV and output it to standard output.
 # Uhhh, what did I just read?
 
 Admittedly, this is a ton of new information. What’s important to note is that **[libsecurity](/misc/libsecurity)** takes care of all the heavy lifting. Read the function definitions in `libsecurity.h`. For example, the entire HKDF stuff is taken care of with the `derive_keys` function. The encrypt/decrypt functions and the HMAC function already use the appropriate keys. The point of this project is to help you learn about network security, but to also expose you to certain cryptographic technologies. You’re not expected to know how to use them from scratch, but simply be aware of their existence.
+
+We also have [**TLV Helpers**](/misc/tlv) that will help with most of the serialization and deserialization steps.
 
 # Common Problems (list will be frequently updated)
 

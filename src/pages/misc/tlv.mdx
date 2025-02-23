@@ -1,0 +1,134 @@
+---
+layout: ../../layouts/Post.astro
+title: "TLV Helpers"
+---
+
+As seen in the Project 2 spec, instead of using packet headers with predefined byte boundaries, 
+we'll be using Type-Length-Value (TLV) encoding for the security messages. TLV can be a bit tricky 
+to work with, so we're providing some TLV helpers in the `consts.h` file found in the starter code.
+
+# Using `security.c`
+Before going into how to use the TLV helpers, it's important to know how the programming model in `security.c` works.
+
+In Project 1, we implemented a reliable data transfer protocol. Our "upper layer" was standard input and standard output.
+We interfaced with `stdin` and `stdout` using the functions provided in `io.h`. 
+
+In Project 2, our "upper layer" is our security layer. You'll see that the functions in `security.h` are similar to the 
+functions in `io.h`. This allows us to "hot swap" our layers very easily when transitioning from Project 1 to Project 2.
+(I encourage you to take a look at the difference between `server.c`/`client.c` in the Project 1 and Project 2 starter code. 
+There's barely any difference!)
+
+The starter code as-is functions as a Project 1 solution since we pass our data directly to the `io` functions.
+
+## `init_sec`
+Similar to `init_io`, this is where we make preparations before we start interfacing with the upper layer. `init_sec` has two parameters:
+
+- `int type`: Determines whether or not this program is functioning as the server or client.
+- `char* host`: The hostname that was inputted to the program.
+
+Take these two values and somehow save them for future use.
+
+## `input_sec`
+
+This function allows you to provide input to the transport layer. The transport layer will call this method when creating new packets.
+As such, it's guaranteed that any data you write to the `buf` argument will all be in one packet (just make sure to not write more than `max_length`, 
+or else you'll get a buffer overflow).
+
+For example, 
+
+```c
+ssize_t input_sec(uint8_t* buf, size_t max_length) {
+    strcpy((char*) buf, "Hello!");
+
+    return strlen("Hello!");
+}
+```
+
+will always send out packets with the payload `Hello!`.
+
+## `output_sec`
+
+Similar to `input_sec`, the data in `buf` corresponds to data from one packet. Each time the transport layer receives a new, in-order packet, 
+it will call this function.
+
+# TLV Examples
+
+Let's go over sending and receiving a (modified) `Client-Hello` message using the TLV functions provided in `consts.h`.
+
+## Sending
+
+In the `input_sec` function, let's create a TLV packet.
+```c
+ssize_t input_sec(uint8_t* buf, size_t max_length) {
+    tlv* ch = create_tlv(CLIENT_HELLO);
+
+```
+`create_tlv` will *dynamically* allocate memory for this TLV object.
+
+Now, let's place a nonce inside this Client Hello. Firstly, let's create the Nonce TLV object.
+
+```c
+    tlv* nn = create_tlv(NONCE);
+```
+Then, generate the nonce using functions from `libsecurity`.
+```c
+    uint8_t nonce[NONCE_SIZE];
+    generate_nonce(nonce, NONCE_SIZE);
+```
+We can now place this data inside the Nonce object. This will *dynamically* allocate space inside the TLV object
+and copy it over.
+```c
+    add_val(nn, nonce, NONCE_SIZE);
+```
+Let's add this Nonce TLV object as part of the Client Hello.
+```c
+    add_tlv(ch, nn);
+```
+We're now ready to send this TLV packet to the transport layer. Let's *serialize* the TLV into bytes by writing it directly
+to the transport layer's buffer (the `buf` argument in `input_sec`).
+```c
+    uint16_t len = serialize_tlv(buf, ch);
+```
+Since all these TLV objects are *dynamically* allocated, we need to free them to conserve memory (this is a toy project, sure, but these
+are best practices...)
+```c
+    free_tlv(ch);
+```
+This will recursively go through each TLV in the TLV object tree and free the object and its value. **It's not recommended for TLV objects to 
+have multiple parents or to be modified after adding a parent. This has undefined behavior.**
+
+To let the transport layer know about the data we've sent, let's return the length of the data.
+```c
+    return len;
+}
+```
+
+## Receiving
+
+In the `output_sec` function, let's try to deserialize a TLV packet.
+```c
+void output_sec(uint8_t* buf, size_t length) {
+    tlv* ch = deserialize_tlv(buf, length);
+```
+
+Make sure that the resulting value is not `NULL`. If it is, that means that 
+the data inside `buf` does not represent a valid TLV packet. Feel free to use the 
+`print_tlv_bytes` function to print as much of the packet as possible.
+
+`deserialize_tlv` will recursively parse TLV packets. As such, our Nonce TLV object has been parsed already. We can now retrieve it and inspect its contents. (Before this, also make sure that the result from `get_tlv` is not `NULL`.)
+
+```c
+    tlv* nn = get_tlv(ch, NONCE);
+    nn->length; // NONCE_SIZE
+    nn->val; // Contains our random nonce
+}
+```
+
+Please note that `get_tlv` performs a breadth-first search in the TLV object for the requested type. To get the other type within a nested topology, get the intermediate type first. (e.g. `Server-Hello` has a top-level signature and another one inside its certificate.)
+
+## Debugging
+
+The `print_tlv_bytes` function is very useful to see how TLV packets may be malformed and/or missing fields.
+
+
+

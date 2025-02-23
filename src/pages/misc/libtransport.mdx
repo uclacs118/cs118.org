@@ -1,0 +1,29 @@
+---
+layout: ../../layouts/Post.astro
+title: "libtransport"
+---
+
+# Overview
+`libtransport` is the solution to Project 1. If you just modified `transport.c` 
+for your project solution, you may hot swap it in instead of `libtransport` 
+(unrecommended since there might be some implementation details that you've missed).
+
+# `listen_loop`
+```c
+void listen_loop(int sockfd, struct sockaddr_in* addr, int initial_state,
+                 ssize_t (*input_p)(uint8_t*, size_t),
+                 void (*output_p)(uint8_t*, size_t));
+```
+
+An ever running loop where the transport layer continously runs the Project 1 protocol to send and receive data.
+
+## Parameters
+- `int sockfd`: The socket that's already bound to an `AF_INET` address.
+- `struct sockaddr_in*`: The destination `AF_INET` address.
+- `int initial_state`: Notifies the transport layer if it's acting as the client or server.
+- `ssize_t (*input_p)(uint8_t*, size_t)`: A pointer to a function that serves as the output from the upper layer (i.e. input into the transport layer).
+- `void (*output_p)(uint8_t*, size_t)`: A pointer to a function that servers as the input from the upper layer (i.e. output from the transport layer).
+
+## Returns
+Never.
+
