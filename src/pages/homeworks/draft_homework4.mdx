@@ -9,13 +9,19 @@ however, make sure that each **question part** is on its own page.
 
 # Question 1: Routing (25 points)
 
-Consider the network shown below. The costs of all links are initially: c(x,y) = 4, c(x,z) = 50, c(y,w) = 1, c(z,w) = 1, c(y,z) = 3. Suppose the distance-vector algorithm introduced in the lecture is used.
+Consider the network shown below. The costs of all links are initially: c(x,y) = 4, c(x,z) = 50, c(y,w) = 1, c(z,w) = 1, c(y,z) = 3.
 
 ![q1](/imgs/hw4p1.pdf)
 
-1. **(9 points)** When the distance vector routing is stabilized, router w, y, and z inform their distances to x to each other. What distance values do they tell each other?
-2. **(9 points)** Now suppose that the link cost between x and y increases to 60. Can y, z, w settle their optimal distances to x within several (say, \\(\le5\\)) iterations? Why or why not?
-3. **(7 points)** Will the distance tables eventually reach a stabilized state? Why or why not?s
+1. **(8 points)** Suppose the link-state routing is used. Show the intermediate steps to compute the shortest path from x to each of the other nodes.
+
+2. Suppose the distance-vector routing is used. 
+
+    a. **(6 points)** When the distance vector routing is stabilized, router w, y, and z inform their distances to x to each other. What distance values do they tell each other?
+
+    b. **(8 points)** Now suppose that the link cost between x and y increases to 60. Can y, z, w settle their optimal distances to x within several (say, \\(\le5\\)) iterations? Why or why not?
+
+    c. **(3 points)** Will the distance tables eventually reach a stabilized state? Why or why not?
 
 
 # Question 2: BGP1 (25 points)
