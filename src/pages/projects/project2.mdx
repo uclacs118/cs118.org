@@ -78,7 +78,7 @@ No other third party libraries are allowed.
   * Encryption uses AES-256-CBC with PKCS \#7 padding  
     * \\(L_\{\mathrm\{plaintext\}\} = \left\lfloor\dfrac\{L_\{\mathrm\{payload\}\} - 60\}\{16\}\right\rfloor \cdot 16 - 1\\)
   * Key derivation uses HKDF SHA-256. Use info ENC for the encryption key and info MAC for the decryption key. The salt is the `Client-Hello` with the `Server-Hello` appended right after.   
-  * Message authentication uses HMAC SHA-256—authenticate over the IV and ciphertext concatenated (in that order without the TLV header)  
+  * Message authentication uses HMAC SHA-256—authenticate over the IV and ciphertext concatenated (in that order with the TLV header)  
 * **Lengths**  
   * Public key length: **\~91 bytes**  
   * Nonce length: **32 bytes**  
@@ -260,6 +260,7 @@ We also have [**TLV Helpers**](/misc/tlv) that will help with most of the serial
 # Common Problems (list will be frequently updated)
 
 * Make sure that **lengths** are in network order/big endian.
+* Make sure your hmac is computed over the TLV-serialized representation of you cryptographic primitives. 
 
 # Autograder Test Cases
 
