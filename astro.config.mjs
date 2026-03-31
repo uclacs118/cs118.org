@@ -8,26 +8,26 @@ import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
 
 // https://astro.build/config
 export default defineConfig({
-    integrations: [mdx()],
-    markdown: {
-        rehypePlugins: [
-            rehypeSlug,
-            [
-                rehypeAutolinkHeadings,
-                {
-                    behavior: 'prepend',
-                    content: {
-                        type: 'text',
-                        value: '#',
-                    },
-                    headingProperties: {
-                        className: ['anchor'],
-                    },
-                    properties: {
-                        className: ['anchor-link'],
-                    },
-                },
-            ],
-        ],
-    }
+	integrations: [mdx()],
+	markdown: {
+		rehypePlugins: [
+			rehypeSlug,
+			[
+				rehypeAutolinkHeadings,
+				{
+					behavior: 'prepend',
+					content: {
+						type: 'text',
+						value: '#',
+					},
+					headingProperties: {
+						className: ['anchor'],
+					},
+					properties: {
+						className: ['anchor-link'],
+					},
+				},
+			],
+		],
+	}
 });
