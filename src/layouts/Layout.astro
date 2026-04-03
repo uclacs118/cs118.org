@@ -8,205 +8,203 @@ const pageTitle = title ? title : frontmatter.title;
 
 <!doctype html>
 <html lang="en" id="nonav">
-    <head>
-        <script is:inline>
-            var darkMode = false;
+  <head>
+    <script is:inline>
+      var darkMode = false;
 
-            var setMode = (mode) => {
-                const root = document.querySelector(":root");
-                const button = document.querySelectorAll(
-                    ".darkbutton ion-icon",
-                );
-                darkMode = mode;
+      var setMode = (mode) => {
+        const root = document.querySelector(":root");
+        const button = document.querySelectorAll(".darkbutton ion-icon");
+        darkMode = mode;
 
-                if (darkMode) {
-                    button.forEach((el) => (el.name = "moon"));
-                    root.style.setProperty("--bg", "#202020");
-                    root.style.setProperty("--fg", "#ffffff");
-                    root.style.setProperty("--acc", "#3d7adb");
-                } else {
-                    button.forEach((el) => (el.name = "sunny"));
-                    root.style.setProperty("--bg", "#ffffff");
-                    root.style.setProperty("--fg", "#202020");
-                    root.style.setProperty("--acc", "#2065d7");
-                }
+        if (darkMode) {
+          button.forEach((el) => (el.name = "moon"));
+          root.style.setProperty("--bg", "#202020");
+          root.style.setProperty("--fg", "#ffffff");
+          root.style.setProperty("--acc", "#3d7adb");
+        } else {
+          button.forEach((el) => (el.name = "sunny"));
+          root.style.setProperty("--bg", "#ffffff");
+          root.style.setProperty("--fg", "#202020");
+          root.style.setProperty("--acc", "#2065d7");
+        }
 
-                if (localStorage) {
-                    localStorage.setItem("darkMode", mode ? "true" : "false");
-                }
-            };
+        if (localStorage) {
+          localStorage.setItem("darkMode", mode ? "true" : "false");
+        }
+      };
 
-            if (localStorage && localStorage.getItem("darkMode")) {
-                setMode(localStorage.getItem("darkMode") == "true");
-            }
+      if (localStorage && localStorage.getItem("darkMode")) {
+        setMode(localStorage.getItem("darkMode") == "true");
+      }
 
-            document.addEventListener("DOMContentLoaded", () => {
-                if (window.matchMedia) {
-                    const query = window.matchMedia(
-                        "(prefers-color-scheme: dark)",
-                    );
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.matchMedia) {
+          const query = window.matchMedia("(prefers-color-scheme: dark)");
 
-                    if (!localStorage || !localStorage.getItem("darkMode")) {
-                        darkMode = query.matches;
-                        setMode(darkMode);
-                    }
+          if (!localStorage || !localStorage.getItem("darkMode")) {
+            darkMode = query.matches;
+            setMode(darkMode);
+          }
 
-                    query.onchange = (e) => {
-                        darkMode = e.matches;
-                        setMode(e.matches);
-                    };
-                }
-            });
-        </script>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" type="image/png" href="/favicon.png" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="mask-icon" href="/favicon.ico" />
+          query.onchange = (e) => {
+            darkMode = e.matches;
+            setMode(e.matches);
+          };
+        }
+      });
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="mask-icon" href="/favicon.ico" />
 
-        <script
-            is:inline
-            id="MathJax-script"
-            async
-            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-        ></script>
-        <script
-            is:inline
-            type="module"
-            src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
-        ></script>
+    <script
+      is:inline
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <script
+      is:inline
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap"
-            rel="stylesheet"
-        />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
 
-        <title>{pageTitle}</title>
-    </head>
-    <body>
-        <Navigation />
-        <div class="content">
-            <div class="container">
-                <br />
-                <slot />
-            </div>
-        </div>
-    </body>
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <Navigation />
+    <div class="content">
+      <div class="container">
+        <br />
+        <slot />
+      </div>
+    </div>
+  </body>
 </html>
 
 <style is:inline>
-    :root {
-        --bg: #ffffff;
-        --fg: #202020;
-        --acc: #2065d7;
-        --alt: #888888;
-        --good: #6aa84f;
-        --bad: #cc0000;
+  :root {
+    --bg: #ffffff;
+    --fg: #202020;
+    --acc: #2065d7;
+    --alt: #888888;
+    --good: #6aa84f;
+    --bad: #cc0000;
+  }
+
+  pre {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  a {
+    color: var(--acc);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .content {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-weight: normal;
+    }
+    p,
+    ul,
+    ol {
+      font-weight: 300;
     }
 
-    pre {
-        padding: 1rem;
-        border-radius: 1rem;
+    table {
+      border-collapse: collapse;
+      display: block;
+      overflow-x: auto;
+      width: 100%;
+      font-weight: 300;
+      padding-left: 1px;
     }
 
-    a {
-        color: var(--acc);
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: underline;
-        }
+    thead th {
+      text-align: left;
+      padding: 0.5rem;
     }
 
-    .content {
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            font-weight: normal;
-        }
-        p, ul, ol {
-            font-weight: 300;
-        }
-
-        table {
-            border-collapse: collapse;
-            display: block;
-            overflow-x: auto;
-            width: 100%;
-            font-weight: 300;
-            padding-left: 1px;
-        }
-
-        thead th {
-            text-align: left;
-            padding: 0.5rem;
-        }
-
-        tbody td {
-            padding: 0.5rem;
-            border: 1px solid var(--acc);
-            margin: 0;
-        }
-
-        a.anchor-link {
-            color: var(--alt);
-            margin-right: 0.25rem;
-        }
-
-        blockquote {
-            color: var(--alt);
-            border-left: 4px solid var(--alt);
-            padding-left: 0.5rem;
-            letter-spacing: -1px;
-            font-style: italic;
-
-            > :last-child {
-                margin-bottom: 0;
-            }
-        }
+    tbody td {
+      padding: 0.5rem;
+      border: 1px solid var(--acc);
+      margin: 0;
     }
+
+    a.anchor-link {
+      color: var(--alt);
+      margin-right: 0.25rem;
+    }
+
+    blockquote {
+      color: var(--alt);
+      border-left: 4px solid var(--alt);
+      padding-left: 0.5rem;
+      letter-spacing: -1px;
+      font-style: italic;
+
+      > :last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
 </style>
 
 <style>
-    html,
-    body {
-        margin: 0;
-        color: var(--fg);
-        background: var(--bg);
-        font-family: "Lexend";
-        height: 100%;
+  html,
+  body {
+    margin: 0;
+    color: var(--fg);
+    background: var(--bg);
+    font-family: "Lexend";
+    height: 100%;
+  }
+
+  .content {
+    position: absolute;
+    left: calc(var(--hsize));
+    width: calc(100% - var(--hsize));
+    padding: 2rem;
+    box-sizing: border-box;
+    hyphens: auto;
+    margin: 0;
+    container-type: inline-size;
+    overflow: visible;
+  }
+
+  .container {
+    --wsize: 0%;
+    margin-left: var(--wsize);
+    width: calc(100% - 2 * var(--wsize));
+    box-sizing: border-box;
+    overflow: visible;
+
+    @container (min-width: 1024px) {
+      --wsize: 20%;
     }
 
-    .content {
-        position: absolute;
-        left: calc(var(--hsize));
-        width: calc(100% - var(--hsize));
-        padding: 2rem;
-        box-sizing: border-box;
-        hyphens: auto;
-        margin: 0;
-        container-type: inline-size;
-        overflow: visible;
+    @container (min-width: 1440px) {
+      --wsize: 25%;
     }
-
-    .container {
-        --wsize: 0%;
-        margin-left: var(--wsize);
-        width: calc(100% - 2 * var(--wsize));
-        box-sizing: border-box;
-        overflow: visible;
-
-        @container (min-width: 1024px) {
-            --wsize: 20%;
-        }
-
-        @container (min-width: 1440px) {
-            --wsize: 25%;
-        }
-    }
+  }
 </style>

@@ -3,51 +3,51 @@ import moment from "moment";
 import { format } from "./helpers/index.astro";
 
 interface Props {
-    title: String;
-    dueDate: string | null;
-    link: string;
+  title: String;
+  dueDate: string | null;
+  link: string;
 }
 
 const { title, dueDate, link } = Astro.props;
 ---
 
 <div class="assignment">
-    <hr />
-    <a class="item" href={link}>
-        <div class="header">
-            <h2><b>{title}</b></h2>
-            {dueDate ? <h3>Due on {moment.utc(dueDate).format(format)}</h3> : null}
-        </div>
-        <ion-icon name="arrow-forward-outline"></ion-icon>
-    </a>
-    <slot />
+  <hr />
+  <a class="item" href={link}>
+    <div class="header">
+      <h2><b>{title}</b></h2>
+      {dueDate ? <h3>Due on {moment.utc(dueDate).format(format)}</h3> : null}
+    </div>
+    <ion-icon name="arrow-forward-outline"></ion-icon>
+  </a>
+  <slot />
 </div>
 
 <style>
-    .assignment {
-        margin-bottom: 2rem;
+  .assignment {
+    margin-bottom: 2rem;
+  }
+  .item {
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    align-items: center;
+
+    .header {
+      color: var(--fg);
+      h2,
+      h3 {
+        margin: 0;
+        margin-bottom: 0.5rem;
+      }
+
+      h3 {
+        color: var(--alt);
+      }
     }
-    .item {
-        display: flex;
-        flex-flow: row;
-        justify-content: space-between;
-        align-items: center;
 
-        .header {
-            color: var(--fg);
-            h2,
-            h3 {
-                margin: 0;
-                margin-bottom: 0.5rem;
-            }
-
-            h3 {
-                color: var(--alt);
-            }
-        }
-
-        ion-icon {
-            font-size: 2rem;
-        }
+    ion-icon {
+      font-size: 2rem;
     }
+  }
 </style>
