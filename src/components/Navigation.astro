@@ -90,36 +90,34 @@ const links = [
 </nav>
 
 <style>
-    :root {
-        &:target {
-            --hsize: 0vw;
-            .expandbutton {
-                display: block;
-            }
-
-            nav {
-                display: none;
-            }
+    :root:target {
+        --hsize: 0vw;
+        .expandbutton {
+            display: block;
         }
 
-        &:not(:target) {
-            --hsize: 20%;
-        
-            @media (max-width: 1024px) {
-                --hsize: 30%;
-            }
-        
-            @media (max-width: 768px) {
-                --hsize: 40%;
-            }
-        
-            .expandbutton {
-                display: none;
-            }
-        
-            nav {
-                display: block;
-            }
+        nav {
+            display: none;
+        }
+    }
+
+    :root:not(:target) {
+        --hsize: 20%;
+    
+        @media (max-width: 1024px) {
+            --hsize: 30%;
+        }
+    
+        @media (max-width: 768px) {
+            --hsize: 40%;
+        }
+    
+        .expandbutton {
+            display: none;
+        }
+    
+        nav {
+            display: block;
         }
     }
 </style>
