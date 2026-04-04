@@ -1,0 +1,16 @@
+---
+import Assignment from '../Assignment.astro';
+import type { MarkdownInstance } from 'astro';
+interface Frontmatter {
+    title: string;
+    dueDate: string;
+}
+
+
+let exams = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("../../pages/winter25/exams/midterm*.mdx", { eager: true }));
+exams.push(...Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("../../pages/winter25/exams/final*.mdx", { eager: true })));
+
+---
+
+{exams.map(exam => <Assignment title={exam.frontmatter.title!} dueDate={null} link={exam.url!} />)}
+{exams.length == 0 ? <p>No exam solutions are available yet-check back later!</p> : null}
