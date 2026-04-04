@@ -3,12 +3,17 @@ let secondSlash = Astro.url.pathname.slice(1).indexOf("/");
 secondSlash = secondSlash == -1 ? Astro.url.pathname.length - 1 : secondSlash;
 const rootPage = Astro.url.pathname.slice(0, secondSlash + 1);
 
+// Determine the quarter prefix (e.g., /spring26, /winter25) or empty for portal
+const isQuarterPage = rootPage.startsWith("/winter") || rootPage.startsWith("/spring");
+const quarterPrefix = isQuarterPage ? rootPage : "";
+
+// Build links with proper prefix
 const links = [
-    ["/", "Syllabus", "newspaper"],
-    ["/schedule", "Schedule", "calendar"],
-    ["/homeworks", "Homeworks", "document-text"],
-    ["/projects", "Projects", "construct"],
-    ["/exams", "Exams", "school"],
+    [quarterPrefix + "/", "Syllabus", "newspaper"],
+    [quarterPrefix + "/schedule", "Schedule", "calendar"],
+    [quarterPrefix + "/homeworks", "Homeworks", "document-text"],
+    [quarterPrefix + "/projects", "Projects", "construct"],
+    [quarterPrefix + "/exams", "Exams", "school"],
     ["https://www.gradescope.com/courses/1292484", "Gradescope", "podium"],
     ["https://bruinlearn.ucla.edu/courses/227821", "Bruin Learn", "flag"],
     ["https://piazza.com/class/mnf41zj8kot3mi", "Piazza", "chatbubbles"],
