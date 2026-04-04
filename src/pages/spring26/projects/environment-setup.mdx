@@ -59,12 +59,12 @@ On macOS, run:
 
 ```bash
 brew install openssl
-sudo ln -s $(brew --prefix)/Cellar/openssl@3/3.4.1/include/openssl /usr/local/include/
-sudo ln -s $(brew --prefix)/Cellar/openssl@3/3.4.1/lib/libcrypto.a /usr/local/lib
+sudo ln -s $(brew --prefix)/Cellar/openssl@3/3.6.1/include/openssl /usr/local/include/
+sudo ln -s $(brew --prefix)/Cellar/openssl@3/3.6.1/lib/libcrypto.a /usr/local/lib
 ```
 
 Notes:
-- You may have to change the version number in the commands provided above. 3.4.1 is the latest version provided by Homebrew as of April 1st, 2025.
+- You may have to change the version number in the commands provided above. 3.6.1 is the latest version provided by Homebrew as of April 2026.
 - You also may have to create the directories `/usr/local/lib` and `/usr/local/include` before running the above commands.
 - On Intel machines, Homebrew may have already linked these directories. That's okay.
 

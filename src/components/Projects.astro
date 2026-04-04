@@ -6,7 +6,7 @@ interface Frontmatter {
     dueDate: string;
 }
 
-const projects = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("./pages/spring26/projects/project*.mdx", { eager: true }));
+const projects = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("../pages/spring26/projects/project*.mdx", { eager: true }));
 ---
 
 {projects.map(project => <Assignment title={project.frontmatter.title!} dueDate={project.frontmatter.dueDate!} link={project.url!} />)}
