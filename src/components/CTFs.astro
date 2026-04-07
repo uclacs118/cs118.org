@@ -1,0 +1,12 @@
+---
+import Assignment from './Assignment.astro';
+import type { MarkdownInstance } from 'astro';
+interface Frontmatter {
+    title: string;
+}
+
+const ctfs = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("../pages/spring26/ctfs/ctf*.mdx", { eager: true }));
+---
+
+{ctfs.map(ctf => <Assignment title={ctf.frontmatter.title!} link={ctf.url!} />)}
+{ctfs.length == 0 ? <p>No CTF solutions are available yet—check back later!</p> : null}
