@@ -5,8 +5,8 @@ interface Frontmatter {
     title: string;
 }
 
-const ctfs = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("../pages/spring26/ctfs/ctf*.mdx", { eager: true }));
+const ctfs = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("../pages/ctfs/ctf*.mdx", { eager: true }));
 ---
 
-{ctfs.map(ctf => <Assignment title={ctf.frontmatter.title!} link={ctf.url!} />)}
+{ctfs.map(ctf => <Assignment title={ctf.frontmatter.title!} link={ctf.url!} dueDate={null} />)}
 {ctfs.length == 0 ? <p>No CTF solutions are available yet—check back later!</p> : null}
