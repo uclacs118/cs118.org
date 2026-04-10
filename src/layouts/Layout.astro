@@ -64,6 +64,30 @@ const pageTitle = title ? title : frontmatter.title;
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="mask-icon" href="/favicon.ico" />
 
+        <script is:inline>
+            window.MathJax = {
+                tex: {
+                    inlineMath: [
+                        ["$", "$"],
+                        ["\\(", "\\)"],
+                    ],
+                    displayMath: [
+                        ["$$", "$$"],
+                        ["\\[", "\\]"],
+                    ],
+                },
+                options: {
+                    skipHtmlTags: [
+                        "script",
+                        "noscript",
+                        "style",
+                        "textarea",
+                        "pre",
+                        "code",
+                    ],
+                },
+            };
+        </script>
         <script
             is:inline
             id="MathJax-script"
@@ -109,6 +133,9 @@ const pageTitle = title ? title : frontmatter.title;
     pre {
         padding: 1rem;
         border-radius: 1rem;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
 
     a {
