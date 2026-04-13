@@ -234,7 +234,7 @@ Answer: `2,3,1`
 
 ### HOL BLocking 2
 
-If the third frame of O1 gets lost, none of the frames that come after this frame can be delivered before the loss is recovered. All frames for O2 and O4 are delivered before the third frame of O1, but this is not the case for O1 and O3. Therefore, only O2 and O4 can be delivered in full.
+If the third frame of O1 gets lost, none of the frames that come after this frame can be delivered before the loss is recovered (since we are running over 1 TCP connection). All frames for O2 and O4 are delivered before the third frame of O1, but this is not the case for O1 and O3. Therefore, only O2 and O4 can be delivered in full.
 
 Answer: `2,4`
 
@@ -259,8 +259,6 @@ The components found in every HTTP/1.0 and later response message are those in t
 Answer: `1,6,8`
 
 ## HTTP Delay
-
-These are just notes, we can fix them later
 
 ### HTTP Delay 1
 
