@@ -1,0 +1,117 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Project 1: HTTP Proxy with Local File Serving"
+dueDate: 2026-04-27 23:59:00
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Project 1</H.Title>
+<H.Subtitle>Due 11:59pm Monday, Apr 27 (Week 7)</H.Subtitle>
+
+## Quick Links
+
+- [Starter Code](https://github.com/uclacs118/project1s26-starter)
+- [Environment Setup](/projects/environment-setup)
+- [Local Autograder](/projects/autograder)
+
+## Overview
+
+In this project, you will implement an HTTP proxy server in C that:
+
+1. Serves local files if they exist on disk
+2. Proxies requests to a backend server if the file is not found locally
+
+This project gives practical experience with:
+
+- TCP socket programming
+- HTTP/1.1 protocol parsing
+- Local file serving
+- Proxy forwarding patterns
+
+## Notices
+
+1. If you're using GitHub or a similar tool to track your work, please make sure that your repository is **set to private**.
+2. As per the syllabus, the use of AI assisted tools is not allowed.
+3. This project must be done **individually**.
+
+## Specification
+
+Please clone the [Starter Code](https://github.com/uclacs118/project1s26-starter) and read the specification on GitHub.
+
+### HTTP Protocol Requirements
+
+Your proxy must support:
+
+- **HTTP/1.1** requests
+- **GET** method only
+- **URIs** starting with `/`
+- **Default file**: `/` should serve `index.html`
+- **File existence check**: Local files served from current directory
+- **Response streaming** from local files or backend
+
+### MIME Types
+
+Set the Content-Type header based on file extension:
+
+| Extension | Content-Type |
+|-----------|--------------|
+| .html | text/html; charset=UTF-8 |
+| .txt | text/plain; charset=UTF-8 |
+| (default) | application/octet-stream |
+
+### Error Handling
+
+Your proxy must return appropriate HTTP error responses:
+
+- **400 Bad Request**: Malformed request line
+- **405 Method Not Allowed**: Any method other than GET
+- **404 Not Found**: Local file does not exist
+- **502 Bad Gateway**: Cannot connect to backend server
+
+### Architecture
+
+```
+[Client] --> [Your Proxy]
+              |
+              +-- File exists locally? --> serve from disk
+              |
+              +-- File not found --> proxy to backend (127.0.0.1:18444)
+```
+
+### Command-Line Interface
+
+```
+./proxy [-b <port>] [-r <host>] [-p <port>]
+
+  -b <port>    Local port to listen on (default: 18443)
+  -r <host>    Backend server host (default: 127.0.0.1)
+  -p <port>    Backend server port (default: 18444)
+```
+
+## Grading Criteria
+
+The autograder runs 8 tests for a total of **100 points**:
+
+| Test | Points |
+|------|--------|
+| Compilation | 30 |
+| Local HTML file | 10 |
+| Local TXT file | 10 |
+| Root / | 10 |
+| Proxy status | 10 |
+| Proxy content | 10 |
+| 404 Not Found | 10 |
+| 502 Bad Gateway | 10 |
+
+## Submission
+
+Submit a ZIP file to Gradescope by **11:59pm on Monday, April 27th**. Late submission is allowed until Wednesday, April 29th (10% deduction per day).
+
+The `helper zip` command creates a compatible ZIP file.
+
+## Resources
+
+- [RFC 1945](https://tools.ietf.org/html/rfc1945) - HTTP/1.0
+- [RFC 7230](https://tools.ietf.org/html/rfc7230) - HTTP/1.1 Message Syntax
+- [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/)
