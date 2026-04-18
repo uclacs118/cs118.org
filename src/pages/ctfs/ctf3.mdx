@@ -1,0 +1,134 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 3: DNS"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 3: DNS</H.Title>
+
+## Activity
+
+### 3.1 - Activity
+
+For this mini-activity, we will resolve a domain name ourselves! In order to do this, we will use the `dig` command-line tool. **You MUST use the Google Cloud Shell at https://shell.cloud.google.com/?show=terminal, or else some questions are unsolvable.**
+
+Using the dig command is simple: `dig [@dns resolver] <query> [record type]`. `[]` are optional parameters, `<>` are required parameters.
+
+For example, to lookup the `AAAA` record for `ctf.cs118.org`, you can use `dig ctf.cs118.org AAAA`. If you want to use Cloudflare's DNS servers specifically (available at `1.1.1.1`), run `dig AAAA @1.1.1.1 ctf.cs118.org`. If you do not specify a record, `A` is used by default.
+
+Let's start simple: what is the value of the `A` record for `dns.cs118.org`?
+
+### 3.2 - Activity
+
+From 3.1, what is the IP address of the server that responded, and what transport layer protocol did it use? Respond like `IP:PROTOCOL`, like `127.0.0.1:ICMP`.
+
+Make sure you are NOT specifying a DNS server in the dig command, i.e. don't have a `@IP address` in the dig command you are running.
+
+### 3.3 - Activity
+
+What type of DNS server did we contact in 3.1 and 3.2?
+
+1. Root
+2. TLD
+3. Authoritative
+4. Recursive
+5. Iterative
+6. ISP
+
+Enter in just the number as your answer.
+
+### 3.4 - Activity
+
+Now, it's time to resolve a domain from scratch (without the help of a recursive resolver)! What is the type of DNS server we need to contact first?
+
+1. Root
+2. TLD
+3. Authoritative
+4. Recursive
+5. Iterative
+6. ISP
+
+### 3.5 - Activity
+
+Alright! Let's get started.
+
+The root name servers are available at `LETTER.root-servers.net` where LETTER is a letter `a-m`. Except since we are doing this manually, we can't resolve this. Instead, a text file with the IP address of the root DNS servers are distributed by hand to all resolvers that need it, and a copy of this file is attached.
+
+What is the IPv4 Address of the root DNS server that is hosted by USC's Information Sciences Institute, or ISI?
+
+### 3.6 - Activity
+
+Let's query that server for `dns.cs118.org`, `A` record. What command should we run?
+
+### 3.7 - Activity
+
+Run the command! Wait, we don't get the `A` record back! Instead, we only get the record for `org.`. What DNS server type did we just get redirected to?
+
+1. Root
+2. TLD
+3. Authoritative
+4. Recursive
+5. Iterative
+6. ISP
+
+### 3.8 - Activity
+
+Notice that in the authority section, we see that `org.` is redirected to some name servers such as `a0.org.afilias-nst.info.`, but in the additional section, we are also given the IP addresses of those name servers. What is the name of this technique?
+
+### 3.9 - Activity
+
+Let's use one of the name servers (pick any of them) and query it for `dns.cs118.org`. What are the types and values of the resource records in the resulting response? Answer in the format `RECORD_TYPE:RES,RECORD_TYPE:RES`, like `AAAA:127.0.0.1,A:0.0.0.0,TXT:1.1.1.1`.
+
+### 3.10 - Activity
+
+Oops! We don't get the IP addresses automatically. In order to resolve this, we need to start over, but this time with the `.com` TLD. Go ahead and query a root DNS server for `rose.ns.cloudflare.com`. What is an IPv4 address of a TLD name server we can use in a dig command to further our search?
+
+### 3.11 - Activity
+
+Let's try again. Query one of the `.com` TLD name servers for the IP address of `rose.ns.cloudflare.com`. What is the `hostname` of a name server for the `cloudflare.com` domain?
+
+### 3.12 - Activity
+
+Now that we have the name server for cloudflare.com, _finally_, what is an IPv4 address for `rose.ns.cloudflare.com`?
+
+### 3.13 - Activity
+
+We're done! Right?
+
+Oh right, we were resolving `rose.ns.cloudflare.com` just so we can continue resolving `dns.cs118.org` manually. Let's continue: resolve `dns.cs118.org` against the cs118.org name servers. What is the final result, and what is its TTL? Answer in the format `IP:TTL`, like `1.1.1.1:100`.
+
+## DNS
+
+### DNS 1
+
+Which of the following statements about DNS is true?
+
+1. A local DNS server never queries the root DNS server.
+2. A standard endpoint device (like your phone or laptop) never queries the root DNS server.
+3. A recursive DNS server never queries the root DNS server.
+4. Only authoritative DNS servers can respond to DNS queries.
+5. DNS uses caching to improve performance.
+6. DNS never uses TCP.
+7. In a single DNS query, some portions of the resolution process can be iterative while others can be recursive in order to resolve a hostname.
+8. Cache expiry of a given DNS record is renewed on every request.
+
+Submit your answer as a comma-separated list of numbers **without spaces**, like `1,2,3`.
+
+### DNS 2
+
+Why do the root DNS servers not have to keep track of all IP addresses on the internet? Answer in no more than 25 words.
+
+Please note: you only get one submission, so make sure your answer is ready before submitting!
+
+### DNS 3
+
+The user on host A wants to access `box.cs118.org` to do the LA activity for this class. Assume host A's local DNS server cache is empty. The round trip time between host A and the local DNS server is 10 ms. The round trip time between the local DNS server and any DNS server in the hierarchy is 50 ms. Any domain under `cs118.org` is hosted by `ns.cs118.org` (one level below the TLD name server) which handles all subdomains of `cs118.org`. Ignoring any processing and queueing delays, how many ms will elapse from when the user requests `box.cs118.org` to when host A gets the IP address for `box.cs118.org`?
+
+### DNS 4
+
+Continuing from DNS 3, the user on host B _also_ wants to access `box.cs118.org` just moments after the query that host A made finishes (i.e., everything is still cached - assume TTLs are large enough so nothing has expired yet). Host B uses the same local DNS server as host A. The round trip time between any host in the network and the local DNS server is 10 ms. The round trip time between the local DNS server and any DNS server in the hierarchy is 50 ms. Any domain under `cs118.org` is hosted by `ns.cs118.org` (one level below the TLD name server) which handles all subdomains of `cs118.org`. Ignoring any processing and queueing delays, how many ms will elapse from when the user requests `box.cs118.org` to when host B gets the IP address for `box.cs118.org`?
+
+### DNS 5
+
+Continuing from DNS 4, the user on host C wants to access `wikipedia.org` just moments after the queries that host A AND host B made finish (i.e., everything is still cached - assume TTLs are large enough so nothing has expired yet). Host C uses the same local DNS server as host A. The round trip time between any host in the network and the local DNS server is 10 ms. The round trip time between the local DNS server and any DNS server in the hierarchy is 50 ms. Any domain under `cs118.org` is hosted by `ns.cs118.org` (one level below the TLD name server) which handles all subdomains of `cs118.org`. Ignoring any processing and queueing delays, how many ms will elapse from when the user requests `wikipedia.org` to when host C gets the IP address for `wikipedia.org`?

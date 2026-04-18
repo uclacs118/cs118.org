@@ -1,0 +1,395 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 3 Solutions: DNS"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 3 Solutions: DNS</H.Title>
+
+## Activity
+
+### 3.1 - Activity
+
+```
+$ dig dns.cs118.org
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.3-Ubuntu <<>> dns.cs118.org
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 399
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 512
+;; QUESTION SECTION:
+;dns.cs118.org.                 IN      A
+
+;; ANSWER SECTION:
+dns.cs118.org.          120     IN      A       127.0.0.21
+
+;; Query time: 56 msec
+;; SERVER: 169.254.169.254#53(169.254.169.254) (UDP)
+;; WHEN: Thu Apr 16 16:57:12 UTC 2026
+;; MSG SIZE  rcvd: 58
+```
+
+The value can be found in the resource record in the answer section.
+
+Answer: `127.0.0.21`
+
+### 3.2 - Activity
+
+The IP address of the server that responded and the protocol used are written next to `SERVER:`.
+
+Answer: `169.254.169.254:UDP`
+
+### 3.3 - Activity
+
+We contacted a recursive resolver. We can see that the header shows the flag `ra`, which stands for "recursion available." This indicates that the server is willing to query other servers on our behalf.
+
+Answer: `4`
+
+### 3.4 - Activity
+
+To resolve a domain from scratch without the help of a recursive resolver, we must contact a root server first.
+
+Answer: `1`
+
+### 3.5 - Activity
+
+We can find the IPv4 address of the root DNS server hosted by ISI in this section of the file:
+
+```
+; FORMERLY NS1.ISI.EDU
+;
+.                        3600000      NS    B.ROOT-SERVERS.NET.
+B.ROOT-SERVERS.NET.      3600000      A     170.247.170.2
+B.ROOT-SERVERS.NET.      3600000      AAAA  2801:1b8:10::b
+```
+
+The IPv4 address is the value of the A record.
+
+Answer: `170.247.170.2`
+
+### 3.6 - Activity
+
+Following the format `dig [@dns resolver] <query> [record type]`, we can run `dig @170.247.170.2 dns.cs118.org A`.
+
+Answer: `dig @170.247.170.2 dns.cs118.org A`
+
+### 3.7 - Activity
+
+`.org` is a top-level domain (TLD). We got redirected to a TLD server.
+
+Answer: `2`
+
+### 3.8 - Activity
+
+The authority section tells us that `.org` is managed by servers like `a0.org.afilias-nst.info`. To find the IP of `a0.org.afilias-nst.info`, we would normally need to ask the `.info` or `.org` servers. But we are currently trying to reach the .org servers as part of our search!
+
+To allow the resolver to resolve the name servers, the parent zone provides the IP addresses (in A and AAAA records) for the name servers in the additional section.
+
+These A and AAAA records are glue records. Glue records prevent infinite lookup loops when a domain’s name server is a subdomain of itself.
+
+Answer: `glue`
+
+### 3.9 - Activity
+
+```
+$ dig @199.19.56.1 dns.cs118.org
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.3-Ubuntu <<>> @199.19.56.1 dns.cs118.org
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 22075
+;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 2, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+;; QUESTION SECTION:
+;dns.cs118.org.                 IN      A
+
+;; AUTHORITY SECTION:
+cs118.org.              3600    IN      NS      rose.ns.cloudflare.com.
+cs118.org.              3600    IN      NS      dakota.ns.cloudflare.com.
+
+;; Query time: 29 msec
+;; SERVER: 199.19.56.1#53(199.19.56.1) (UDP)
+;; WHEN: Thu Apr 16 19:16:43 UTC 2026
+;; MSG SIZE  rcvd: 99
+```
+
+We can find the resource records of the name servers which manage `cs118.org` in the authority section.
+
+Answer: `NS:dakota.ns.cloudflare.com.,NS:rose.ns.cloudflare.com.`
+
+### 3.10 - Activity
+
+We can query a root server for `rose.ns.cloudflare.com`.
+
+```
+$ dig @170.247.170.2 rose.ns.cloudflare.com
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.3-Ubuntu <<>> @170.247.170.2 rose.ns.cloudflare.com
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 51775
+;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 13, ADDITIONAL: 27
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+;; QUESTION SECTION:
+;rose.ns.cloudflare.com.                IN      A
+
+;; AUTHORITY SECTION:
+com.                    172800  IN      NS      a.gtld-servers.net.
+com.                    172800  IN      NS      b.gtld-servers.net.
+com.                    172800  IN      NS      c.gtld-servers.net.
+com.                    172800  IN      NS      d.gtld-servers.net.
+com.                    172800  IN      NS      e.gtld-servers.net.
+com.                    172800  IN      NS      f.gtld-servers.net.
+com.                    172800  IN      NS      g.gtld-servers.net.
+com.                    172800  IN      NS      h.gtld-servers.net.
+com.                    172800  IN      NS      i.gtld-servers.net.
+com.                    172800  IN      NS      j.gtld-servers.net.
+com.                    172800  IN      NS      k.gtld-servers.net.
+com.                    172800  IN      NS      l.gtld-servers.net.
+com.                    172800  IN      NS      m.gtld-servers.net.
+
+;; ADDITIONAL SECTION:
+a.gtld-servers.net.     172800  IN      A       192.5.6.30
+a.gtld-servers.net.     172800  IN      AAAA    2001:503:a83e::2:30
+b.gtld-servers.net.     172800  IN      A       192.33.14.30
+b.gtld-servers.net.     172800  IN      AAAA    2001:503:231d::2:30
+c.gtld-servers.net.     172800  IN      A       192.26.92.30
+c.gtld-servers.net.     172800  IN      AAAA    2001:503:83eb::30
+d.gtld-servers.net.     172800  IN      A       192.31.80.30
+d.gtld-servers.net.     172800  IN      AAAA    2001:500:856e::30
+e.gtld-servers.net.     172800  IN      A       192.12.94.30
+e.gtld-servers.net.     172800  IN      AAAA    2001:502:1ca1::30
+f.gtld-servers.net.     172800  IN      A       192.35.51.30
+f.gtld-servers.net.     172800  IN      AAAA    2001:503:d414::30
+g.gtld-servers.net.     172800  IN      A       192.42.93.30
+g.gtld-servers.net.     172800  IN      AAAA    2001:503:eea3::30
+h.gtld-servers.net.     172800  IN      A       192.54.112.30
+h.gtld-servers.net.     172800  IN      AAAA    2001:502:8cc::30
+i.gtld-servers.net.     172800  IN      A       192.43.172.30
+i.gtld-servers.net.     172800  IN      AAAA    2001:503:39c1::30
+j.gtld-servers.net.     172800  IN      A       192.48.79.30
+j.gtld-servers.net.     172800  IN      AAAA    2001:502:7094::30
+k.gtld-servers.net.     172800  IN      A       192.52.178.30
+k.gtld-servers.net.     172800  IN      AAAA    2001:503:d2d::30
+l.gtld-servers.net.     172800  IN      A       192.41.162.30
+l.gtld-servers.net.     172800  IN      AAAA    2001:500:d937::30
+m.gtld-servers.net.     172800  IN      A       192.55.83.30
+m.gtld-servers.net.     172800  IN      AAAA    2001:501:b1f9::30
+
+;; Query time: 57 msec
+;; SERVER: 170.247.170.2#53(170.247.170.2) (UDP)
+;; WHEN: Thu Apr 16 18
+```
+
+We can find IPv4 addresses of TLD name servers in the additional section (e.g., `192.5.6.30`, `192.33.14.30`, `192.26.92.30`).
+
+Answers may vary.
+
+### 3.11 - Activity
+
+We can query one of the `.com` TLD name servers for the IP address of `rose.ns.cloudflare.com`.
+
+```
+$ dig @192.5.6.30 rose.ns.cloudflare.com
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.3-Ubuntu <<>> @192.5.6.30 rose.ns.cloudflare.com
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 21232
+;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 5, ADDITIONAL: 21
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;rose.ns.cloudflare.com.                IN      A
+
+;; AUTHORITY SECTION:
+cloudflare.com.         172800  IN      NS      ns3.cloudflare.com.
+cloudflare.com.         172800  IN      NS      ns5.cloudflare.com.
+cloudflare.com.         172800  IN      NS      ns4.cloudflare.com.
+cloudflare.com.         172800  IN      NS      ns6.cloudflare.com.
+cloudflare.com.         172800  IN      NS      ns7.cloudflare.com.
+
+;; ADDITIONAL SECTION:
+ns3.cloudflare.com.     172800  IN      A       162.159.0.33
+ns3.cloudflare.com.     172800  IN      A       162.159.7.226
+ns3.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:21
+ns3.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:7e2
+ns5.cloudflare.com.     172800  IN      A       162.159.2.9
+ns5.cloudflare.com.     172800  IN      A       162.159.9.55
+ns5.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:209
+ns5.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:937
+ns4.cloudflare.com.     172800  IN      A       162.159.1.33
+ns4.cloudflare.com.     172800  IN      A       162.159.8.55
+ns4.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:121
+ns4.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:837
+ns6.cloudflare.com.     172800  IN      A       162.159.3.11
+ns6.cloudflare.com.     172800  IN      A       162.159.5.6
+ns6.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:30b
+ns6.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:506
+ns7.cloudflare.com.     172800  IN      A       162.159.4.8
+ns7.cloudflare.com.     172800  IN      A       162.159.6.6
+ns7.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:408
+ns7.cloudflare.com.     172800  IN      AAAA    2400:cb00:2049:1::a29f:606
+
+;; Query time: 58 msec
+;; SERVER: 192.5.6.30#53(192.5.6.30) (UDP)
+;; WHEN: Thu Apr 16 19:18:35 UTC 2026
+;; MSG SIZE  rcvd: 581
+```
+
+The hostname of a name server is its unique human-readable name. Hostnames of name servers for the domain can be found in the authority section.
+
+Answer: `ns3.cloudflare.com.`,`ns4.cloudflare.com.`,`ns5.cloudflare.com.`,`ns6.cloudflare.com.`, or `ns7.cloudflare.com.`
+
+### 3.12 - Activity
+
+We can query one of the name servers found in the previous activity for `rose.ns.cloudflare.com`.
+
+```
+$ dig @162.159.0.33 rose.ns.cloudflare.com
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.3-Ubuntu <<>> @162.159.0.33 rose.ns.cloudflare.com
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 26404
+;; flags: qr aa rd; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+;; QUESTION SECTION:
+;rose.ns.cloudflare.com.                IN      A
+
+;; ANSWER SECTION:
+rose.ns.cloudflare.com. 86353   IN      A       172.64.32.141
+rose.ns.cloudflare.com. 86353   IN      A       173.245.58.141
+rose.ns.cloudflare.com. 86353   IN      A       108.162.192.141
+
+;; Query time: 24 msec
+;; SERVER: 162.159.0.33#53(162.159.0.33) (UDP)
+;; WHEN: Thu Apr 16 19:19:42 UTC 2026
+;; MSG SIZE  rcvd: 99
+```
+
+We find the IPv4 addresses we are looking for in the answer section.
+
+Answer: `108.162.192.141`, `172.64.32.141`, or `173.245.58.141`
+
+### 3.13 - Activity
+
+Now that we know the IP address of `rose.ns.cloudflare.com`, we can continue resolving `dns.cs118.org`.
+
+```
+dig @108.162.192.141 dns.cs118.org
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.3-Ubuntu <<>> @108.162.192.141 dns.cs118.org
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 26587
+;; flags: qr aa rd; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+;; QUESTION SECTION:
+;dns.cs118.org.                 IN      A
+
+;; ANSWER SECTION:
+dns.cs118.org.          120     IN      A       127.0.0.21
+
+;; Query time: 35 msec
+;; SERVER: 108.162.192.141#53(108.162.192.141) (UDP)
+;; WHEN: Thu Apr 16 19:20:38 UTC 2026
+;; MSG SIZE  rcvd: 58
+```
+
+In our answer section, we see that the IPv4 address is `127.0.0.21` and the TTL is `120`.
+
+Answer: `127.0.0.21:120`
+
+## DNS
+
+### DNS 1
+
+Answer choices and explanations:
+
+1. A local DNS server never queries the root DNS server.
+   - **False**. If the local DNS server is a recursive resolver, it will query the root if it needs to resolve a TLD.
+2. A standard endpoint device (like your phone or laptop) never queries the root DNS server.
+   - **True**. This device will query its configured recursive resolver or local DNS server to resolve names.
+3. A recursive DNS server never queries the root DNS server.
+   - **False**. It will need to query the root DNS server to resolve TLDs.
+4. Only authoritative DNS servers can respond to DNS queries.
+   - **False**. A recursive resolver can respond to DNS queries.
+5. DNS uses caching to improve performance.
+   - **True**.
+6. DNS never uses TCP.
+   - **False**. There are some cases where DNS runs over TCP. One example is DNS over HTTPS (DoH), used to encrypt DNS queries.
+7. In a single DNS query, some portions of the resolution process can be iterative while others can be recursive in order to resolve a hostname.
+   - **True**. An endpoint can ask the recursive resolver to resolve a name. This resolver will iteratively resolve the name by querying a series of DNS authoritative servers.
+8. Cache expiry of a given DNS record is renewed on every request.
+   - **False**. DNS queries do not renew the TTL of a DNS record.
+
+Answer: `2,5,7`
+
+### DNS 2
+
+Root DNS servers only need IP addresses of TLD authoritative servers, and queries can now be sent to those.
+
+Answers may vary.
+
+### DNS 3
+
+Here are the communication steps that occur.
+
+- Host A queries local DNS server to resolve `box.cs118.org`.
+- Local DNS server queries root DNS server to resolve `box.cs118.org`.
+  - Root DNS server replies with NS/A records (i.e., glue records) for `.org` TLD name server.
+- Local DNS server queries `.org` DNS server to resolve `box.cs118.org`.
+  - `.org` TLD name server replies with NS/A records (i.e., glue records) for the authoritative name server for `cs118.org`. This name server is `ns.cs118.org`.
+- Local DNS server queries `ns.cs118.org` authoritative name server to resolve `box.cs118.org`.
+  - `ns.cs118.org` has the A record for `box.cs118.org` and replies to the local DNS server with its IP address.
+- Local DNS server replies to Host A with IP address for `box.cs118.org`.
+
+Total: 1 round trip between host A and local DNS server and 3 round trips between local DNS server and authoritative name servers. This gives us **160 ms**.
+
+Answer: `160`
+
+### DNS 4
+
+Now, the local DNS server stores an A record for `box.cs118.org` in its cache. When host B contacts this DNS server, the DNS server can immediately reply with the same A record. There is only one round trip between host B and the local DNS server. This gives us **10 ms**.
+
+Answer: `10`
+
+### DNS 5
+
+The local DNS server has A records for the `.org` TLD name server, the `ns.cs118.org` authoritative name server, and `box.cs118.org` in its cache. When host C wants to resolve `wikipedia.org`, it follows the following steps.
+
+- Host C queries local DNS server to resolve `wikipedia.org`.
+- Local DNS server queries `.org` TLD name server to resolve `wikipedia.org`.
+  - `.org` TLD name server replies with NS/A records (i.e., glue records) for the authoriative name server for `wikipedia.org`.
+- Local DNS server queries authoritative name server for `wikipedia.org` to resolve `wikipedia.org`.
+  - This authoritative name server has the A record for `wikipedia.org`, and it replies with this IP address.
+- Local DNS server replies to host C with IP address for `wikipedia.org`.
+
+Total: 1 round trip between host C and local DNS server and 2 round trips between local DNS server and authoritative name servers. This gives us **110 ms**.
+
+Answer: `110`
