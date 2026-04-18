@@ -1,0 +1,334 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 1 Solutions: Sockets and Packet Delay"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 1 Solutions: Sockets and Packet Delay</H.Title>
+
+## Activity
+
+### 1.1 - Activity
+
+Connect via SSH and receive the flag: `cs118{1.1:c0nn3ct3d!}`
+
+### 1.2 - Activity
+
+Type `help` to see the available commands:
+
+```
+Supported syscalls: socket, bind, listen, accept, connect, send, recv, close
+```
+
+Type `socket` to create a socket object:
+
+```
+> socket
+$ sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+$ printf("sock: %d\n", sock)
+< sock: 3
+```
+
+Type `connect` to connect to `10.0.0.X:1111`. Use the socket fd number returned from the previous call to `socket`:
+
+```
+> connect 3 10.0.1.1 1111
+$ addr.sin_family = AF_INET;
+$ addr.sin_port = htons(1111);
+$ ret = inet_pton(AF_INET, 10.0.1.1, &addr.sin_addr);
+$ printf("ret: %d\n", ret)
+< ret: 1
+$ ret = connect(3, (sockaddr*)&addr, sizeof(addr));
+$ printf("ret: %d\n", ret)
+< ret: 0
+```
+
+Receive data from the socket with `recv`. USe the socket fd number returned from the previous call to `socket`. The buffer size is arbitrary but make it large enough to receive all the data.
+
+```
+> recv 3 1024
+$ ret = recv(3, buf, 1024, MSG_DONTWAIT);
+$ printf("ret: %d\n", ret)
+< ret: 262
+$ buf[ret] = 0; // Add tailing \0 for print
+$ printf("buf: %s\n")
+buf: cs118{1.2:r34d_d474} Welcome to the ice breaker server! Note that everything you enter here will appear on the screen in the front, so don't put anything you don't want publicly listed. Also, please limit responses to **1024 characters max**! What is your name?
+```
+
+Flag: `cs118{1.2:r34d_d474}`
+
+### 1.3 - Activity
+
+Send your name to the connection using `send`:
+
+```
+> send 3 admin
+$ ret = send(3, "admin", 5, 0);
+$ printf("ret: %d\n", ret)
+< ret: 5
+```
+
+Receive the next instructions:
+
+```
+> recv 3 1024
+$ ret = recv(3, buf, 1024, MSG_DONTWAIT);
+$ printf("ret: %d\n", ret)
+< ret: 29
+$ buf[ret] = 0; // Add tailing \0 for print
+$ printf("buf: %s\n")
+buf: What is your year and major?
+```
+
+Keep doing this for a few more questions:
+
+```
+> recv 3 1024
+$ ret = recv(3, buf, 1024, MSG_DONTWAIT);
+$ printf("ret: %d\n", ret)
+< ret: 144
+$ buf[ret] = 0; // Add tailing \0 for print
+$ printf("buf: %s\n")
+buf: cs118{1.3:1nf0_su8m1tt3d} Nice! Now, open port 2222. I'll be trying to connect to your port 2222 repeatedly to send some important information.
+```
+
+Flag: `cs118{1.3:1nf0_su8m1tt3d}`
+
+### 1.4 - Activity
+
+We need to open a TCP listening socket on port 2222. First, create a new socket with `socket`.
+
+```
+> socket
+$ sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+$ printf("sock: %d\n", sock)
+< sock: 4
+```
+
+Then, bind it to port 2222. We will bind it to 0.0.0.0:2222 - this IP address means that we accept connections from any network interface, provided they are connecting to port 2222. Use `any` for 0.0.0.0.
+
+```
+> bind 4 any 2222
+$ addr.sin_family = AF_INET;
+$ addr.sin_port = htons(2222);
+$ addr.sin_addr.s_addr = INADDR_ANY;
+$ ret = bind(4, (sockaddr*)&addr, sizeof(addr));
+$ printf("ret: %d\n", ret)
+< ret: 0
+```
+
+Now, use `listen` to start the socket listening.
+
+```
+> listen 4
+$ ret = listen(4, 0);
+$ printf("ret: %d\n", ret)
+< ret: 0
+```
+
+Accept the incoming connection to the socket using `accept`. We get a new socket fd number that can be used to send/receive data for this connection:
+
+```
+> accept 4
+$ socklen = sizeof(addr);
+$ new_sock = accept(4, (sockaddr*)&addr, &socklen);
+$ inet_ntop(AF_INET, &addr.sin_addr, ip_str, socklen);
+$ printf("IP: %s", ip_str);
+< IP: 10.0.1.1
+$ printf("Port: %d", ntohs(addr.sin_port));
+< Port: 57572
+$ printf("new_sock: %d\n", new_sock)
+< new_sock: 5
+$ printf("Now use this new socket to communicate with the client\n")
+< Now use this new socket to communicate with the client
+```
+
+Use `recv` to receive data from this connection.
+
+```
+> recv 5 1024
+$ ret = recv(5, buf, 1024, MSG_DONTWAIT);
+$ printf("ret: %d\n", ret)
+< ret: 235
+$ buf[ret] = 0; // Add tailing \0 for print
+$ printf("buf: %s\n")
+buf: cs118{1.4:1nc0m1ng_7r4nsm1ss10n} Congrats! You have shown your ability to use TCP socket syscall, and earned some points in the process! Make sure to visit https://ctf.cs118.org and submit the flags you have received to get the points!
+```
+
+Flag: `cs118{1.4:1nc0m1ng_7r4nsm1ss10n}`
+
+## Packet Delay
+
+### Packet Delay 1
+
+Let $L$ be the packet length, $P$ be the propagation delay, $R_\{AB\}$ be the link bandwidth from A to B, $R_\{BC\}$ be the link bandwidth from B to C, $T_\{AB\}$ be the transmission delay from A to B, and $T_\{BC\}$ be the transmission delay from B to C. We are given the following:
+
+$$
+\begin\{gather*\}
+L = 1000 \text\{ B\} \\
+P = 3 \text\{ ms\} \\
+R_\{AB\} = 1 \text\{ Mbps\} \\
+R_\{BC\} = 5 \text\{ Mbps\}
+\end\{gather*\}
+$$
+
+The time it takes for the first packet to be fully sent by node A is the amount of time it takes for the node to fully transmit the packet. We can find the transmission delay $T_\{AB\}$ as follows:
+
+$$
+\begin\{align\}
+T_\{AB\} = \frac\{L\}\{R_\{AB\}\} = \frac\{1000 \text\{ B\}\}\{1 \text\{ Mbps\}\} = 8 \text\{ ms\}
+\end\{align\}
+$$
+
+Answer: `8`
+
+### Packet Delay 2
+
+As soon as node A begins transmitting the first packet, the first bit of the first packet begins propagating from A to B. This takes 3 ms, since the propagation delay is 3 ms.
+
+Answer: `3`
+
+### Packet Delay 3
+
+The amount of time it takes for the entire first packet to reach node B is the sum of the transmission delay and the propagation delay from A to B.
+
+$$T_\{AB\} + P = 8 \text\{ ms\} + 3 \text\{ ms\} = 11 \text\{ ms\}$$
+
+Answer: `11`
+
+### Packet Delay 4
+
+As soon as node A fully transmits a packet, it can begin transmitting the next packet. Each packet takes $T_\{AB\}=8 \text\{ ms\}$ to be transmitted, so the total time it takes for all three packets to be transmitted is $3 * 8 \text\{ ms\} = 24 \text\{ ms\}$.
+
+Answer: `24`
+
+### Packet Delay 5
+
+We can find the transmission delay from B to C $T_\{BC\}$ as follows:
+
+$$
+\begin\{align\}
+T_\{BC\} = \frac\{L\}\{R_\{BC\}\} = \frac\{1000 \text\{ B\}\}\{5 \text\{ Mbps\}\} = 1.6 \text\{ ms\}
+\end\{align\}
+$$
+
+Since $T_\{AB\}$ > $T_\{BC\}$, node B fully transmits a given packet before the next one arrives. Therefore, there is no queueing delay at node B.
+
+Answer: `no`
+
+### Packet Delay 6
+
+The first two packets must be transmitted by node A before the third packet can be transmitted. This queueing delay is $2 * T_\{AB\} = 16 \text\{ ms\}$.
+
+After the queueing delay, it takes an additional $T_\{AB\} = 8 \text\{ ms\}$ for the third packet to be transmitted by node A.
+
+Additionally, it takes $P = 3 \text\{ ms\}$ for the third packet to propagate from A to B.
+
+At node B, there is no queueing delay, so node B finishes transmitting the packet in $T_\{BC\} = 1.6 \text\{ ms\}$.
+
+We can add up these delays to find the time at which node B finishes transmitting the packet:
+
+$$2 * T_\{AB\} + T_\{AB\} + P + T_\{BC\} = 28.6 \text\{ ms\}$$
+
+Answer: `28.6`
+
+### Packet Delay 7
+
+After node B finishes transmitting the packet, the packet propagates to node C in $P = 3 \text\{ ms\}$. We add this delay to the time at which node B finishes transmitting to get:
+
+$$28.6 \text\{ ms\} + 3 \text\{ ms\} = 31.6 \text\{ ms\}$$
+
+Answer: `31.6`
+
+### Packet Delay 8
+
+In the circuit-switched network, a packet can begin transmission at a given node while part of the packet is still propagating to the node. Therefore, the time between the arrival of a bit at B and the departure of the bit from B is eliminated. This is the transmission delay $T_\{BC\} = 1.6 \text\{ ms\}$.
+
+The percentage of time saved by the circuit-switched network is $100 * \frac\{1.6 \text\{ ms\}\}\{31.6 \text\{ ms\}\}≈5$.
+
+Answer: `5`
+
+### Packet Delay 9
+
+On the way from node C to node A, the packets queue up at node B. To visualize the delays, we can create a table with the time at which each packet arrives at and leaves from each node.
+
+The amount of time for which a packet stays at a node before leaving the node is the sum of the transmission delay and the queueing delay at the node. The amount of time it takes for a packet to travel from one node to another is always the propagation delay between the nodes.
+
+| Packet | Leave C | Arrive B | Leave B | Arrive A |
+| ------ | ------- | -------- | ------- | -------- |
+| 1      | 1.6 ms  | 4.6 ms   | 12.6 ms | 15.6 ms  |
+| 2      | 3.2 ms  | 6.2 ms   | 20.6 ms | 23.6 ms  |
+| 3      | 4.8 ms  | 7.8 ms   | 28.6 ms | 31.6 ms  |
+
+It takes 31.6 ms for the 3 packets to be sent from node C back to node A.
+
+Answer: `31.6`
+
+### Packet Delay 10
+
+The end-to-end transfer time is dominated by the slowest link regardless of direction. As a result, the queueing delay and idle time sum to the same value on the way from A to C and on the way from C to A.
+
+Answers may vary.
+
+## Protocol Layers
+
+### Protocol Layers 1
+
+For an HTTP message to be passed to the Ethernet interface of the first host, the application layer, transport layer, network layer, and link layer (where Ethernet operates) must encapsulate the packets in layer-specific headers.
+
+Answer: `a,t,n`; `l` is optional after `n`
+
+### Protocol Layers 2
+
+A routing decision is made in the network layer. Each layer uses its respective header to make a decision. The link layer header/tail is the outermost envelope of the packet, followed by the network layer header. Therefore, the link layer and the network layer envelopes are considered before a routing decision is made.
+
+Answer: `l`; `n` is optional after `l`
+
+## Protocols
+
+### Protocols 1
+
+All of the listed protocols are on the application layer. You will need to use HTTP when logged into the `gmail.com` website and interacting with the webpage. Then, mail is sent via SMTP (simple mail transfer protocol).
+
+Answer: `2,5`
+
+## Sockets
+
+### Sockets 1.1
+
+First, you need to create a socket using `socket`, specifying that it is a TCP socket. Then, bind it to port 8080 using `bind`. Then, listen for incoming TCP connections with `listen`.
+
+Answer: `socket,bind,listen`
+
+### Sockets 1.2
+
+Accept the next incoming connection using `accept`. Then, receive data from the connection with `recv`. Then, send data to the connection using `send`.
+
+Answer: `accept,recv,send`
+
+### Sockets 2
+
+First, create the socket using `socket`, specifying that it is a TCP socket. It is now optional to use `bind`, as the OS can automatically bind it to a port in the next step. Use `connect` to connect to the server `127.0.0.1:8080`. Then, send the GET request data using `send`. Receive the HTTP response using `recv`.
+
+Answer: `socket,connect,send,recv`; `bind` is optional between `socket` and `connect`
+
+### Sockets 3
+
+First, create the socket using `socket`, specifying that is a UDP socket. Bind the socket to port 8080 using `bind`. Read the first UDP datagram using `recvfrom`. We use `recvfrom` instead of `recv` since UDP doesn't establish connections, and instead we use a NULL source address as input to `recvfrom`; here, the OS fills in the address of the host sending us UDP datagrams.
+
+Answer: `socket,bind,recvfrom`
+
+### Sockets 4
+
+First, create the socket using `socket`, specifying that is a UDP socket. It is now optional to use `bind`, as the OS can automatically bind it to a port in the next step. Use `sendto` to send the UDP datagram to the server (we use this instead of `send` since UDP is connectionless)
+
+Answer: `socket,sendto`; `bind` is optional between `socket` and `sendto`
+
+## Unit Conversion
+
+### Unit Conversion 1
+
+`120 Kbps * 1 byte/8 bits * 2/3 day * 24 hours/day * 3600 seconds/hour * 1 GB/10^6 KB = 0.864`
+
+Answer: `0.864`
