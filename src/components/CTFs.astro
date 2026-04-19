@@ -9,4 +9,4 @@ const ctfs = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("../p
 ---
 
 {ctfs.map(ctf => <Assignment title={ctf.frontmatter.title!} link={ctf.url!} dueDate={null} />)}
-{ctfs.length == 0 ? <p>No CTF solutions are available yet—check back later!</p> : null}
+{ctfs.length == 0 ? <p>No CTF challenges are available yet—check back later!</p> : null}

@@ -1,334 +1,212 @@
 ---
 layout: ../../layouts/Layout.astro
-title: "Week 1 Solutions: Sockets and Packet Delay"
+title: "Week 1: Sockets and Packet Delay"
 ---
 
 import * as H from "../../components/helpers/index.astro";
+import { Image } from "astro:assets";
+import protocolLayers from "../../../public/ctfs/protocol-layers.png";
 
-<H.Title>Week 1 Solutions: Sockets and Packet Delay</H.Title>
+<H.Title>Week 1: Sockets and Packet Delay</H.Title>
 
 ## Activity
 
 ### 1.1 - Activity
 
-Connect via SSH and receive the flag: `cs118{1.1:c0nn3ct3d!}`
+SSH in using `ssh networking@ssh.ctf.cs118.org -p 5000` and password `isfun`. Once connected, you will be dropped into a custom shell where you can run various networking related syscalls. Use it to connect to `10.0.1.X` port `1111`, where X is 1 for Discussion 1A, 2 for Discussion 1B, and 3 for Discussion 1C, and follow the instructions sent to you on connection!
+
+If you do not have SSH installed locally, you can go to https://shell.cloud.google.com, login with your UCLA account, and use the Linux machine terminal provided to SSH in instead.
 
 ### 1.2 - Activity
 
-Type `help` to see the available commands:
-
-```
-Supported syscalls: socket, bind, listen, accept, connect, send, recv, close
-```
-
-Type `socket` to create a socket object:
-
-```
-> socket
-$ sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-$ printf("sock: %d\n", sock)
-< sock: 3
-```
-
-Type `connect` to connect to `10.0.0.X:1111`. Use the socket fd number returned from the previous call to `socket`:
-
-```
-> connect 3 10.0.1.1 1111
-$ addr.sin_family = AF_INET;
-$ addr.sin_port = htons(1111);
-$ ret = inet_pton(AF_INET, 10.0.1.1, &addr.sin_addr);
-$ printf("ret: %d\n", ret)
-< ret: 1
-$ ret = connect(3, (sockaddr*)&addr, sizeof(addr));
-$ printf("ret: %d\n", ret)
-< ret: 0
-```
-
-Receive data from the socket with `recv`. USe the socket fd number returned from the previous call to `socket`. The buffer size is arbitrary but make it large enough to receive all the data.
-
-```
-> recv 3 1024
-$ ret = recv(3, buf, 1024, MSG_DONTWAIT);
-$ printf("ret: %d\n", ret)
-< ret: 262
-$ buf[ret] = 0; // Add tailing \0 for print
-$ printf("buf: %s\n")
-buf: cs118{1.2:r34d_d474} Welcome to the ice breaker server! Note that everything you enter here will appear on the screen in the front, so don't put anything you don't want publicly listed. Also, please limit responses to **1024 characters max**! What is your name?
-```
-
-Flag: `cs118{1.2:r34d_d474}`
+Continue with context from the previous activity.
 
 ### 1.3 - Activity
 
-Send your name to the connection using `send`:
-
-```
-> send 3 admin
-$ ret = send(3, "admin", 5, 0);
-$ printf("ret: %d\n", ret)
-< ret: 5
-```
-
-Receive the next instructions:
-
-```
-> recv 3 1024
-$ ret = recv(3, buf, 1024, MSG_DONTWAIT);
-$ printf("ret: %d\n", ret)
-< ret: 29
-$ buf[ret] = 0; // Add tailing \0 for print
-$ printf("buf: %s\n")
-buf: What is your year and major?
-```
-
-Keep doing this for a few more questions:
-
-```
-> recv 3 1024
-$ ret = recv(3, buf, 1024, MSG_DONTWAIT);
-$ printf("ret: %d\n", ret)
-< ret: 144
-$ buf[ret] = 0; // Add tailing \0 for print
-$ printf("buf: %s\n")
-buf: cs118{1.3:1nf0_su8m1tt3d} Nice! Now, open port 2222. I'll be trying to connect to your port 2222 repeatedly to send some important information.
-```
-
-Flag: `cs118{1.3:1nf0_su8m1tt3d}`
+Continue with context from the previous activity.
 
 ### 1.4 - Activity
 
-We need to open a TCP listening socket on port 2222. First, create a new socket with `socket`.
-
-```
-> socket
-$ sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-$ printf("sock: %d\n", sock)
-< sock: 4
-```
-
-Then, bind it to port 2222. We will bind it to 0.0.0.0:2222 - this IP address means that we accept connections from any network interface, provided they are connecting to port 2222. Use `any` for 0.0.0.0.
-
-```
-> bind 4 any 2222
-$ addr.sin_family = AF_INET;
-$ addr.sin_port = htons(2222);
-$ addr.sin_addr.s_addr = INADDR_ANY;
-$ ret = bind(4, (sockaddr*)&addr, sizeof(addr));
-$ printf("ret: %d\n", ret)
-< ret: 0
-```
-
-Now, use `listen` to start the socket listening.
-
-```
-> listen 4
-$ ret = listen(4, 0);
-$ printf("ret: %d\n", ret)
-< ret: 0
-```
-
-Accept the incoming connection to the socket using `accept`. We get a new socket fd number that can be used to send/receive data for this connection:
-
-```
-> accept 4
-$ socklen = sizeof(addr);
-$ new_sock = accept(4, (sockaddr*)&addr, &socklen);
-$ inet_ntop(AF_INET, &addr.sin_addr, ip_str, socklen);
-$ printf("IP: %s", ip_str);
-< IP: 10.0.1.1
-$ printf("Port: %d", ntohs(addr.sin_port));
-< Port: 57572
-$ printf("new_sock: %d\n", new_sock)
-< new_sock: 5
-$ printf("Now use this new socket to communicate with the client\n")
-< Now use this new socket to communicate with the client
-```
-
-Use `recv` to receive data from this connection.
-
-```
-> recv 5 1024
-$ ret = recv(5, buf, 1024, MSG_DONTWAIT);
-$ printf("ret: %d\n", ret)
-< ret: 235
-$ buf[ret] = 0; // Add tailing \0 for print
-$ printf("buf: %s\n")
-buf: cs118{1.4:1nc0m1ng_7r4nsm1ss10n} Congrats! You have shown your ability to use TCP socket syscall, and earned some points in the process! Make sure to visit https://ctf.cs118.org and submit the flags you have received to get the points!
-```
-
-Flag: `cs118{1.4:1nc0m1ng_7r4nsm1ss10n}`
+Continue with context from the previous activity.
 
 ## Packet Delay
 
 ### Packet Delay 1
 
-Let $L$ be the packet length, $P$ be the propagation delay, $R_\{AB\}$ be the link bandwidth from A to B, $R_\{BC\}$ be the link bandwidth from B to C, $T_\{AB\}$ be the transmission delay from A to B, and $T_\{BC\}$ be the transmission delay from B to C. We are given the following:
+This is the first question in a series of questions using this same scenario:
 
-$$
-\begin\{gather*\}
-L = 1000 \text\{ B\} \\
-P = 3 \text\{ ms\} \\
-R_\{AB\} = 1 \text\{ Mbps\} \\
-R_\{BC\} = 5 \text\{ Mbps\}
-\end\{gather*\}
-$$
+Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 bytes, and the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0 ms.
 
-The time it takes for the first packet to be fully sent by node A is the amount of time it takes for the node to fully transmit the packet. We can find the transmission delay $T_\{AB\}$ as follows:
-
-$$
-\begin\{align\}
-T_\{AB\} = \frac\{L\}\{R_\{AB\}\} = \frac\{1000 \text\{ B\}\}\{1 \text\{ Mbps\}\} = 8 \text\{ ms\}
-\end\{align\}
-$$
-
-Answer: `8`
+How much time (in ms) does it take for the first packet to be fully sent by node A? Give just a number, like `42`.
 
 ### Packet Delay 2
 
-As soon as node A begins transmitting the first packet, the first bit of the first packet begins propagating from A to B. This takes 3 ms, since the propagation delay is 3 ms.
+Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 bytes, and the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0 ms.
 
-Answer: `3`
+How much time (in ms) does it take for the first bit of the first packet to be received by node B?
 
 ### Packet Delay 3
 
-The amount of time it takes for the entire first packet to reach node B is the sum of the transmission delay and the propagation delay from A to B.
+Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 bytes, and the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0 ms.
 
-$$T_\{AB\} + P = 8 \text\{ ms\} + 3 \text\{ ms\} = 11 \text\{ ms\}$$
-
-Answer: `11`
+How much time (in ms) does it take for the last byte of the first packet to be received by node B?
 
 ### Packet Delay 4
 
-As soon as node A fully transmits a packet, it can begin transmitting the next packet. Each packet takes $T_\{AB\}=8 \text\{ ms\}$ to be transmitted, so the total time it takes for all three packets to be transmitted is $3 * 8 \text\{ ms\} = 24 \text\{ ms\}$.
+Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 bytes, and the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0 ms.
 
-Answer: `24`
+How much time (in ms) does it take for the last packet to be fully sent into the wire by node A?
 
 ### Packet Delay 5
 
-We can find the transmission delay from B to C $T_\{BC\}$ as follows:
+Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 bytes, and the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0 ms.
 
-$$
-\begin\{align\}
-T_\{BC\} = \frac\{L\}\{R_\{BC\}\} = \frac\{1000 \text\{ B\}\}\{5 \text\{ Mbps\}\} = 1.6 \text\{ ms\}
-\end\{align\}
-$$
+Yes/No: Do packets queue up at node B? In other words, when node B transmits packet 1, does it already have the entirety of packet 2 stored and ready to transmit before node B finishes transmitting packet 1?
 
-Since $T_\{AB\}$ > $T_\{BC\}$, node B fully transmits a given packet before the next one arrives. Therefore, there is no queueing delay at node B.
-
-Answer: `no`
+Enter in exactly the text "yes" or "no".
 
 ### Packet Delay 6
 
-The first two packets must be transmitted by node A before the third packet can be transmitted. This queueing delay is $2 * T_\{AB\} = 16 \text\{ ms\}$.
+Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 bytes, and the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0 ms.
 
-After the queueing delay, it takes an additional $T_\{AB\} = 8 \text\{ ms\}$ for the third packet to be transmitted by node A.
-
-Additionally, it takes $P = 3 \text\{ ms\}$ for the third packet to propagate from A to B.
-
-At node B, there is no queueing delay, so node B finishes transmitting the packet in $T_\{BC\} = 1.6 \text\{ ms\}$.
-
-We can add up these delays to find the time at which node B finishes transmitting the packet:
-
-$$2 * T_\{AB\} + T_\{AB\} + P + T_\{BC\} = 28.6 \text\{ ms\}$$
-
-Answer: `28.6`
+At what time does node B finish transmitting packet 3?
 
 ### Packet Delay 7
 
-After node B finishes transmitting the packet, the packet propagates to node C in $P = 3 \text\{ ms\}$. We add this delay to the time at which node B finishes transmitting to get:
+Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 bytes, and the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0 ms.
 
-$$28.6 \text\{ ms\} + 3 \text\{ ms\} = 31.6 \text\{ ms\}$$
-
-Answer: `31.6`
+At what time does node C fully receive packet 3?
 
 ### Packet Delay 8
 
-In the circuit-switched network, a packet can begin transmission at a given node while part of the packet is still propagating to the node. Therefore, the time between the arrival of a bit at B and the departure of the bit from B is eliminated. This is the transmission delay $T_\{BC\} = 1.6 \text\{ ms\}$.
+**Challenge:** Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from node A to node C via node B. Packets have a size of 1000 bytes, and the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that node A begins transmitting the first packet at time t = 0 ms.
 
-The percentage of time saved by the circuit-switched network is $100 * \frac\{1.6 \text\{ ms\}\}\{31.6 \text\{ ms\}\}≈5$.
-
-Answer: `5`
+Historically, data was transferred over the phone line network, where a dedicated circuit-connected connection was made between any 2 callers who wanted to connect to each other. As such, an intermediate node did not need to receive the entire "packet" of data before forwarding it to the next one-it just streamed the data to a predetermined destination. Ignoring any delay that a router might have between receiving a bit and sending out the bit, what percentage of time is "wasted" due to the store-and-forward processing of packets compared to this circuit-switched network using a streaming processing? Answer as a 2-digit number representing the percentage, rounded to the nearest percent.
 
 ### Packet Delay 9
 
-On the way from node C to node A, the packets queue up at node B. To visualize the delays, we can create a table with the time at which each packet arrives at and leaves from each node.
+Now, let's keep everything the same, except we are now sending from node C to node A. The updated portions of the description are bolded:
 
-The amount of time for which a packet stays at a node before leaving the node is the sum of the transmission delay and the queueing delay at the node. The amount of time it takes for a packet to travel from one node to another is always the propagation delay between the nodes.
+Consider a linear packet-switched network with 3 nodes, A, B, and C. Assume that a packet must be fully received by a node before it can begin to be forwarded. 3 packets are sent from **node C** to **node A** via node B. Packets have a size of 1000 bytes, and the propagation delay of both links is 3 ms. Between A and B, the transmission rate is 1 Mbps, and between B and C, the transmission rate is 5 Mbps. For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second, and assume that **node C** begins transmitting the first packet at time t = 0 ms.
 
-| Packet | Leave C | Arrive B | Leave B | Arrive A |
-| ------ | ------- | -------- | ------- | -------- |
-| 1      | 1.6 ms  | 4.6 ms   | 12.6 ms | 15.6 ms  |
-| 2      | 3.2 ms  | 6.2 ms   | 20.6 ms | 23.6 ms  |
-| 3      | 4.8 ms  | 7.8 ms   | 28.6 ms | 31.6 ms  |
-
-It takes 31.6 ms for the 3 packets to be sent from node C back to node A.
-
-Answer: `31.6`
+How much time does it take for 3 packets to be sent from node C back to node A?
 
 ### Packet Delay 10
 
-The end-to-end transfer time is dominated by the slowest link regardless of direction. As a result, the queueing delay and idle time sum to the same value on the way from A to C and on the way from C to A.
+**Challenge:** Notice how the time it takes to send all 3 packets from node A to node C, or node C to node A, is the exact same, despite the fact that the link transmission speeds are different. Why is this the case?
 
-Answers may vary.
+Note that points for this question are manually granted, and are not automatic.
 
 ## Protocol Layers
 
 ### Protocol Layers 1
 
-For an HTTP message to be passed to the Ethernet interface of the first host, the application layer, transport layer, network layer, and link layer (where Ethernet operates) must encapsulate the packets in layer-specific headers.
+<Image
+  src={protocolLayers}
+  style={{ width: "100%", height: "auto" }}
+  alt="Protocol layers"
+/>
 
-Answer: `a,t,n`; `l` is optional after `n`
+The host on the left is trying to send an HTTP message to the host on the right.
+
+Write down the names of the protocol layers involved as an HTTP message is passed to the Ethernet interface of the first host. Use the first letter of the protocol layer in a list. For example, if you believe the answer is (apple, orange, kiwi), answer "a,o,k".
 
 ### Protocol Layers 2
 
-A routing decision is made in the network layer. Each layer uses its respective header to make a decision. The link layer header/tail is the outermost envelope of the packet, followed by the network layer header. Therefore, the link layer and the network layer envelopes are considered before a routing decision is made.
+<Image
+  src={protocolLayers}
+  style={{ width: "100%", height: "auto" }}
+  alt="Protocol layers"
+/>
 
-Answer: `l`; `n` is optional after `l`
+When the HTTP message reaches the first router, what are the layers that it passes before a routing decision is made?
 
 ## Protocols
 
 ### Protocols 1
 
-All of the listed protocols are on the application layer. You will need to use HTTP when logged into the `gmail.com` website and interacting with the webpage. Then, mail is sent via SMTP (simple mail transfer protocol).
+Which of the following protocols are used if I logged into gmail.com and sent an email to my friend? Answer as a sorted, comma separated list, like `1,2,3`.
 
-Answer: `2,5`
+1. FTP
+2. SMTP
+3. SIP
+4. DASH
+5. HTTP
+6. STIR/SHAKEN
 
 ## Sockets
 
 ### Sockets 1.1
 
-First, you need to create a socket using `socket`, specifying that it is a TCP socket. Then, bind it to port 8080 using `bind`. Then, listen for incoming TCP connections with `listen`.
+I would like to set up a TCP **server**, listening on port 8080 for any incoming connections, but not actually make any connections. In what order should I run the following syscalls, if needed? Answer in a comma-separated list, like `cats,dogs,fish`.
 
-Answer: `socket,bind,listen`
+- socket
+- bind
+- listen
+- accept
+- connect
+- send
+- sendto
+- recv
+- recvfrom
 
 ### Sockets 1.2
 
-Accept the next incoming connection using `accept`. Then, receive data from the connection with `recv`. Then, send data to the connection using `send`.
+My TCP server is already listening on port 8080. Which of the following syscalls, and in what order, can I use to receive some data from the next incoming connection, and then send some data back? Answer in a comma-separated list, like `cats,dogs,fish`.
 
-Answer: `accept,recv,send`
+- bind
+- listen
+- accept
+- connect
+- send
+- sendto
+- recv
+- recvfrom
 
 ### Sockets 2
 
-First, create the socket using `socket`, specifying that it is a TCP socket. It is now optional to use `bind`, as the OS can automatically bind it to a port in the next step. Use `connect` to connect to the server `127.0.0.1:8080`. Then, send the GET request data using `send`. Receive the HTTP response using `recv`.
+I would like to set up a TCP **client**, connecting to a server on port 8080 at 127.0.0.1, and sending an HTTP GET request and reading the response. In what order should I run the following syscalls, if needed? Answer in a comma-separated list, like `cats,dogs,fish`.
 
-Answer: `socket,connect,send,recv`; `bind` is optional between `socket` and `connect`
+- socket
+- bind
+- listen
+- accept
+- connect
+- send
+- sendto
+- recv
+- recvfrom
 
 ### Sockets 3
 
-First, create the socket using `socket`, specifying that is a UDP socket. Bind the socket to port 8080 using `bind`. Read the first UDP datagram using `recvfrom`. We use `recvfrom` instead of `recv` since UDP doesn't establish connections, and instead we use a NULL source address as input to `recvfrom`; here, the OS fills in the address of the host sending us UDP datagrams.
+I would like to set up a **UDP** **server**, listening for any incoming UDP datagrams on port 8080, and reading the data of the first received UDP datagram. In what order should I run the following syscalls, if needed? Answer in a comma-separated list, like `cats,dogs,fish`.
 
-Answer: `socket,bind,recvfrom`
+- socket
+- bind
+- listen
+- accept
+- connect
+- send
+- sendto
+- recv
+- recvfrom
 
 ### Sockets 4
 
-First, create the socket using `socket`, specifying that is a UDP socket. It is now optional to use `bind`, as the OS can automatically bind it to a port in the next step. Use `sendto` to send the UDP datagram to the server (we use this instead of `send` since UDP is connectionless)
+I would like to set up a **UDP** **client**, sending a datagram to port 8080 on 127.0.0.1. In what order should I run the following syscalls, if needed? Answer in a comma-separated list, like `cats,dogs,fish`.
 
-Answer: `socket,sendto`; `bind` is optional between `socket` and `sendto`
+- socket
+- bind
+- listen
+- accept
+- connect
+- send
+- sendto
+- recv
+- recvfrom
 
 ## Unit Conversion
 
 ### Unit Conversion 1
 
-`120 Kbps * 1 byte/8 bits * 2/3 day * 24 hours/day * 3600 seconds/hour * 1 GB/10^6 KB = 0.864`
-
-Answer: `0.864`
+Convert 120 Kbps to gigabytes per 2/3rds of a day (since we are sleeping the other 1/3rd of the day). Use 10^3 when converting between units such as megabytes and kilobytes, not 2^10.

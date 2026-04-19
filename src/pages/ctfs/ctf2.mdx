@@ -1,325 +1,205 @@
 ---
 layout: ../../layouts/Layout.astro
-title: "Week 2 Solutions: HTTP"
+title: "Week 2: HTTP"
 ---
 
 import * as H from "../../components/helpers/index.astro";
+import { Image } from "astro:assets";
+import holBlocking from "../../../public/ctfs/hol-blocking.png";
 
-<H.Title>Week 2 Solutions: HTTP</H.Title>
+<H.Title>Week 2: HTTP</H.Title>
 
 ## Activity
 
 ### 2.1 - Activity
 
-We are given the IP 10.0.2.2. The default HTTP port is 80. We can use netcat to connect to the HTTP server:
+SSH in using `ssh networking@ssh.ctf.cs118.org -p 5000` and password `isfun`. Once connected, you will be dropped into the same shell as last week, but this time, we can simplify the process using `nc`, or netcat! Simply run `nc IP PORT`, and you will be put into an interactive shell where you simply type what you want to send to the TCP server you connected to, and any data received is immediately printed on the screen.
 
-```
-> nc 10.0.2.2 80
-Running netcat...
-Do Ctrl + C to disconnect
-```
-
-Try sending a GET request:
-
-```
-GET /
-
-<p>Error: Use HTTP 1.1! You used HTTP/0.9 instead.</p>
-Netcat exited with status 0
-```
-
-We are asked to use HTTP 1.1. Try again:
-
-```
-> nc 10.0.2.2 80
-Running netcat...
-Do Ctrl + C to disconnect
-
-GET / HTTP/1.1
-
-HTTP/1.1 404 NOT FOUND
-Server: Werkzeug/3.1.8 Python/3.12.13
-Date: Wed, 08 Apr 2026 23:58:24 GMT
-Content-Type: text/html; charset=utf-8
-Content-Length: 97
-Connection: close
-
-<p>Error: Host 'None' not found.</p>
-<p>Did you mean 'sockets.net'? Set it as a Host header.</p>
-
-Netcat exited with status 0
-```
-
-We forgot to set the Host header! We try again with `sockets.net` as our Host header:
-
-```
-> nc 10.0.2.2 80
-Running netcat...
-Do Ctrl + C to disconnect
-
-GET / HTTP/1.1
-Host: sockets.net
-
-HTTP/1.1 200 OK
-Server: Werkzeug/3.1.8 Python/3.12.13
-Date: Thu, 09 Apr 2026 00:01:56 GMT
-Content-Type: text/html; charset=utf-8
-Content-Length: 226
-Set-Cookie: mycookie=chocolate_chip; Path=/
-Connection: close
-
-<h1>Welcome!</h1>
-<h2>Flag: cs118{2.1:1n1t14l_c0nn3ct10n}</h2>
-<p>Hello! You've successfully connected to my http server! Now, revisit the server, but following my instructions, including the cookie via the Cookie header.</p>
-
-Netcat exited with status 0
-```
-
-Flag: `cs118{2.1:1n1t14l_c0nn3ct10n}`
+Connect to the HTTP server on IP 10.0.2.2 (using the default HTTP port!) and follow the instructions. Remember that this is an HTTP server, so you must first send an HTTP GET request manually!
 
 ### 2.2 - Activity
 
-Our HTTP response from the previous activity shows that a cookie was set:
-
-```
-Set-Cookie: mycookie=chocolate_chip
-```
-
-The HTML file tells us to revisit the server with the cookie included:
-
-```
-> nc 10.0.2.2 80
-Running netcat...
-Do Ctrl + C to disconnect
-
-GET / HTTP/1.1
-Host: sockets.net
-cookie: mycookie=chocolate_chip
-
-HTTP/1.1 401 UNAUTHORIZED
-Server: Werkzeug/3.1.8 Python/3.12.13
-Date: Thu, 09 Apr 2026 00:07:54 GMT
-Content-Type: text/html; charset=utf-8
-Content-Length: 219
-Connection: close
-
-<p>cs118{2.2:c00k13s} Om nom nom - thanks for the cookie! Remember to keep sending this cookie every time! That being said, I don't know who you are. Can you set a user agent? Just set it to your name or something.</p>
-
-Netcat exited with status 0
-```
-
-Flag: `cs118{2.2:c00k13s}`
+Continue with context from the previous activity.
 
 ### 2.3 - Activity
 
-The HTML file received in the previous activity tells us to set a User-Agent header. We can set the header to our name:
-
-```
-> nc 10.0.2.2 80
-Running netcat...
-Do Ctrl + C to disconnect
-
-GET / HTTP/1.1
-Host: sockets.net
-cookie: mycookie=chocolate_chip
-User-Agent: Your CS 118 LAs
-
-HTTP/1.1 200 OK
-Server: Werkzeug/3.1.8 Python/3.12.13
-Date: Thu, 09 Apr 2026 00:11:04 GMT
-Content-Type: text/html; charset=utf-8
-Content-Length: 141
-Connection: close
-
-<p>cs118{2.3us34_4g3nt} Nice to meet you, Your CS 118 LAs!</p>
-<p>Let's change paths, shall we? <a href="/new_path">Just click here!</a></p>
-
-Netcat exited with status 0
-```
-
-Flag: `cs118{2.3us34_4g3nt}`
+Continue with context from the previous activity.
 
 ### 2.4 - Activity
 
-The HTML file received in the previous activity tells us that our new path should be `/new_path`. Visit the new path in a GET request:
-
-```
-> nc 10.0.2.2 80
-Running netcat...
-Do Ctrl + C to disconnect
-
-GET /new_path HTTP/1.1
-Host: sockets.net
-cookie: mycookie=chocolate_chip
-User-Agent: Your CS 118 LAs
-
-HTTP/1.1 200 OK
-Server: Werkzeug/3.1.8 Python/3.12.13
-Date: Thu, 09 Apr 2026 00:13:39 GMT
-Content-Type: text/html; charset=utf-8
-Content-Length: 442
-Connection: close
-
-<p>cs118{2.4:7h3_p47h_n0t_t4k3n} You made it! Last request: make a POST request to this same endpoint (aka same path) with the data 'favorite_pet=cat' or 'favorite_pet=dog' or whatever your favorite pet is!</p>
-<p>If you need help, check out <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST#url-encoded_form_submission'>https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST#url-encoded_form_submission</a></p>
-
-Netcat exited with status 0
-```
-
-Flag: `cs118{2.4:7h3_p47h_n0t_t4k3n}`
+Continue with context from the previous activity.
 
 ### 2.5 - Activity
 
-According to the HTML file received in the previous activity, we need to make a POST request to the same endpoint. The resource given tells us that a POST request with a URL-encoded form submission is formatted like this:
-
-```
-POST /test HTTP/1.1
-Host: example.com
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 27
-
-field1=value1&field2=value2
-```
-
-We can structure our POST request like the one above and submit our favorite pet:
-
-```
-> nc 10.0.2.2 80
-Running netcat...
-Do Ctrl + C to disconnect
-
-POST /new_path HTTP/1.1
-Host: sockets.net
-cookie: mycookie=chocolate_chip
-User-Agent: Your CS 118 LAs
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 16
-
-favorite_pet=dog
-HTTP/1.1 200 OK
-Server: Werkzeug/3.1.8 Python/3.12.13
-Date: Thu, 09 Apr 2026 00:22:48 GMT
-Content-Type: text/html; charset=utf-8
-Content-Length: 109
-Connection: close
-
-<p>I love that! Congrats on making it all the way through! Here is your final flag: cs118{2.5:http_guru}</p>
-
-Netcat exited with status 0
-```
-
-Flag: `cs118{2.5:http_guru}`
+Continue with context from the previous activity.
 
 ## Cookies
 
 ### Cookies 1
 
-When the user visits the site for the first time, the client sends a typical HTTP request with no `Cookie` header (5). Upon receiving the request, the server creates an entry in the backend database (4). The server then sends an HTTP response with a `Set-Cookie` header (6). The client receives the response and stores the cookie in a local file (2). When the user visits the site again, the client sends an HTTP request with a `Cookie` header (1). Finally, upon receiving the request, the server gets the cookie from its backend database (3).
+List the following events in the order in which they occur.
 
-Answer: `5,4,6,2,1,3`
+1. Client sends `Cookie` header in HTTP request.
+2. Client stores cookie in local file.
+3. Server accesses cookie entry in backend database.
+4. Server creates entry in backend database.
+5. Client sends HTTP request with no `Cookie` header.
+6. Server sends `Set-Cookie` header in HTTP response.
+
+Answer in a list, such as `1,2,3`.
 
 ### Cookies 2
 
-The four components of the cookie system are the backend database at the website (8), the `Set-Cookie` header in the first HTTP response (4), the cookie file kept by your browser (5), and the `Cookie` header in subsequent HTTP requests (1).
+A user visits `amazon.com` for the first time. A cookie for the user for `amazon.com` is saved in the process. A week later, the user returns to the site. Which of the following are components of the cookie system represented in this interaction?
 
-Answer: `1,4,5,8`
+1. `Cookie` header in the HTTP request
+2. `Cookie` header in the HTTP response
+3. `Set-Cookie` header in the HTTP request
+4. `Set-Cookie` header in the HTTP response
+5. Cookie file kept by your browser
+6. Cookie file kept on the website's server
+7. Executable script that runs on the user's computer
+8. Backend database at the website
+
+Answer with a list, like `1,2,3`. List the items in the order in which they appear above.
 
 ## HOL Blocking
 
 ### HOL Blocking 1
 
-A frame is a basic unit of communication. A message is composed of one or more frames. A stream is a virtual channel that carries messages in both directions.
+HTTP/2 introduced a few new communication elements with the goal of mitigating head-of-line (HOL) blocking. Order the following HTTP/2 communication elements from innermost to outermost.
 
-Answer: `2,3,1`
+1. Stream
+2. Frame
+3. Message
 
-### HOL BLocking 2
+Answer with a list, like `1,2,3`.
 
-If the third frame of O1 gets lost, none of the frames that come after this frame can be delivered before the loss is recovered (since we are running over 1 TCP connection). All frames for O2 and O4 are delivered before the third frame of O1, but this is not the case for O1 and O3. Therefore, only O2 and O4 can be delivered in full.
+### HOL Blocking 2
 
-Answer: `2,4`
+<Image
+  src={holBlocking}
+  style={{ width: "100%", height: "auto" }}
+  alt="HOL blocking"
+/>
+
+A client requests 1 large video file and 3 smaller images using HTTP/2. The objects are divided into frames, which are interleaved to mitigate HOL blocking at the application layer. As shown in the image, the objects are multiplexed into a single stream where the frame arrival order is: two frames of O1, one frame of O2, one frame of O3, and so on.
+
+Suppose the third frame of O1 gets lost. Which objects can be delivered to the client before the loss is recovered? List them in order of their arrival at the client.
+
+Answer with a list, like `1,2,3`.
 
 ## HTTP
 
 ### HTTP 1
 
-A nonpersistent HTTP model with parallel TCP connections consumes a larger amount of server resources than a single persistent connection with pipelining. Since there are many small images and JS/CSS files, many TCP connections are created, each of which saves TCP state to memory. The large number of connections quickly exhausts server memory.
+Which HTTP operation model typically consumes a larger amount of **server** resources for the same web page containing many small images and JS/CSS files: nonpersistent HTTP with parallel TCP connections or a single persistent connection with pipelining? Why?
 
-Answers may vary.
+Please note: you only get one submission, so make sure your answer is ready before submitting!
 
 ### HTTP 2
 
-The components found in every HTTP/1.0 and later request message are those in the request line: the method, the path, and the HTTP version.
+Which of the following is found in **every** HTTP/1.0 and later **request** message?
 
-Answer: `4,5,6`
+1. Human-readable status
+2. Nonce
+3. Port
+4. Method
+5. Path (URL)
+6. HTTP version
+7. Host
+8. Status code
+9. Stream #
+10. Content type
+11. HTML
+12. Body
+
+Answer with a list, like `1,2,3`. List the items in the order in which they appear above.
 
 ### HTTP 3
 
-The components found in every HTTP/1.0 and later response message are those in the status line: the human-readable status, the HTTP version, and the status code.
+Which of the following is found in **every** HTTP 1.0 and later **response** message?
 
-Answer: `1,6,8`
+1. Human-readable status
+2. Nonce
+3. Port
+4. Method
+5. Path (URL)
+6. HTTP version
+7. Host
+8. Status code
+9. Stream #
+10. Content type
+11. HTML
+12. Body
+
+Answer with a list, like `1,2,3`. List the items in the order in which they appear above.
 
 ## HTTP Delay
 
 ### HTTP Delay 1
 
-Each large object is 8 Mb. The network bandwith is 10 Mbps. We can find the transmission time of one large object:
+Suppose we are trying to fetch a web page's index.html page alongside 8 large (1 MB) objects. We are using HTTP/1.0 without parallel connections. Assume the network bandwidth is 10 Mbps. How long does it take to fetch all these objects?
 
-$$\frac\{8 \text\{ Mb\}\}\{10 \text\{ Mbps\}\} = 0.8 \text\{ s\}$$
-
-It takes 0.5 seconds to establish the TCP connection required to request the initial index.html file. Each of the 8 large objects requires a new TCP connection, which takes 0.5 seconds to set up. Additionally, each of the large and takes 0.8 seconds to transmit. We can add up these values to get the total amount of time:
-
-$$0.5 \text\{ s\} + 8(0.5 \text\{ s\} + 0.8 \text\{ s\}) = 10.9 \text\{ s\}$$
-
-Answer: `10.9`
+For the sake of simplicity, assume it takes 0.5 seconds to establish a TCP connection. Ignore the time taken to send HTTP requests or to receive small HTTP responses. Ignore other propagation delays.
 
 ### HTTP Delay 2
 
-With the degraded bandwith, the transmission time of one large object increases:
-
-$$\frac\{8 \text\{ Mb\}\}\{1.25 \text\{ Mbps\}\} = 6.4 \text\{ s\}$$
-
-It takes 0.5 seconds to establish the TCP connection required to request the initial index.html file. The 8 parallel connections collectively take 0.5 seconds to establish the TCP connection and another 6.4 seconds to transmit the files in parallel. We can add up these values to get the total amount of time:
-
-$$0.5 \text\{ s\} + 0.5 \text\{ s\} + 6.4 \text\{ s\} = 7.4 \text\{ s\}$$
-
-Answer: `7.4`
+Repeat the scenario in HTTP Delay 1 but now, we are using HTTP/1.0 with 8 parallel connections for the large objects. However, when opening this many connections, the network bandwidth degrades to 1.25 Mbps.
 
 ### HTTP Delay 3
 
-It takes 0.5 seconds to establish the TCP connection. The bandwidth is 10 Mbps as in HTTP Delay 1, so it takes 0.8 s to transmit each of the 8 large files. We can add up these values to get the total amount of time:
-
-$$0.5 \text\{ s\} + 8(0.8 \text\{ s\}) = 6.9 \text\{ s\}$$
-
-Answer: `6.9`
+Repeat the scenario in HTTP Delay 1 but now, we are using HTTP/1.1 with one persistent connection for all requests.
 
 ### HTTP Delay 4
 
-The latency does not significantly improve in this scenario. In both cases, the total transmission time is the same, and this is the bottleneck since other delays are negligible.
+Suppose in the scenario for HTTP Delay 3, we also used HTTP/1.1 pipelining. After the first request to the server, the client knows the 8 objects it needs to request. Then, it can send 8 pipelined requests for these objects. Would this significantly improve the latency compared to HTTP Delay 3? Why or why not?
 
-Answers may vary.
+Please note: you only get one submission, so make sure your answer is ready before submitting!
 
 ## HTTP Versions
 
 ### HTTP Versions 1
 
-HTTP/1.0 supports parallel connections.
+Which of the following features does HTTP/1.0 support?
 
-Answer: `1`
+1. Parallel connections
+2. Persistent connections
+3. Pipelining
+4. Multiplexing
+5. Binary encoding
+6. Header compression
+
+Answer with a list, like `1,2,3`. List the items in the order in which they appear above.
 
 ### HTTP Versions 2
 
-HTTP/1.1 supports parallel connections, persistent connections, and pipelining.
+Which of the following features does HTTP/1.1 support?
 
-Answer: `1,2,3`
+1. Parallel connections
+2. Persistent connections
+3. Pipelining
+4. Multiplexing
+5. Binary encoding
+6. Header compression
+
+Answer with a list, like `1,2,3`. List the items in the order in which they appear above.
 
 ### HTTP Versions 3
 
-HTTP/2 supports persistent connections, multiplexing, binary encoding, and header compression.
+Which of the following features does HTTP/2 support?
 
-Answer: `2,4,5,6`
+1. Parallel connections
+2. Persistent connections
+3. Pipelining
+4. Multiplexing
+5. Binary encoding
+6. Header compression
+
+Answer with a list, like `1,2,3`. List the items in the order in which they appear above.
 
 ### HTTP Versions 4
 
-The first version of HTTP which allowed for virtual hosting is HTTP/1.1. This was enabled via the `Host` header.
+What is the first version of HTTP that allowed for virtual hosting, and what is the name of the header that allowed this to occur?
 
-Answer: `1.1,host`
+Answer like `5,cats` for HTTP version 5 and header called `cats`.
