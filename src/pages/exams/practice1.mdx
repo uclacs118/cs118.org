@@ -118,4 +118,4 @@ Again, assuming no packet losses, suppose host B closes the connection with host
 9. The HTTP status code 304 (Not Modified) is primarily associated with HTTP conditional GET.
 10. Calling `bind` is required for both a client and server when programming sockets.
 11. A TCP server needs to call `accept` to receive data from a connection, while a UDP server should not do so.
-12. Whenever the sender retransmits a segment before receiving its ACK, the sender does not measure the RTT.
+12. In TCP, whenever the sender retransmits a segment before receiving its ACK, the sender does not measure the RTT.
