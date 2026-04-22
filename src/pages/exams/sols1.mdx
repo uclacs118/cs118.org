@@ -1,0 +1,155 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Midterm 1 Practice Problem Solutions"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Midterm 1 Practice Problem Solutions</H.Title>
+
+## Packet Transport
+
+### Packet Transport 1
+
+Let $L$ be the packet length, $P$ be the propagation delay, $R_\{AB\}$ be the link bandwidth from A to B, $R_\{BC\}$ be the link bandwidth from B to C, and $R_\{CD\}$ be the link bandwidth from C to D. Let $T_\{AB\}$ be the transmission delay from A to B, $T_\{BC\}$ be the transmission delay from B to C, and $T_\{CD\}$ be the transmission delay from C to D. We are given the following:
+
+$$
+\begin\{gather*\}
+L = 1500 \text\{ B\} \\
+P = 5 \text\{ ms\} \\
+R_\{AB\} = 4 \text\{ Mbps\} \\
+R_\{BC\} = 1 \text\{ Mbps\} \\
+R_\{CD\} = 2 \text\{ Mbps\}
+\end\{gather*\}
+$$
+
+Let's start by finding the transmission delay for a given packet for each of the links.
+
+$$
+\begin\{gather*\}
+T_\{AB\} = \frac\{L\}\{R_\{AB\}\} = \frac\{1500 \text\{ B\}\}\{4 \text\{ Mbps\}\} = 3 \text\{ ms\} \\
+T_\{BC\} = \frac\{L\}\{R_\{BC\}\} = \frac\{1500 \text\{ B\}\}\{4 \text\{ Mbps\}\} = 12 \text\{ ms\} \\
+T_\{CD\} = \frac\{L\}\{R_\{CD\}\} = \frac\{1500 \text\{ B\}\}\{4 \text\{ Mbps\}\} = 6 \text\{ ms\}
+\end\{gather*\}
+$$
+
+Node A begins transmitting the first packet at t = 0 ms and finishes transmitting it at t = 0 + 3 = 3 ms. The first packet then propagates to node B and arrives at t = 3 + 5 = 8 ms. Node B begins transmitting the first packet at this time and finishes transmitting it at 8 + 12 = 20 ms. The first packet then propagates to node C and arrives at 20 + 5 = 25 ms. Node C begins transmitting the first packet at this time and finishes transmitting it at 25 + 6 = 31 ms. The first packet then propagates to node D and arrives at 31 + 5 = 36 ms.
+
+### Packet Transport 2
+
+The transmission delay for an ACK packet is negligible, so the ACK packet propagates from node D to node C at t = 36 ms and arrives at t = 36 + 5 = 41 ms. Then, it propagates from node C to node B at t = 41 ms and arrives at t = 41 + 5 = 46 ms. Finally, it propagates from node B to node A at t = 46 ms and arrives at t = 46 + 5 = 51 ms.
+
+### Packet Transport 3
+
+Since the flow control window size is 3 packets, node A does not need to wait to receive the ACK for the first packet before beginning to transmit the second one. Since node A finishes transmitting the first packet at t = 3 ms, it begins transmitting the second packet at this time and finishes transmitting it at t = 3 + 3 = 6 ms. The second packet then propagates to node B and arrives at t = 6 + 5 = 11 ms. Since node B finishes transmitting the first packet at t = 20 ms, it begins transmitting the second packet at this time and finishes transmitting it at t = 20 + 12 = 32 ms. The second packet then propagates to node C and arrives at t = 32 + 5 = 37 ms. At this time, node C has already finished transmitting the first packet, so it can immediately begin transmitting the second packet and finishes transmitting it at t = 37 + 6 = 43 ms. The second packet then propagates to node D and arrives at t = 43 + 5 = 48 ms.
+
+### Packet Transport 4
+
+Since the flow control window size is 3 packets, node A does not need to wait to receive the ACK for the first packet before beginning to transmit the third one. Since node A finishes transmitting the second packet at t = 6 ms, it begins transmitting the third packet at this time and finishes transmitting it at t = 6 + 3 = 9 ms. The third packet then propagates to node B and arrives at t = 9 + 5 = 14 ms. Since node B finishes transmitting the second packet at t = 32 ms, it begins transmitting the second packet at this time and finishes transmitting it at t = 32 + 12 = 44 ms. The third packet then propagates to node C and arrives at t = 44 + 5 = 49 ms. At this time, node C has already finished transmitting the second packet, so it can immediately begin transmitting the third packet and finishes transmitting it at t = 49 + 6 = 55 ms. The third packet then propagates to node D and arrives at t = 55 + 5 = 60 ms.
+
+### Packet Transport 5
+
+Since the flow control window size is 3 packets, node A must wait to receive the ACK for the first packet before advancing its flow control window and beginning to transmit the fourth one. Since node A receives the ACK for the first packet at t = 51 ms, it begins transmitting the fourth packet at this time and finishes transmitting it at t = 51 + 3 = 54 ms. The fourth packet then propagates to node B and arrives at t = 54 + 5 = 59 ms. Node B begins transmitting the fourth packet at this time and finishes transmitting it at 59 + 12 = 71 ms. The fourth packet then propagates to node C and arrives at 71 + 5 = 76 ms. Node C begins transmitting the fourth packet at this time and finishes transmitting it at 76 + 6 = 82 ms. The fourth packet then propagates to node D and arrives at 82 + 5 = 87 ms.
+
+## DNS
+
+### DNS 1
+
+The stub resolver on Alice's machine sends a query to the recursive resolver. The recursive resolver has nothing in its cache, so it first queries the root server to get resource records for the `.edu` TLD servers. Then, it queries a `.edu` TLD server to get resource records for the `ucla.edu` authoritative servers. Then, it queries a `ucla.edu` authoritative server to find resource records for the `registrar.ucla.edu` authoritative servers. Finally, it queries a `registrar.ucla.edu` authoritative server to find the IP address for `catalog.registrar.ucla.edu`.
+
+The RTT for the stub resolver's query is 4 ms. The RTT for each of the recursive resolver's queries is 30 ms. In total, the time the stub resolver must wait to receive the IP address is 4 + 30 + 30 + 30 + 30 = 124 ms.
+
+### DNS 2
+
+The stub resolver on Bob's machine sends a query to the recursive resolver. The IP address of `catalog.registrar.ucla.edu` is still in the recursive resolver's cache, so the total time the stub resolver must wait is the amount of time it takes to query the recursive resolver: 6 ms.
+
+### DNS 3
+
+The stub resolver on Alice's machine sends a query to the recursive resolver. The recursive resolver has resource records for the `ucla.edu` authoritative servers in its cache, so it queries a `ucla.edu` authoritative server to find the IP address for `cs.ucla.edu`.
+
+In total, the time the stub resolver must wait to receive the IP address is 4 + 30 = 34 ms.
+
+### DNS 4
+
+The stub resolver on Alice's machine sends a query to the recursive resolver. The recursive resolver has resource records for the `cs.ucla.edu` authoritative servers in its cache, so it queries a `cs.ucla.edu` authoritative server to find the IP address for `web.cs.ucla.edu`.
+
+In total, the time the stub resolver must wait to receive the IP address is 4 + 30 = 34 ms.
+
+## HTTP
+
+### HTTP 1
+
+First, we need 1 RTT to establish a TCP connection between the client and server. Then, the client sends the HTTP request, which takes 0.5 RTT. Then, the server needs to send its response. This takes 0.5 RTT for transmission and 0.5 RTT for propagation. This adds up to **2.5 RTT**.
+
+### HTTP 2
+
+Each time we request a new object from the server using HTTP/1.0, we have to establish a new TCP connection and send the request. All the timing parameters of each request (the initial request to `index.html` and the two requests for the images) are equal, so we just multiply 2.5 RTT by 3. We get **7.5 RTT**.
+
+### HTTP 3
+
+Each request needs to set up a new TCP connection still, since we are using HTTP/1.0. To fetch `index.html`, we still take 2.5 RTT. However, now, we can send the requests for two images in parallel. The requests are sent at the same time, take the same time to process by the server (in parallel), and return to the client at the same time. The latency for each of these requests is also 2.5 RTT. Therefore, our overall latency is **5 RTT**.
+
+### HTTP 4
+
+Now that we are using persistent connections in HTTP/1.1, we only need to establish one TCP connection when requesting `index.html`. Requesting `index.html` still takes 2.5 RTT. But now, we can directly request an image object. Sending the request takes 0.5 RTT for propagation. The server takes 0.5 RTT for transmission and another 0.5 RTT is needed for propagation back to the client. Therefore, after receiving `index.html`, the latency to request each image object is 1.5 RTT. There are two images, so the total latency is 2.5 RTT + 2\*1.5 RTT = **5.5 RTT**.
+
+### HTTP 5
+
+Again, we are using HTTP/1.1 with one persistent connection, meaning we only need to establish one TCP connection. It still takes 2.5 RTT to receive `index.html`. However, now, the client can pipeline its requests to the two image objects. Since each request has negligible transmission time, the client can send the requests at approximately the same time, and they arrive at the server both after about 0.5 RTT. The server now queues these requests and responds to them sequentially. To respond to a request, the server needs to spend 0.5 RTT for transmission. Therefore, after 1 RTT, both responses are in the connection between the server and client. After another 0.5 RTT, all of the bytes of the second response have propagated to the client. This adds up to 2.5 RTT + 0.5 RTT + 1 RTT + 0.5 RTT = **4.5 RTT**.
+
+## TCP
+
+### TCP 1
+
+A first sends B a SYN segment with **sequence number 821** and **ACK is not set**.
+B then sends A a SYN-ACK segment with **sequence number 901** and **ACK number 822**.
+A then sends B an ACK segment with **sequence number 822** and **ACK number 902**.
+
+### TCP 2
+
+First segment sent by A: sequence number **822**.
+Second segment sent by A: sequence number **1322**.
+Third segment sent by A: sequence number **2322**.
+
+### TCP 3
+
+First ACK sent by B: ACK number **1322**.
+Second ACK sent by B: ACK number **2322**.
+Third ACK sent by B: ACK number **3822**.
+
+### TCP 4
+
+B sends the ACK number that it sent to acknowledge segment 1: **1322**.
+
+### TCP 5
+
+B sends A a FIN segment with sequence number **902** and **ACK is not set**.
+A sends B a FIN-ACK segment with **sequence number 3822** and **ACK number 903**.
+B sends A an ACK segment with **sequence number 903** and **ACK number 3823**.
+
+## True or False
+
+1. It is possible for an application which requires reliable transfer to run on UDP.
+   - **True**. An application running on UDP can implement reliable transfer at the application layer. An example of this is DNS.
+2. In TCP, packets are directed to the same socket if they have the same destination IP address and port number.
+   - **False**. The receiving host uses the source IP address and port number as well as the destination IP address and port number to direct a segment to the appropriate socket.
+3. UDP segments may be lost, duplicated, or delivered out of order.
+   - **True**. Reliability is not a guarantee of UDP.
+4. In TCP, the flow control window size is determined by the amount of traffic flowing through the network.
+   - **False**. The flow control window size is determined by the receiving host.
+5. In a DNS response, glue records are found in the Additional section.
+   - **True**. Glue records are found in the Additional section.
+6. Even if a user never directly visits a given site, the site can use third-party cookies to track the user's visits to other sites.
+   - **True**. Consider this scenario: A user visits a site, and the HTTP response contains a URL to a third-party site. The user's browser makes a request to the third-party URL, and the HTTP response contains a cookie. Now, the user visits other sites, which include the same third-party URL in their HTTP responses. Subsequent requests to the third-party URL include the cookie, allowing the third-party site to track the user's visits to other sites.
+7. If `cnn.com` is using a CDN like Cloudflare, then the authoritative name server for `cnn.com` is on a different domain than `cnn.com`.
+   - **True**. CNN will use Cloudflare's DNS servers as its own DNS servers, meaning that its authoritative name servers will be subdomains of `ns.cloudflare.com`.
+8. HTTP/2 completely solves the head-of-line blocking problem by multiplexing messages in one TCP connection.
+   - **False**. The underlying TCP connection still has HOL blocking.
+9. The HTTP status code 304 (Not Modified) is primarily associated with HTTP conditional GET.
+   - **True**. When this code is returned to a conditional GET, the client knows the resource has not changed and can instead use a cached version.
+10. Calling `bind` is required for both a client and server when programming sockets.
+    - **False**. A client does not need to call `bind` to connect to a socket. When calling `connect` (TCP) or `sendto` (UDP), if an address/port is not bound yet for a client, the operating system will automatically do so.
+11. A TCP server needs to call `accept` to receive data from a connection, while a UDP server should not do so.
+    - **True**. TCP is a connection-based protocol, so a server needs to accept an incoming connection from a client. UDP is connectionless, so a server can accept bytes from any incoming client without establishing a connection.
+12. In TCP, whenever the sender retransmits a segment before receiving its ACK, the sender does not measure the RTT.
+    - **True**. After a retransmission, the sender uses Karn's algorithm to update the RTO, which does not require measurement of the RTT.
