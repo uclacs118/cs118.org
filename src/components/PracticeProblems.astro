@@ -1,0 +1,12 @@
+---
+import Assignment from './Assignment.astro';
+import type { MarkdownInstance } from 'astro';
+interface Frontmatter {
+    title: string;
+}
+
+const problemSets = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("../pages/exams/practice*.mdx", { eager: true }));
+---
+
+{problemSets.map(p => <Assignment title={p.frontmatter.title!} link={p.url!} dueDate={null} />)}
+{problemSets.length == 0 ? <p>No practice problems are available yet—check back later!</p> : null}
