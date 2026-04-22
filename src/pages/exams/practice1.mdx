@@ -1,0 +1,129 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Midterm 1 Practice Problems"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Midterm 1 Practice Problems</H.Title>
+
+## Packet Transport
+
+We have a packet-switched network with 4 nodes, A, B, C, and D. Four packets are sent from node A to node D via nodes B and C (A -> B -> C -> D). Node A begins transmitting the first packet at time t = 0 ms.
+
+- Packets have a size of 1500 B.
+- The propagation delay of all links is 5 ms.
+- Between A and B, the bandwidth is 4 Mbps. Between B and C, the bandwidth is 1 Mbps. Between C and D, the bandwidth is 2 Mbps.
+
+For the purposes of this problem, 1 Mbps = 1,000,000 = 10^6 bits per second.
+
+The following questions refer to the scenario described above.
+
+### Packet Transport 1
+
+Suppose the network uses the Go-Back-N protocol. Node D informs A that its flow control window size is 3 packets. What is the minimum number of distinct sequence numbers that must be used?
+
+### Packet Transport 2
+
+Now, suppose the network uses the Selective Repeat protocol. Node D informs A that its flow control window size is 3 packets. What is the minimum number of distinct sequence numbers that must be used?
+
+### Packet Transport 3
+
+Using the Selective Repeat protocol with a flow control window size of 3 packets, at what time does the first packet arrive at node D?
+
+### Packet Transport 4
+
+Assume the transmission delay for an ACK packet is negligible. Using the Selective Repeat protocol with a flow control window size of 3 packets, at what time does the ACK for the first packet arrive at node A?
+
+### Packet Transport 5
+
+Using the Selective Repeat protocol with a flow control window size of 3 packets, at what time does the second packet arrive at node D?
+
+### Packet Transport 6
+
+Using the Selective Repeat protocol with a flow control window size of 3 packets, at what time does the third packet arrive at node D?
+
+### Packet Transport 7
+
+Using the Selective Repeat protocol with a flow control window size of 3 packets, at what time does the fourth packet arrive at node D?
+
+## DNS
+
+A prospective UCLA CS student, Alice, wants to access `catalog.registrar.ucla.edu` to view course descriptions of CS electives. The round-trip time for a DNS query between the stub resolver on Alice's machine and the local recursive resolver is 4 ms. The round-trip time between the local recursive resolver and any authoritative server is 30 ms.
+
+### DNS 1
+
+Suppose the recursive resolver's cache is empty when Alice initially tries to access `catalog.registrar.ucla.edu`. How long must the stub resolver wait to receive the IP address of `catalog.registrar.ucla.edu` after sending a DNS query?
+
+### DNS 2
+
+Another student, Bob, also wants to access `catalog.registrar.ucla.edu`. His machine's stub resolver accesses the same local recursive resolver as that on Alice's machine. The round-trip time for a DNS query between the stub resolver on Bob's machine and the local recursive resolver is 6 ms. Assume TTLs are large enough so that all cached items are still present. How long must the stub resolver on Bob's machine wait to receive the IP address of `catalog.registrar.ucla.edu` after sending a DNS query?
+
+### DNS 3
+
+After reading course descriptions on `catalog.registrar.ucla.edu`, Alice decides to explore the CS department further by visiting `cs.ucla.edu`. Assume TTLs are large enough so that all cached items are still present. How long must the stub resolver on Alice's machine wait to receive the IP address of `cs.ucla.edu` after sending a DNS query?
+
+### DNS 4
+
+Alice wants to take CS 118 with Professor Zhang, so visits Professor Zhang's website (`web.cs.ucla.edu/~lixia/`). Assume TTLs are large enough so that all cached items are still present. How long must the stub resolver wait to receive the IP address of `web.cs.ucla.edu` after sending a DNS query?
+
+## HTTP
+
+### HTTP 1
+
+Suppose a HTTP client makes a request to the `cs.ucla.edu` webpage for the first time. How many round-trip times (RTTs) are needed between when the client issues the request to when `index.html` is fully downloaded? Assume the _transmission delay_ for any of the client's HTTP requests is negligible and the _transmission delay_ for the server's HTTP response (`index.html`) is 0.5 RTT. Ignore any DNS requests. Do not ignore setting up the TCP connection.
+
+### HTTP 2
+
+Suppose we have the identical scenario as HTTP 1, but now the webpage has 2 JPEG images it needs to transmit to the client. The client only knows it needs to request these images after receiving `index.html`. Assume that the _transmission delay_ for each image is also 0.5 RTT. If we are using HTTP/1.0 without parallel connections, how many RTTs are needed between when the client issues its first request to when both images and `index.html` are fully downloaded?
+
+### HTTP 3
+
+Repeat HTTP 2, but now suppose the client issues two HTTP requests in parallel after learning it needs to fetch two images. Assume the network bandwidth does not change, and assume the server can simply process two GET requests in parallel without any performance penalties. How many RTTs are needed between when the client issues its first request to when both images and `index.html` are fully downloaded?
+
+### HTTP 4
+
+Suppose we have the identical scenario as HTTP 2, but now we are using HTTP/1.1 with a single persistent connection. How many RTTs are needed between when the client issues its first request to when both images and `index.html` are fully downloaded?
+
+### HTTP 5
+
+Suppose we have the identical scenario as HTTP 4, but now we are using HTTP/1.1 with a single persistent connection **and** we pipeline the requests for the two images. How many RTTs are needed between when the client issues its first request to when both images and `index.html` are fully downloaded?
+
+## TCP
+
+Host A establishes a TCP connection with host B. Then, host A sends 3 segments to host B. The first segment is 500 bytes long, the second segment is 1000 bytes long, and the third segment is 1500 bytes long. Host A randomly picks 821 for its initial sequence number. Host B randomly picks 901 for its initial sequence number.
+
+### TCP 1
+
+What are the sequence and ACK numbers of the three TCP segments sent between A and B to setup the connection? Assume that there is no data sent in any of the three segments sent in the handshake.
+
+### TCP 2
+
+What is the sequence number for each of the 3 segments sent by host A after the connection is established?
+
+### TCP 3
+
+Assuming there are no packet losses, what is the ACK number of each ACK segment sent by host B after the connection is established? Assume B ACKs each segment immediately after receiving it.
+
+### TCP 4
+
+Suppose that host B does not receive the second segment but receives the third segment from host A. After receiving this segment, assuming there are no delayed ACKs, what ACK number does host B send?
+
+### TCP 5
+
+Again, assuming no packet losses, suppose host B closes the connection with host A after receiving all 3 segments (and host A closes the connection on their side afterwards). Assume that host B's initial FIN segment does not have the ACK flag set, but host A combines the ACK and FIN segments to close its connection. What are the sequence and ACK numbers of the **3** segments sent during this closing handshake?
+
+## True or False
+
+1. It is possible for an application which requires reliable transfer to run on UDP.
+2. In TCP, packets are directed to the same socket if they have the same destination IP address and port number.
+3. UDP segments may be lost, duplicated, or delivered out of order.
+4. In TCP, the flow control window size is determined by the amount of traffic flowing through the network.
+5. In a DNS response, glue records are found in the Additional section.
+6. Even if a user never directly visits a given site, the site can use third-party cookies to track the user's visits to other sites.
+7. If `cnn.com` is using a CDN like Cloudflare, then the authoritative name server for `cnn.com` is on a different domain than `cnn.com`.
+8. HTTP/2 completely solves the head-of-line blocking problem by multiplexing messages in one TCP connection.
+9. The HTTP status code 304 (Not Modified) is primarily associated with HTTP conditional GET.
+10. Calling `bind` is required for both a client and server when programming sockets.
+11. A TCP server needs to call `accept` to receive data from a connection, while a UDP server should not do so.
+12. In TCP, the latest RTT must be measured when using Karn's algorithm to update the retransmission timeout (RTO) value.
