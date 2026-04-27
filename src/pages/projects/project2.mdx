@@ -7,7 +7,9 @@ dueDate: 2026-05-18 23:59:00
 import * as H from "../../components/helpers/index.astro";
 
 <H.Title>Project 2</H.Title>
-<H.Subtitle>Reliable Data Transport - Due 11:59pm Monday, May 18 (Week 12)</H.Subtitle>
+<H.Subtitle>
+  Reliable Data Transport - Due 11:59pm Monday, May 18 (Week 12)
+</H.Subtitle>
 
 ## Quick Links
 
@@ -17,25 +19,18 @@ import * as H from "../../components/helpers/index.astro";
 
 ## Overview
 
-In this project, you will implement a **reliable data transport (RDT) protocol** in C. You will implement the elements of reliable data transport you learned from class, including:
+In this project, you will implement a **reliable data transport (RDT) protocol** in C. You will implement the elements of reliable data transport you learned from class that can withstand
 
-- Packet structure with sequence numbers and acknowledgements
-- Checksum validation for data integrity
-- Sliding window for flow control
-- Retransmission logic with timeouts
-- Handling of packet loss and reordering
+- Dropped packets
+- Reordered packets
 
-Your implementation will communicate over UDP but provide reliable delivery to the application layer, similar to how TCP provides reliability over IP.
+Your implementation will communicate over UDP and provide reliable delivery to the application layer, similar to how TCP provides reliability over IP.
 
 ### Architecture
 
 Your client and server will follow a layered architecture:
 
 ![Architecture Diagram](/projects/arch.png)
-
-- **STDIO Layer** (`io.c`): Reads from stdin, writes to stdout
-- **Logic Layer** (`transport.c`): Implements RDT protocol - packet construction, acknowledgements, retransmission, flow control
-- **NetIO Layer** (`client.c` / `server.c`): Sends and receives packets over the network
 
 ## Notices
 
@@ -51,51 +46,48 @@ The `helper zip` command creates a compatible ZIP file.
 
 ## Grading Criteria
 
-The autograder runs 17 tests for a total of **100 points**:
+The autograder runs 17 tests for a total of **100 points**.
 
-| Test | Points |
-| ---- | ------ |
-| Compilation | 4 |
-| Small file (10 KB) - Baseline | 6 |
-| Small file (10 KB) - Drop (5%) | 6 |
-| Small file (10 KB) - Reorder (100%) | 6 |
-| Small file (10 KB) - Drop + Reorder | 6 |
-| Medium file (100 KB) - Baseline | 6 |
-| Medium file (100 KB) - Drop (5%) | 6 |
-| Medium file (100 KB) - Reorder (100%) | 6 |
-| Medium file (100 KB) - Drop + Reorder | 6 |
-| Large file (500 KB) - Baseline | 6 |
-| Large file (500 KB) - Drop (5%) | 6 |
-| Large file (500 KB) - Reorder (100%) | 6 |
-| Large file (500 KB) - Drop + Reorder | 6 |
-| Ginormous file (2 MB) - Baseline | 6 |
-| Ginormous file (2 MB) - Drop (5%) | 6 |
-| Ginormous file (2 MB) - Reorder (100%) | 6 |
-| Ginormous file (2 MB) - Drop + Reorder | 6 |
+The grader runs your client and server and checks to see whether the input to one is in the output of the other. You should keep debug statements to stderr for that reason.
+
+| Test                                   | Points |
+| -------------------------------------- | ------ |
+| Compilation                            | 4      |
+| Small file (10 KB) - Baseline          | 6      |
+| Small file (10 KB) - Drop (5%)         | 6      |
+| Small file (10 KB) - Reorder (100%)    | 6      |
+| Small file (10 KB) - Drop + Reorder    | 6      |
+| Medium file (100 KB) - Baseline        | 6      |
+| Medium file (100 KB) - Drop (5%)       | 6      |
+| Medium file (100 KB) - Reorder (100%)  | 6      |
+| Medium file (100 KB) - Drop + Reorder  | 6      |
+| Large file (500 KB) - Baseline         | 6      |
+| Large file (500 KB) - Drop (5%)        | 6      |
+| Large file (500 KB) - Reorder (100%)   | 6      |
+| Large file (500 KB) - Drop + Reorder   | 6      |
+| Ginormous file (2 MB) - Baseline       | 6      |
+| Ginormous file (2 MB) - Drop (5%)      | 6      |
+| Ginormous file (2 MB) - Reorder (100%) | 6      |
+| Ginormous file (2 MB) - Drop + Reorder | 6      |
 
 ### Test Conditions
 
 Each file size has four test scenarios:
+
 - **Baseline**: No packet loss or reordering
 - **Drop (5%)**: 5% of packets are dropped
 - **Reorder (100%)**: All packets are reordered (sent out of order)
 - **Drop + Reorder**: 5% packet loss combined with 100% reordering
 
-The autograder compares the output byte-for-byte with the input. Your implementation must correctly:
-- Sequence and acknowledge packets
-- Detect corruption via checksum
-- Retransmit lost packets
-- Reorder buffered packets in correct order
-- Manage the sliding window for flow control
-
 ### Compilation Requirements
 
 Your submission must:
+
 - Include a `Makefile` that builds `client` and `server` executables
 
 ### Running Tests Locally
 
-Since running all tests may take a long time, you can run individual test categories using the helper script:
+Since running all tests may take a long time, you we highly recommend running individual test categories using the helper script:
 
 ```bash
 ./helper test compile   # Run compilation test only
@@ -120,4 +112,3 @@ Run `./helper` without arguments to see all available commands.
 
 - [RFC 793](https://tools.ietf.org/html/rfc793) - Transmission Control Protocol (original)
 - [RFC 9293](https://www.rfc-editor.org/rfc/rfc9293.html) - Transmission Control Protocol (latest standard, August 2022)
-- [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/)
