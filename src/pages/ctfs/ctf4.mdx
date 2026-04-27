@@ -1,0 +1,170 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 4: Reliable Transfer, TCP, and UDP"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 4: Reliable Transfer, TCP, and UDP</H.Title>
+
+## Reliable Transfer
+
+### Reliable Transfer 1
+
+Assume the Selective Repeat protocol uses a window size of 10 packets at the sender side. What is the minimum number of unique sequence numbers necessary to prevent sequence number collisions?
+
+### Reliable Transfer 2
+
+Assume the Go-Back-N protocol uses a window size of 10 packets at the sender side. What is the minimum number of unique sequence numbers necessary to prevent sequence number collisions?
+
+### Reliable Transfer 3
+
+Assume we are using the Stop-and-Wait protocol. The link speed is 1000 bps, the packet size is 10 bits, and the one-way propagation delay is 45 ms. If there is no pipelining, calculate the sender's utilization as a decimal between 0 and 1. Assume that the transmission delay for the ACK is negligible.
+
+## UDP
+
+### UDP 1
+
+Which of the following are true about UDP?
+
+1. UDP can detect if packets are corrupted.
+2. UDP can detect if packets are dropped.
+3. UDP can detect if packets are out of order.
+4. UDP can detect if packets are duplicated.
+
+Answer with a list, like `1,2,3`.
+
+### UDP 2
+
+In UDP, which of the following are used by the destination host to determine which socket a segment should be directed to?
+
+1. Source IP address
+2. Source port number
+3. Destination IP address
+4. Destination port number
+
+Answer with a list, like `1,2,3`.
+
+## TCP
+
+### TCP 1
+
+Which of the following are true about TCP?
+
+1. TCP can detect if packets are corrupted.
+2. TCP can detect if packets are dropped.
+3. TCP can detect if packets are out of order.
+4. TCP can detect if packets are duplicated.
+
+Answer with a list, like `1,2,3`.
+
+### TCP 2
+
+In TCP, which of the following are used by the destination host to determine which socket a segment should be directed to?
+
+1. Source IP address
+2. Source port number
+3. Destination IP address
+4. Destination port number
+
+Answer with a list, like `1,2,3`.
+
+### TCP 3
+
+When can the first TCP data segment start its transmission during the TCP 3-way handshake?
+
+1. Before the first message is sent
+2. Together with the first message
+3. Before the second message is received
+4. Together with the second message
+5. Together with the third message
+6. After the third message is sent
+
+Answer with a number, like `1`.
+
+### TCP 4
+
+The ACK number in TCP is:
+
+1. Next packet number expected
+2. Last packet number received
+3. Next byte expected
+4. Last byte received
+
+Answer with a number, like `1`.
+
+### TCP 5
+
+Fast retransmit occurs when:
+
+1. There are unusually large RTTs
+2. The segment's timer expires
+3. 3 duplicate ACKs are received
+4. The window of the receiver is full
+5. None of the above
+
+Answer with a number, like `1`.
+
+### TCP 6
+
+Suppose host A has 8 data segments to send to host B over TCP, but on the initial transmission, the 5th segment (sent from A) is lost. No other packets (including ACKs) are lost. How many total data segments are sent to host B by host A? Assume the retransmission timer does not go off. We are using fast retransmit.
+
+## TCP SEQ and ACK
+
+Host A establishes a TCP connection with host B. Then, the following sequence of events happens:
+
+1. Host A sends B a segment with 500 bytes
+2. Host B sends host A a segment with 1000 bytes
+3. Host A sends host B a segment with 1000 bytes
+4. Host B sends host A a segment with 750 bytes
+5. Host A closes the connection with host B
+6. Host B closes the connection with host A
+
+Host A randomly picks 521 for its initial sequence number. Host B randomly picks 672 for its initial sequence number.
+
+### TCP SEQ and ACK 1
+
+What are the SEQ and ACK numbers of the three TCP segments sent between A and B to setup the connection? Assume that there is no data sent in any of the three segments sent in the handshake.
+
+Answer with a comma-separated list: `seq1,ack1,seq2,ack2,seq3,ack3`. If a segment does not have a SEQ or ACK number, use `-` for that field.
+
+### TCP SEQ and ACK 2
+
+For the first 4 steps listed above, write the SEQ and ACK numbers of each segment sent. Assume that after the handshake, ACKs are piggybacked with data and not sent in separate segments. Also assume that the first segment A sends to B still contains an ACK number and sets the ACK flag.
+
+Answer with a comma-separated list: `seq1,ack1,seq2,ack2,seq3,ack3,seq4,ack4`. If a segment does not have a SEQ or ACK number, use `-` for that field.
+
+### TCP SEQ and ACK 3
+
+What are the SEQ and ACK numbers of each of the **4** segments sent when the hosts close connections on both ends? Note that now, we are not piggybacking host B's ACK onto host B's FIN to A—these two segments are sent separately. Assume that the ACK flag is not set for FIN segments (so there is no ACK number).
+
+Answer with a comma-separated list: `seq1,ack1,seq2,ack2,seq3,ack3,seq4,ack4`. If a segment does not have a SEQ or ACK number, use `-` for that field.
+
+## Checksum
+
+### Checksum 1
+
+Why does UDP include a pseudo header from the IP layer in its checksum calculation?
+
+1. To compress the UDP header size
+2. To verify that the packet was delivered to the correct IP address and protocol
+3. To allow UDP to perform its own routing
+4. To increase the speed of the calculation
+
+Answer with a number, like `1`.
+
+### Checksum 2
+
+Which of the following elements are included in the pseudo header when computing a UDP or TCP checksum?
+
+1. Source IP address
+2. Source port number
+3. Destination IP address
+4. Destination port number
+5. Protocol
+6. Length of pseudo header
+7. Length of segment
+8. Length of pseudo header and segment combined
+9. Checksum
+
+Answer with a list, like `1,2,3`.

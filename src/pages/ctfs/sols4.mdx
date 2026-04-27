@@ -1,0 +1,134 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 4 Solutions: Reliable Transfer, TCP, and UDP"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 4 Solutions: Reliable Transfer, TCP, and UDP</H.Title>
+
+## Reliable Transfer
+
+### Reliable Transfer 1
+
+Consider a scenario where a sender transmits a full window of 10 packets. The receiver successfully receives all 10 and replies with 10 ACKs, but all of these ACKs are lost in transit. The sender, having received no ACKs, times out and retransmits the original packets. Meanwhile, the receiver has already advanced its window and expects the next 10 packets. To prevent the receiver from mistakenly accepting retransmitted packets as new ones, the protocol requires at least 20 unique sequence numbers: 10 to identify the packets within the sender's window, and 10 additional numbers to differentiate new packets from retransmissions.
+
+Answer: `20`
+
+### Reliable Transfer 2
+
+Consider a scenario where a sender transmits a full window of 10 packets. The receiver successfully receives all 10 and replies with 10 ACKs, but all of these ACKs are lost in transit. The sender, having received no ACKs, times out and retransmits the original packets. Meanwhile, the receiver has already advanced its window and expects the next packet. To prevent the receiver from mistakenly accepting a retransmitted packet as the new one, the protocol requires at least 11 unique sequence numbers: 10 to identify the packets within the sender's window, and 1 additional number to differentiate the new packet from a retransmission.
+
+Answer: `11`
+
+### Reliable Transfer 3
+
+The sender's utilization $U$ is calculated with the formula $U = \frac\{T\}\{T + RTPD\}$, where $RTPD$ is round-trip propagation delay and $T$ is transmission delay.
+
+We can calculate the transmission delay as follows:
+
+$$T = \frac\{10 \text\{ b\}\}\{1000 \text\{ bps\}\} = 10 \text\{ ms\}$$
+
+We can calculate the round-trip propagation delay as follows:
+
+$$RTPD = 2 \cdot 45 \text\{ ms\} = 90 \text\{ ms\}$$
+
+Therefore, the utilization is $U = \frac\{10 \text\{ ms\}\}\{10 \text\{ ms\} + 90\text\{ ms\}\} = 0.1$.
+
+Answer: `0.1`
+
+## UDP
+
+### UDP 1
+
+UDP can detect if packets are corrupted via its checksum. However, UDP cannot detect if packets are dropped, out of order, or duplicated.
+
+Answer: `1`
+
+### UDP 2
+
+In UDP, the destination host uses the destination IP address and destination port number to determine which socket a segment should be directed to.
+
+Answer: `3,4`
+
+## TCP
+
+### TCP 1
+
+TCP can detect if packets are corrupted via its checksum. In addition, TCP guarantees reliability, so can detect if packets are dropped, out of order, or duplicated.
+
+Answer: `1,2,3,4`
+
+### TCP 2
+
+In TCP, the destination host uses the source IP address, source port number, destination IP address, and destination port number to determine which socket a segment should be directed to.
+
+Answer: `1,2,3,4`
+
+### TCP 3
+
+The first TCP data segment can start its transmission together with the third message in the handshake.
+
+Answer: `5`
+
+### TCP 4
+
+The ACK number represents the next byte expected.
+
+Answer: `3`
+
+### TCP 5
+
+Fast retransmit occurs when 3 duplicate ACKs are received.
+
+Answer: `3`
+
+### TCP 6
+
+8 original data segments are sent from A to B. Additionally, 1 segment is sent from A to B due to fast retransmit after 3 ACKs for the 5th segment are received by A.
+
+Answer: `9`
+
+## TCP SEQ and ACK
+
+### TCP SEQ and ACK 1
+
+1. First, A sends B a SYN segment (with ACK flag not set - no ACK number). The sequence number is 521 (A's initial sequence number).
+2. B then sends A a SYN-ACK segment. The sequence number is 672 (B's initial sequence number). This also ACKs the SYN from A, and the next sequence number from A expected is 522 - the ACK number is 522.
+3. A then sends B an ACK segment. The sequence number is the one following the SYN segment, or 522. The ACK number is the next sequence number expected from B, or 673.
+
+Answer: `521,-,672,522,522,673`
+
+### TCP SEQ and ACK 2
+
+1. A sends B a segment with 500 bytes. The sequence number is 522 (the pure ACK segment it just sent does not consume a sequence number). The ACK number is still 673, as B hasn't sent anything yet. Note that this first segment still has the ACK flag set as specified in the question.
+2. B sends A a segment with 1000 bytes. The sequence number is 673. B also piggybacks an ACK onto this segment, and the ACK number is the next sequence number expected from A, or 522 + 500 = 1022.
+3. A then sends B a segment with 1000 bytes. The sequence number is 522 + 500 = 1022. A also piggybacks an ACK onto this segment, and the ACK number is the next sequence number expected from B, or 673 + 1000 = 1673.
+4. B then sends A a segment with 750 bytes. The sequence number is 673 + 1000 = 1673. The piggybacked ACK number is the next sequence number expected from A, or 1022 + 1000 = 2022.
+
+Answer: `522,673,673,1022,1022,1673,1673,2022`
+
+### TCP SEQ and ACK 3
+
+When the connection is going to be closed, and both ends have received all data, A is currently at sequence number 1022 + 1000 = 20222, and B is currently at sequence number 1673 + 750 = 2423.
+
+1. A sends B a FIN segment (with ACK flag not set as clarified in the question) to close its connection with B. The sequence number is 2022.
+2. B sends an ACK for A's FIN segment. The sequence number is B's current sequence number, or 2423. The ACK number is the next sequence number expected from A. Since FIN advances the sequence number by 1, this number is 2023.
+3. B also sends a FIN segment to close the connection with A. The sequence number is still 2423, since the previous pure ACK segment doesn't consume a sequence number. The ACK flag isn't set.
+4. A sends an ACK for B's FIN segment. The sequence number is A's current sequence number, which is 2023 (the sequence number advanced by 1 after sending FIN). The ACK number is the next sequence number expected from B. Since FIN advanced the sequence number by 1, this number is 2424.
+
+Answer: `2022,-,2423,2023,2423,-,2023,2424`
+
+## Checksum
+
+### Checksum 1
+
+The UDP checksum needs to make sure that packets are delivered to the right destination address, transport protocol, etc., so it needs to include these values in its calculation. However, these values are not found in a UDP header; rather, they are in the IP packet header in layer 3. To fix this, we calculate the checksum over the pseudo-header that includes these fields from the IP header.
+
+Answer: `2`
+
+### Checksum 2
+
+An IPv4 pseudo-header contains the source IP address (32 bits), destination IP address (32 bits), padding (8 bits set to 0), the protocol number (8 bits), and TCP/UDP length (16 bits). The last field is specifically the length of the TCP/UDP header + length of data, or the length of the entire transport-layer segment. These fields correspond to answer choices 1, 3, 5, and 7, respectively.
+
+Answer: `1,3,5,7`
