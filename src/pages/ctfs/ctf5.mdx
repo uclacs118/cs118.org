@@ -1,0 +1,219 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 5: Congestion Control, Security"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 5: Congestion Control, Security</H.Title>
+
+## Certificates
+
+### Certificates 1
+
+Look at the provided `server.crt` certificate. What is the domain name that this certificate applies to? Just submit the domain name itself (e.g. `google.com`).
+
+Use the command `openssl x509 -in certificate.crt -text -noout` to parse a certificate file.
+
+### Certificates 2
+
+What is the CN (common name) of the issuer of this certificate?
+
+### Certificates 3
+
+What is the CN (common name) of the root CA? You may need to use the provided `intermediate.crt`.
+
+### Certificates 4
+
+Look at the provided `server_untrusted.crt`. A browser will be unable to verify this certificate for the domain it applies to. Why?
+
+## Congestion Control
+
+### Congestion Control 1
+
+What does the congestion control window (`cwnd`) size represent?
+
+1. The number of bytes the receiver can buffer at a time
+2. The number of bytes that can fit inside the sender's queue
+3. The maximum number of bytes in flight in the network between the sender and the receiver
+4. The number of bytes the sender can send before a packet is dropped
+
+Answer with a number, like `1`.
+
+### Congestion Control 2
+
+Which of the following fields in a captured TCP segment header indicates the current state of the sender's congestion control window (`cwnd`)?
+
+1. The window size field
+2. The acknowledgement number field
+3. The options field
+4. None of the above
+
+Answer with a number, like `1`.
+
+### Congestion Control 3
+
+During the congestion avoidance phase, if the current `cwnd` is 10 segments and 10 successful ACKs are received (one full window), what will the new `cwnd` be (in segments)?
+
+### Congestion Control 4
+
+During the slow start phase, if the current `cwnd` is 10 segments and 10 successful ACKs are received (one full window), what will the new `cwnd` be (in segments)?
+
+### Congestion Control 5
+
+If the current `cwnd` is 10 segments and a timeout occurs, what will the new `cwnd` be (in segments)?
+
+## Cryptography
+
+### Cryptography 1
+
+Which of the following cryptographic algorithms can be performed with just a single shared key between two parties?
+
+1. Symmetric encryption
+2. Public-key encryption
+3. Signatures (NOT MAC)
+4. MAC (NOT signatures)
+
+Answer with a list, like `1,2,3`.
+
+### Cryptography 2
+
+Which of the following cryptographic algorithms can be performed using public and private keys (without a shared key exchange)?
+
+1. Symmetric encryption
+2. Public-key encryption
+3. Signatures (NOT MAC)
+4. MAC (NOT signatures)
+
+Answer with a list, like `1,2,3`.
+
+### Cryptography 3
+
+A client sends a password over HTTPS. Which cryptographic property ensures that an eavesdropper cannot read it?
+
+1. Confidentiality
+2. Integrity
+3. Authenticity
+4. Availability
+
+Answer with a number, like `1`.
+
+### Cryptography 4
+
+A client downloads a file over HTTPS. Which cryptographic property ensures that the file was not tampered in transit?
+
+1. Confidentiality
+2. Integrity
+3. Authenticity
+4. Availability
+
+Answer with a number, like `1`.
+
+### Cryptography 5
+
+Why does TLS establish a shared session key to use for symmetric encryption instead of just relying on asymmetric cryptography?
+
+1. Asymmetric cryptography is less secure
+2. Historical reasons
+3. Symmetric cryptography is more efficient to compute locally
+4. Asymmetric cryptography requires more key exchanges
+
+Answer with a number, like `1`.
+
+### Cryptography 6
+
+Suppose a server publishes a public key alongside its cryptographic hash. A client tries to download both of these objects over HTTP (**not** HTTPS). Identify which cryptographic property is missing from this setup, and what an attacker could do in this scenario.
+
+Hint: A public key is intended to be public. If an eavesdropper reads its contents, nothing bad happens.
+
+## Congestion Control Simulation
+
+Host A begins sending data to host B over a TCP connection at T = 0 ms. Host B does not have any data to send to host A. Each segment that host A sends is 1 KB, which is also the MSS. At T = 0 ms, host A's congestion control window `cwnd` = 1 KB and `ssthresh` = 3 KB. Additionally, RTO = 100 ms and 1 RTT = 20 ms. The RTT includes a transmission delay of 4 ms for data-carrying segments. The transmission delay for ACK segments with no data is negligible. Delayed ACKs are not used.
+
+### Congestion Control Simulation 1
+
+At what time (in ms) does host A receive the ACK for segment 2?
+
+### Congestion Control Simulation 2
+
+What is host A's congestion control phase once it receives the ACK for segment 2?
+
+1. Slow start
+2. Congestion avoidance
+3. Fast recovery
+
+Answer with a number, like `1`.
+
+### Congestion Control Simulation 3
+
+At what time (in ms) does host A begin transmitting segment 5?
+
+### Congestion Control Simulation 4
+
+Once host A receives the ACK for segment 5, what is `cwnd` (in KB)?
+
+### Congestion Control Simulation 5
+
+Suppose segment 6 gets lost once. At what time (in ms) does host A begin retransmitting the segment?
+
+### Congestion Control Simulation 6
+
+What is host A's congestion control phase once it finishes retransmitting segment 6?
+
+1. Slow start
+2. Congestion avoidance
+3. Fast recovery
+
+Answer with a number, like `1`.
+
+### Congestion Control Simulation 7
+
+At what time (in ms) does host A receive the ACK for segment 9?
+
+### Congestion Control Simulation 8
+
+Once host A receives the ACK for segment 9, what is `cwnd` (in KB)?
+
+## TLS
+
+### TLS 1
+
+In a TLS handshake, what could a client send to a server?
+
+1. The highest supported TLS protocol version it supports
+2. The TLS protocol version that will be used
+3. Supported cryptographic algorithms
+4. The cryptographic algorithms that will be used
+5. A certificate
+6. An encrypted random number
+7. A public key used for Diffie-Hellman Key Exchange
+
+Answer with a list, like `1,2,3`.
+
+### TLS 2
+
+In a TLS handshake, what could a server send to a client?
+
+1. The highest supported TLS protocol version it supports
+2. The TLS protocol version that will be used
+3. Supported cryptographic algorithms
+4. The cryptographic algorithms that will be used
+5. A certificate
+6. An encrypted random number
+7. A public key used for Diffie-Hellman Key Exchange
+
+Answer with a list, like `1,2,3`.
+
+### TLS 3
+
+Which of the cryptographic primitives are used in **modern** TLS (which has **forward secrecy**)?
+
+1. Symmetric-key encryption
+2. Asymmetric (public-key) encryption
+3. MACs
+4. Asymmetric (public-key) signatures
+5. Asymmetric key exchanges (e.g., Diffie-Hellman)
+6. Key exchanges based on random-number encryption
+7. Hashing
+
+Answer with a list, like `1,2,3`.

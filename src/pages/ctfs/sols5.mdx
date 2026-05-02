@@ -1,0 +1,193 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 5 Solutions: Congestion Control, Security"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 5 Solutions: Congestion Control, Security</H.Title>
+
+## Certificates
+
+### Certificates 1
+
+Parse the given `server.crt` certificate with the provided command and look for the `Subject` line.
+
+```
+Subject: C = US, O = CS118, CN = cs118.org
+```
+
+The common name is the domain `cs118.org`.
+
+### Certificates 2
+
+Now, look for the `Issuer` line.
+
+```
+Issuer: C = US, O = CS118IntermediateCA, CN = CS 118 Intermediate CA
+```
+
+The common name of the intermediate CA is `CS 118 Intermediate CA`.
+
+### Certificates 3
+
+We need to parse the certificate `intermediate.crt` - this certificate is from the CA that signed `server.crt`. We need to find the root certificate here. Let's see who signed `intermediate.crt` by looking at the `Issuer` line:
+
+```
+Issuer: C = US, O = CS118RootCA, CN = CS118 Root CA
+```
+
+The common name of the issuer is `CS118 Root CA`, which is indeed the root CA.
+
+### Certificates 4
+
+This is a self-signed certificate. We can see this by looking at the `Issuer` line:
+
+```
+Issuer: C = US, O = Example, CN = cs118.org
+```
+
+In other words, this certificate was signed by `cs118.org`, and this certificate also applies to `cs118.org`. This means that there is no external CA that signed this certificate, and your browser does not trust `cs118.org` by default. Since the browser does not trust any issuers of this certificate, it will not verify it.
+
+## Congestion Control
+
+### Congestion Control 1
+
+The congestion control window represents the maximum number of bytes in flight in the network between the sender and the receiver.
+
+Answer: `3`
+
+### Congestion Control 2
+
+The state of the sender's congestion control window is not included in the TCP segment header. It is stored in the sender's memory.
+
+Answer: `4`
+
+### Congestion Control 3
+
+During the congestion avoidance phase, `cwnd` increases by 1 MSS per RTT. Therefore, the new `cwnd` will be 10 + 1 = 11 segments.
+
+Answer: `11`
+
+### Congestion Control 4
+
+During the slow start phase, `cwnd` increases by 1 MSS per new ACK. Therefore, the new `cwnd` will be 10 + 10 = 20 segments.
+
+Answer: `20`
+
+### Congestion Control 5
+
+Regardless of phase, a timeout causes `cwnd` to be reset to 1. Therefore, the new `cwnd` will be 1 segment.
+
+Answer: `1`
+
+## Cryptography
+
+### Cryptography 1
+
+Symmetric encryption uses a single shared key for encryption and decryption. MACs also used a shared symmetric key. The answer is `1,4`.
+
+### Cryptography 2
+
+Public-key encryption uses a public-private key pair to encrypt/decrypt. Signatures (not MACs) also use a private key to sign and a public key to verify. The answer is `2,3`.
+
+### Cryptography 3
+
+Confidentiality protects the contents of an encrypted message from being read. This is the answer: `1`.
+
+### Cryptography 4
+
+Integrity protects the contents of an message from being tampered with. This is the answer: `2`.
+
+### Cryptography 5
+
+Symmetric cryptography is generally much easier to compute than asymmetric cryptography, since algorithms can be much simpler by there being one master key for encryption/decryption. The answer is `3`.
+
+### Cryptography 6
+
+The violated cryptographic property is **authenticity**.
+
+An attacker can replace _both_ the key and its hash. A hash can be computed without any secret keys, so once an attacker replaces a file in transit, they can also replace its hash. To the client, it looks like they receive a valid file and a valid hash. This can be catastrophic; by replacing the server's public key with the attacker's public key, the attacker can pretend to be the server in all signed communications from now on. To prevent this, we need authenticity to prove that the file and hash were produced by the server.
+
+## Congestion Control Simulation
+
+The following table depicts the scenario. A blank cell is used whenever a value does not change from the previous row.
+
+| T (ms) | Event experienced by A                         | Duplicate ACKs | ssthresh after event (KB) | cwnd after event (KB)   | Phase after event    |
+| ------ | ---------------------------------------------- | -------------- | ------------------------- | ----------------------- | -------------------- |
+| 0      | Send S1                                        | 0              | 3                         | 1 (S1)                  | Slow start           |
+| 20     | Get ACK for S1, send S2                        |                |                           | 2 (S2, S3)              |                      |
+| 24     | Send S3                                        |                |                           |                         |                      |
+| 40     | Get ACK for S2, send S4                        |                |                           | 3 (S3, S4, S5)          | Congestion avoidance |
+| 44     | Get ACK for S3, send S5                        |                |                           | 3.33 (S4, S5, S6)       |                      |
+| 48     | Send S6                                        |                |                           |                         |                      |
+| 60     | Get ACK for S4, send S7                        |                |                           | 3.67 (S5, S6, S7)       |                      |
+| 64     | Get ACK for S5, send S8                        |                |                           | 4 (S6, S7, S8, S9)      |                      |
+| 68     | Send S9                                        |                |                           |                         |                      |
+| 80     | Get ACK for S5 (due to receipt of S7)          | 1              |                           |                         |                      |
+| 84     | Get ACK for S5 (due to receipt of S8)          | 2              |                           |                         |                      |
+| 88     | Get ACK for S5 (due to receipt of S9), send S6 | 3              | 2                         | 5 (S6, S7, S8, S9, S10) | Fast recovery        |
+| 92     | Send S10                                       |                |                           |                         |                      |
+| 108    | Get ACK for S9                                 | 0              |                           | 2 (S10, S11)            | Congestion avoidance |
+
+### Congestion Control Simulation 1
+
+Host A receives the ACK for segment 2 at T = 40 ms.
+
+Answer: `40`
+
+### Congestion Control Simulation 2
+
+Once host A receives the ACK for segment 2, `cwnd` is adjusted to 3 KB. `cwnd` = 3 KB = `ssthresh`, so host A enters the congestion avoidance phase.
+
+Answer: `2`
+
+### Congestion Control Simulation 3
+
+Host A begins transmitting segment 5 at T = 44 ms.
+
+Answer: `44`
+
+### Congestion Control Simulation 4
+
+We use the equation `cwnd` = `cwnd` + MSS \* (MSS / `cwnd`) several times while in the congestion avoidance phase. We find that once host A receives the ACK for segment 5, `cwnd` = 4 KB.
+
+Answer: `4`
+
+### Congestion Control Simulation 5
+
+Host A begins retransmitting segment 6 as soon as it receives 3 duplicate ACKs for segment 5. This occurs at T = 88 ms.
+
+Answer: `88`
+
+### Congestion Control Simulation 6
+
+When host A receives 3 duplicate ACKs for segment 5, it retransmits segment 6 and then enters the fast recovery phase.
+
+Answer: `3`
+
+### Congestion Control Simulation 7
+
+Host B sends the cumulative ACK for segment 9 once it receives all segments up to and including 9. Host A receives the ACK at T = 108 ms.
+
+Answer: `108`
+
+### Congestion Control Simulation 8
+
+We use the equation `cwnd` = `ssthresh` as host A enters the congestion avoidance phase. We find that `cwnd` = `ssthresh` = 2 KB.
+
+Answer: `2`
+
+## TLS
+
+### TLS 1
+
+In all versions of TLS, during ClientHello, a client offers various TLS protocol versions that it supports and various cryptographic algorithms that it supports. In older versions of TLS, the client encrypts a random number with the server's public key to perform key exchange. In newer versions, it uses DHKE instead, which requires it to send a public key. The answer is `1,3,6,7`.
+
+### TLS 2
+
+In all versions of TLS, during ServerHello, a server chooses a version of TLS and cryptographic algorithms to use based on the client's offer and their compatibility. The server also always sends its certificate. In newer versions of TLS, the server also performs DHKE which requires it to send its public key (which is technically already a part of the certificate it sends). The answer is `2,4,5,7` or `2,4,5`.
+
+### TLS 3
+
+To provide forward secrecy, modern TLS uses DHKE to derive a secret key, not encryption of a random number. Modern TLS also does not use asymmetric cryptography for encryption; after the secret key is derived, both the client and server can proceed with symmetric cryptography, which is more efficient. All other primitives are used (including hashing, which is a part of signature and MAC algorithms). The answer is `1,3,4,5,7`.
