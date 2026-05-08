@@ -9,8 +9,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.0.3",
-    "astro": "^5.1.1",
+    "@astrojs/mdx": "^5.0.4",
+    "astro": "^6.2.1",
     "ionicons": "^7.4.0",
     "moment": "^2.30.1",
     "rehype-autolink-headings": "^7.1.0",
