@@ -1,0 +1,146 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 6 Solutions: QUIC, IP"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 6 Solutions: QUIC, IP</H.Title>
+
+## QUIC
+
+### QUIC 1
+
+QUIC identifies a connection by a pair of connection IDs (random numbers), allowing the session to remain active even if the user’s IP address or port changes. This is an improvement from TCP, which identifies a connection by a 4-tuple (source and destination IP addresses and port numbers).
+
+Answer: `2`
+
+### QUIC 2
+
+When establishing a new TCP connection over TLS, the client can begin sending application data to the server after the TCP handshake and the TLS handshake occur. After 2 RTTs for the handshakes, the fifth packet the client sends is the first one that can contain application data.
+
+Answer: `2`
+
+### QUIC 3
+
+When establishing a new QUIC connection, the client can begin sending application data to the server after the QUIC handshake occurs, as the QUIC handshake bundles the security setup and the connection setup. After 1 RTT for the handshake, the third packet the client sends is the first one that can contain application data.
+
+Answer: `1`
+
+### QUIC 4
+
+1. Each QUIC packet is assigned a monotonically increasing packet number.
+   - **True**. Each packet is identified by its unique packet number.
+2. QUIC packets are retransmitted if they are lost.
+   - **False**. Packets themselves are never retransmitted; instead, their frames are retransmitted in future packets.
+3. Packet losses are detected solely using packet number-based thresholds.
+   - **False**. Both packet number-based and time-based thresholds are used to detect packet losses.
+4. QUIC uses cumulative ACKs.
+   - **False**. QUIC includes the highest packet number received so far in a given ACK frame, but this is not a cumulative ACK. QUIC only uses selective ACKs.
+5. QUIC uses selective ACKs.
+   - **True**. In a given ACK frame, QUIC puts selective ACKs in ACK blocks, which acknowledge contiguous ranges of recently received packets.
+6. An ACK frame includes the highest packet number received so far.
+   - **True**. Note that this is not a cumulative ACK.
+7. The sender keeps a mapping of packets to the frames they contain.
+   - **True**. This is necessary for ensuring that the correct frames get retransmitted after a packet loss.
+
+Answer: `1,5,6,7`
+
+### QUIC 5
+
+A QUIC connection is like a super TCP connection containing multiple streams, which are akin to TCP connections. If a frame within a given stream is lost, the other streams are not blocked while the frame is retransmitted. By enabling multiplexing at the transport level, QUIC eliminates head-of-line blocking.
+
+Answers may vary.
+
+## QUIC Data Delivery
+
+### QUIC Data Delivery 1
+
+Each HTTP request/response pair uses one stream. Therfore, three streams are used for three different HTTP requests.
+
+Answer: `3`
+
+### QUIC Data Delivery 2
+
+We start by packing the frames from the highest-priority stream, stream 16. Stream 16's flow control window size is 800 B, so we can pack at most 800 B from stream 16. Each frame in the stream is 400 B, so we pack the first two frames—`S16-1` and `S16-2`. This leaves us with 400 B in the packet. Now, we pack frames from the medium-priority stream, stream 15. Each frame in the stream is 200 B, so we pack the first two frames—`S15-1` and `S15-2`. This leaves us with no space left in the packet, so the frames included are `S16-1`, `S16-2`, `S15-1`, and `S15-2`.
+
+Answer: `S16-1,S16-2,S15-1,S15-2`
+
+### QUIC Data Delivery 3
+
+1. Packet 105 is retransmitted.
+   - This does not occur; packet numbers are not reused.
+2. The lost frames are added to a transmission queue in order of priority.
+   - This does occur.
+3. The lost frames are retransmitted in future packets with new sequence numbers.
+   - This does occur.
+4. Data from stream 14 remains blocked until the lost frames are retransmitted and received.
+   - Data from stream 14 is not blocked; the lost frames are only from streams 15 and 16.
+5. Data from stream 15 remains blocked until the lost frames are retransmitted and received.
+   - Data from stream 15 is blocked; some of the lost frames are from stream 15, and they must be delivered before more frames from the stream can be delivered.
+6. Data from stream 16 remains blocked until the lost frames are retransmitted and received.
+   - Data from stream 16 is blocked; some of the lost frames are from stream 16, and they must be delivered before more frames from the stream can be delivered.
+
+Answer: `2,3,5,6`
+
+## IP
+
+### IP 1
+
+The IP header contains the source and destination IP addresses. Its protocol field contains the upper layer protocol to deliver the packet to. It also has a TTL, checksum, and a fragmentation offset.
+
+IP does not contain source and destination ports (this is a function of the network layer) or source and destination MAC addresses (this is a function of the link layer).
+
+Answer: `1,2,6,7,8,9`
+
+### IP 2
+
+The "header length" of an IP packet is the number of 32-bit "rows" in the header. An IP packet header with no options is 20 bytes or 5 rows. This leaves 5 rows for options, or another 20 bytes.
+
+Answer: `20`
+
+### IP 3
+
+IP TTLs help packets to "die" if they cannot reach their destination within the TTL, preventing these packets from indefinitely circulating in the network.
+
+Answer: `3`
+
+## IP Fragmentation
+
+### IP Fragmentation 1
+
+The MF bit indicates if there are more fragments left in the IP packet. If it is not set, you know you are at the last fragment.
+
+Answer: `5`
+
+### IP Fragmentation 2
+
+Reassembly of fragments only happens at the destination host and never in any intermediate device.
+
+Answer: `2`
+
+### IP Fragmentation 3
+
+Each fragment has its own 20-byte IP header, leaving 1480 bytes for data. The original packet has a 20-byte header and 3980 bytes of data. We therefore need 3 fragments to cover all of the data bytes, as $1480*3 > 3980$.
+
+Answer: `3`
+
+### IP Fragmentation 4
+
+The first fragment has fragment offset 0. This fragment contains 1480 data bytes, or 185 fragment "blocks." This means the second fragment has fragment offset 185. Likewise, this fragment has 185 fragment "blocks," so the third fragment has fragment offset 370.
+
+Answer: `0,185,370`
+
+### IP Fragmentation 5
+
+All fragments except the last have the MF bit set.
+
+Answer: `1,2`
+
+### IP Fragmentation 6
+
+The first fragment has a 20 byte header and 1480 data bytes. Each fragment in the 1000-byte MTU link, after considering the 20 byte header, has 980 fragment bytes. This means we need 2 fragments, as $2*980 > 1480$.
+
+Note that since we are fragmenting a fragment (that has its MF bit set), _every_ one of its fragments has the MF bit set too. We set the MF bit on the fragment's last fragment because it isn't actually the last fragment of the entire packet.
+
+Answer: `2,1,2`

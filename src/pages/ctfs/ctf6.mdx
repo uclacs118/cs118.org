@@ -1,0 +1,163 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 6: QUIC, IP"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 6: QUIC, IP</H.Title>
+
+## QUIC
+
+### QUIC 1
+
+How does QUIC identify a connection, and what is the primary advantage of this mechanism over TCP?
+
+1. By a 4-tuple (source and destination IP addresses and port numbers), ensuring that the connection remains strictly tied to the hardware interface for security.
+2. By a pair of connection IDs (random numbers), allowing the session to remain active even if the user’s IP address or port changes.
+3. By a cryptographic hash of the device's MAC address, ensuring that only the original physical device can send or receive data.
+4. By the sequence number of the initial packet, which allows the server to prioritize traffic based on the user's initial request time.
+
+Answer with a number, like `1`.
+
+### QUIC 2
+
+When establishing a new TCP connection over TLS, after how many RTTs can a client begin sending application data to the server?
+
+### QUIC 3
+
+When establishing a new QUIC cnonection, after how many RTTs can a client begin sending application data to the server?
+
+### QUIC 4
+
+Which of the following are true about reliable delivery in QUIC?
+
+1. Each QUIC packet is assigned a monotonically increasing packet number.
+2. QUIC packets are retransmitted if they are lost.
+3. Packet losses are detected solely using packet number-based thresholds.
+4. QUIC uses cumulative ACKs.
+5. QUIC uses selective ACKs.
+6. An ACK frame includes the highest packet number received so far.
+7. The sender keeps a mapping of packets to the frames they contain.
+
+Answer with a comma-separated list, like `1,2,3`.
+
+### QUIC 5
+
+Please explain how QUIC’s use of streams and frames in data delivery solves the head-of-line (HOL) blocking issue inherent in TCP.
+
+## QUIC Data Delivery
+
+### QUIC Data Delivery 1
+
+A client makes three HTTP requests for three different objects to a server over a QUIC connection. How many data streams are used?
+
+### QUIC Data Delivery 2
+
+The server sends the three objects to the client over three data streams. The frames in each stream that are ready for transmission are listed below.
+
+- Stream 14 (low priority): `S14-1`, `S14-2`, `S14-3`, `S14-4`
+- Stream 15 (medium priority): `S15-1`, `S15-2`, `S15-3`, `S15-4`, `S15-5`
+- Stream 16 (high priority): `S16-1`, `S16-2`, `S16-3`
+
+For the purposes of this problem, assume frames in stream 14 are each 500 B, frames in stream 15 are each 200 B, and frames in stream 16 are each 400 B. The maximum packet size (excluding headers) is 1200 B. The flow control window sizes of streams 14, 15, and 16 are 1500 B, 800 B, and 800 B respectively.
+
+The server is ready to construct and send packet 105. Which frames will be included in the packet? List the frames in a comma-separated list like `S1-1,S1-2,S1-3`.
+
+### QUIC Data Delivery 3
+
+Suppose packet 105 is lost. Which of the following events occur?
+
+1. Packet 105 is retransmitted.
+2. The lost frames are added to a transmission queue in order of priority.
+3. The lost frames are retransmitted in future packets with new packet numbers.
+4. Data from stream 14 cannot be delivered to the application until the lost frames are retransmitted and received.
+5. Data from stream 15 cannot be delivered to the application until the lost frames are retransmitted and received.
+6. Data from stream 16 cannot be delivered to the application until the lost frames are retransmitted and received.
+
+Answer with a comma-separated list, like `1,2,3`.
+
+## IP
+
+### IP 1
+
+Which of the following pieces of information are present in an IP packet header?
+
+1. Source IP address
+2. Destination IP address
+3. Next hop IP address
+4. Source port number
+5. Destination port number
+6. Upper layer protocol
+7. TTL
+8. Checksum
+9. Fragmentation offset
+10. Source MAC address
+11. Destination MAC address
+
+Answer with a comma-separated list, like `1,2,3`.
+
+### IP 2
+
+If the "header length" field of an IP packet is 10, how many _bytes_ of options are there in the header? Answer with a number, like `10`.
+
+### IP 3
+
+Which of these features of IP limits network congestion?
+
+1. Unreliability
+2. Fragmentation
+3. TTLs
+4. Checksums
+
+Answer with a number, like `1`.
+
+## IP Fragmentation
+
+### IP Fragmentation 1
+
+Which field in an IP packet header is used to identify the last fragment of a fragmented packet?
+
+1. TTL
+2. Identifier
+3. Fragment offset
+4. DF bit
+5. MF bit
+6. Header length
+
+Answer with a number, like `1`.
+
+### IP Fragmentation 2
+
+Where does reassembly of fragments occur?
+
+1. Intermediate routers
+2. Destination host
+3. Source host
+4. Intermediate switches that switch to higher-MTU links
+
+Answer with a number, like `1`.
+
+### IP Fragmentation 3
+
+An 4000-byte IP packet (header + data) must be sent over a link with MTU 1500 bytes. Assuming all IP headers are 20 bytes, how many fragments are needed?
+
+Answer with a number, like `1`.
+
+### IP Fragmentation 4
+
+In the scenario in IP Fragmentation 3, what is the fragment offset of each fragment?
+
+Answer with a comma-separated list of numbers, like `100,200,300`.
+
+### IP Fragmentation 5
+
+In the scenario in IP Fragmentation 3, which fragments have the MF bit set?
+
+Answer with a comma-separated list of numbers, like `1,2,3`.
+
+### IP Fragmentation 6
+
+In the scenario in IP Fragmentation 3, suppose the first fragment is routed on a different path than every other fragment. In this path, after traveling through the 1500-byte MTU link, it needs to travel through a 1000-byte MTU link. Identify how many fragments are made from this one fragment, and then identify which of them have the MF bit set. For example, if 4 fragments are made and all have the MF bit set, answer `4,1,2,3,4`.
+
+Answer with a comma-separated list of numbers, like `1,2,3`.
