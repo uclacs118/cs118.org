@@ -74,12 +74,12 @@ Answer: `S16-1,S16-2,S15-1,S15-2`
    - This does occur.
 3. The lost frames are retransmitted in future packets with new sequence numbers.
    - This does occur.
-4. Data from stream 14 remains blocked until the lost frames are retransmitted and received.
-   - Data from stream 14 is not blocked; the lost frames are only from streams 15 and 16.
-5. Data from stream 15 remains blocked until the lost frames are retransmitted and received.
-   - Data from stream 15 is blocked; some of the lost frames are from stream 15, and they must be delivered before more frames from the stream can be delivered.
-6. Data from stream 16 remains blocked until the lost frames are retransmitted and received.
-   - Data from stream 16 is blocked; some of the lost frames are from stream 16, and they must be delivered before more frames from the stream can be delivered.
+4. Data from stream 14 cannot be delivered to the application until the lost frames are retransmitted and received.
+   - Data from stream 14 can be delivered; the lost frames are only from streams 15 and 16.
+5. Data from stream 15 cannot be delivered to the application until the lost frames are retransmitted and received.
+   - Data from stream 15 cannot be delivered; some of the lost frames are from stream 15, and they must be delivered before more frames from the stream can be delivered.
+6. Data from stream 16 cannot be delivered to the application until the lost frames are retransmitted and received.
+   - Data from stream 16 cannot be delivered; some of the lost frames are from stream 16, and they must be delivered before more frames from the stream can be delivered.
 
 Answer: `2,3,5,6`
 
