@@ -1,0 +1,54 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Local Autograder - Spring 2026"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Local Autograder</H.Title>
+
+Autograder P2
+
+Using the Local Autograder (...for Project 3)
+
+Running testcases, using ./helper interactive, and zipping up your submission are all the same, but there are a couple of key differences when using the autograder for Project 3.
+
+Manual Testing
+
+A large part of Project 3 is managing keys and certificates. As per the spec, the CA public key, the server private key, and the serverâs certificate (signed by the CA) are all in the current working directory.
+
+In /autograder/source/keys, thereâs a script called gen_files. This script will automatically generate the requisite files to test your code.
+
+Since the files are in this directory, running the executables manually is a bit different.
+
+```c
+
+<span>$ cd /autograder/submission</span>
+
+<span>$ make</span>
+
+<span>$ cd /autograder/source/keys</span>
+
+<span>$ ./gen_files</span>
+
+<span>$ ../../submission/server 8080</span>
+
+<span>$ ../src/server 8080 # To use the reference implementation</span>
+
+### ```
+
+In short, test out the binaries while the CWD is /autograder/source/keys.
+
+Not just localhost anymore
+
+In Project 1, we ran ./client localhost 8080 without much regard to what localhost means. In Project 3, the hostname (first command line argument) is a real DNS name. The starter code will automatically run DNS to find the IP address of the hostname. Feel free to continue testing with localhost since thatâs what the default DNS name will be in the certificates we give you, but your solution should work for any DNS name.
+
+Custom Test Cases
+
+To test out odd functionality, you may switch out the secondary versions of files.
+
+The two ca_public_key.bin files can be switched out to test if your client is checking for the CAâs signature properly.
+
+The two server_key.bin files can be switched out to test if your client is checking that the server really does own the certificate.
+
+The two server_cert.bin files can be switched out to test if your client is checking the DNS name properly (The regular one has localhost as the DNS name, but the other has example.com.
