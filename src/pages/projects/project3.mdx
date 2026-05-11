@@ -215,7 +215,332 @@ The `LIFETIME` field (16 bytes) contains:
 - Bytes 0–7: `not_before` as a 64-bit big-endian Unix timestamp
 - Bytes 8–15: `not_after` as a 64-bit big-endian Unix timestamp
 
-Your code must compare these to the current time (`time(NULL)`) and reject expired or not-yet-valid certificates (the reference server calls `exit(1)` in these cases).
+Your code must compare these to the current time (`time(NULL)`) and reject expired or not-yet-valid certificates. You may implement lifetime enforcement however you prefer — the reference solution calls `exit(1)` with message `EXPIRED Certificate` or `CERTIFICATE NOT YET VALID`. A helper like this works:
+
+```c
+static uint64_t read_be_uint(const uint8_t* buf, size_t len) {
+    uint64_t val = 0;
+    for (size_t i = 0; i < len; i++) val = (val << 8) | buf[i];
+    return val;
+}
+
+static void enforce_lifetime_valid(const uint8_t* lifetime) {
+    uint64_t not_before = read_be_uint(lifetime, 8);
+    uint64_t not_after = read_be_uint(lifetime + 8, 8);
+    time_t now = time(NULL);
+    if (now < 0 || now < (time_t)not_before) { print("CERTIFICATE NOT YET VALID"); exit(1); }
+    if ((uint64_t)now > not_after) { print("EXPIRED Certificate"); exit(1); }
+}
+```
+
+You may also use OpenSSL's `OSSL_TIME` or other approaches.
+
+### Step-by-Step Implementation
+
+#### `init_sec` — Initialize
+
+```c
+void init_sec(int initial_state, char* host, bool bad_mac) {
+    state_sec = initial_state;
+    hostname = host;
+    inc_mac = bad_mac;
+    init_io();
+
+    if (state_sec == CLIENT_CLIENT_HELLO_SEND) {
+        // Client: load CA public key to verify server certificate
+        load_ca_public_key("ca_public_key.bin");
+    } else if (state_sec == SERVER_CLIENT_HELLO_AWAIT) {
+        // Server: load server certificate to send to clients
+        load_certificate("server_cert.bin");
+    }
+    // Both: generate ephemeral ECDH key pair
+    generate_private_key();
+    derive_public_key();
+}
+```
+
+#### Client side: `input_sec` in `CLIENT_CLIENT_HELLO_SEND`
+
+Build a CLIENT_HELLO TLV with a nonce and your EC public key:
+
+```c
+case CLIENT_CLIENT_HELLO_SEND: {
+    tlv* ch = create_tlv(CLIENT_HELLO);   // type 0x10
+    tlv* nonce = create_tlv(NONCE);       // type 0x01
+    uint8_t n[NONCE_SIZE];
+    generate_nonce(n, NONCE_SIZE);
+    add_val(nonce, n, NONCE_SIZE);
+
+    tlv* pub = create_tlv(PUBLIC_KEY);   // type 0x02
+    add_val(pub, public_key, pub_key_size);
+
+    add_tlv(ch, nonce);
+    add_tlv(ch, pub);
+
+    client_hello = ch;  // save for transcript
+    state_sec = CLIENT_SERVER_HELLO_AWAIT;
+    return serialize_tlv(buf, ch);
+}
+```
+
+#### Server side: `output_sec` in `SERVER_CLIENT_HELLO_AWAIT`
+
+Parse CLIENT_HELLO, extract nonce and public key for ECDH:
+
+```c
+case SERVER_CLIENT_HELLO_AWAIT: {
+    client_hello = deserialize_tlv(buf, length);
+    if (!client_hello) exit(6);
+
+    tlv* nn = get_tlv(client_hello, NONCE);
+    tlv* pk = get_tlv(client_hello, PUBLIC_KEY);
+    if (!nn || !pk) exit(6);
+
+    load_peer_public_key(pk->val, pk->length);
+    state_sec = SERVER_SERVER_HELLO_SEND;
+    break;
+}
+```
+
+#### Server side: `input_sec` in `SERVER_SERVER_HELLO_SEND`
+
+Build SERVER_HELLO with certificate + your ephemeral pubkey + signature:
+
+```c
+case SERVER_SERVER_HELLO_SEND: {
+    tlv* sh = create_tlv(SERVER_HELLO);   // type 0x20
+
+    // NONCE
+    tlv* nonce = create_tlv(NONCE);
+    uint8_t n[NONCE_SIZE];
+    generate_nonce(n, NONCE_SIZE);
+    add_val(nonce, n, NONCE_SIZE);
+
+    // Certificate (loaded by init_sec)
+    tlv* cert = deserialize_tlv(certificate, cert_size);
+
+    // Check lifetime
+    tlv* lifetime = get_tlv(cert, LIFETIME);
+    enforce_lifetime_valid(lifetime->val);  // exits if invalid
+
+    // Ephemeral public key
+    tlv* pub_key = create_tlv(PUBLIC_KEY);
+    add_val(pub_key, public_key, pub_key_size);
+
+    // Signature over client_hello + nonce + cert + pub_key
+    tlv* sig = create_tlv(HANDSHAKE_SIGNATURE);  // type 0x21
+    uint8_t buf_sig[1000];
+    uint16_t sig_len  = serialize_tlv(buf_sig, client_hello);
+         sig_len     += serialize_tlv(buf_sig + sig_len, nonce);
+         sig_len     += serialize_tlv(buf_sig + sig_len, cert);
+         sig_len     += serialize_tlv(buf_sig + sig_len, pub_key);
+    uint8_t sig_bytes[255];
+    size_t s = sign(sig_bytes, buf_sig, sig_len);
+    add_val(sig, sig_bytes, s);
+
+    add_tlv(sh, nonce);
+    add_tlv(sh, cert);
+    add_tlv(sh, pub_key);
+    add_tlv(sh, sig);
+
+    server_hello = sh;  // save for transcript
+    derive_secret();     // ECDH with client's ephemeral key
+
+    // Build transcript and derive session keys
+    ts_len  = serialize_tlv(ts, client_hello);
+    ts_len += serialize_tlv(ts + ts_len, server_hello);
+    derive_keys(ts, ts_len);
+
+    state_sec = SERVER_FINISHED_AWAIT;
+    return serialize_tlv(buf, sh);
+}
+```
+
+#### Client side: `output_sec` in `CLIENT_SERVER_HELLO_AWAIT`
+
+Parse SERVER_HELLO, verify cert, signature, and DNS name, derive keys:
+
+```c
+case CLIENT_SERVER_HELLO_AWAIT: {
+    server_hello = deserialize_tlv(buf, length);
+    if (!server_hello) exit(6);
+
+    tlv* nn  = get_tlv(server_hello, NONCE);
+    tlv* cert = get_tlv(server_hello, CERTIFICATE);
+    tlv* pke = get_tlv(server_hello, PUBLIC_KEY);  // server ephemeral
+    tlv* hssig = get_tlv(server_hello, HANDSHAKE_SIGNATURE);
+    if (!nn || !cert || !pke || !hssig) exit(6);
+
+    // Parse certificate
+    tlv* dn   = get_tlv(cert, DNS_NAME);
+    tlv* pks  = get_tlv(cert, PUBLIC_KEY);   // server identity key
+    tlv* life = get_tlv(cert, LIFETIME);
+    tlv* csig = get_tlv(cert, SIGNATURE);
+    if (!dn || !pks || !life || !csig) exit(6);
+
+    // 1. Verify cert signature with CA public key
+    uint8_t cert_data[1000];
+    uint16_t cd_len  = serialize_tlv(cert_data, dn);
+         cd_len     += serialize_tlv(cert_data + cd_len, pks);
+         cd_len     += serialize_tlv(cert_data + cd_len, life);
+    if (verify(csig->val, csig->length, cert_data, cd_len, ec_ca_public_key) != 1)
+        { print("BAD (Certificate) Signature"); exit(1); }
+
+    // 2. Check lifetime
+    enforce_lifetime_valid(life->val);
+
+    // 3. Verify DNS name
+    if (strncmp(hostname, (char*)dn->val, dn->length) != 0)
+        { print("BAD DNS-Name"); exit(2); }
+
+    // 4. Verify handshake signature with server's identity key (from cert)
+    load_peer_public_key(pks->val, pks->length);
+    uint8_t hs_data[1000];
+    uint16_t hd_len  = serialize_tlv(hs_data, client_hello);
+         hd_len     += serialize_tlv(hs_data + hd_len, nn);
+         hd_len     += serialize_tlv(hs_data + hd_len, cert);
+         hd_len     += serialize_tlv(hs_data + hd_len, pke);
+    if (verify(hssig->val, hssig->length, hs_data, hd_len, ec_peer_public_key) != 1)
+        { print("BAD Handshake-Signature"); exit(3); }
+
+    // 5. Derive shared secret with server's ephemeral key
+    load_peer_public_key(pke->val, pke->length);
+    derive_secret();
+
+    // 6. Build transcript and derive session keys
+    ts_len  = serialize_tlv(ts, client_hello);
+    ts_len += serialize_tlv(ts + ts_len, server_hello);
+    derive_keys(ts, ts_len);
+
+    state_sec = CLIENT_FINISHED_SEND;
+    break;
+}
+```
+
+#### Client side: `input_sec` in `CLIENT_FINISHED_SEND`
+
+Send HMAC of transcript:
+
+```c
+case CLIENT_FINISHED_SEND: {
+    tlv* fin = create_tlv(FINISHED);     // type 0x30
+    tlv* tr  = create_tlv(TRANSCRIPT);   // type 0x04
+    uint8_t digest[MAC_SIZE];
+    hmac(digest, ts, ts_len);
+    add_val(tr, digest, MAC_SIZE);
+    add_tlv(fin, tr);
+
+    state_sec = DATA_STATE;
+    return serialize_tlv(buf, fin);
+}
+```
+
+#### Server side: `output_sec` in `SERVER_FINISHED_AWAIT`
+
+Verify FINISHED HMAC:
+
+```c
+case SERVER_FINISHED_AWAIT: {
+    tlv* fin = deserialize_tlv(buf, length);
+    if (!fin) exit(6);
+    tlv* tr = get_tlv(fin, TRANSCRIPT);
+    if (!tr) exit(6);
+
+    uint8_t digest[MAC_SIZE];
+    hmac(digest, ts, ts_len);
+    if (memcmp(digest, tr->val, MAC_SIZE) != 0)
+        { print("BAD TRANSCRIPT"); exit(4); }
+
+    state_sec = DATA_STATE;
+    break;
+}
+```
+
+#### Data state: `input_sec` in `DATA_STATE` (send encrypted data)
+
+```c
+case DATA_STATE: {
+    tlv* data = create_tlv(DATA);           // type 0x50
+    tlv* iv   = create_tlv(IV);             // type 0x51
+    tlv* cip  = create_tlv(CIPHERTEXT);     // type 0x52
+    tlv* mac  = create_tlv(MAC);            // type 0x53
+
+    uint8_t iv_b[IV_SIZE];
+    uint8_t pt[1012];
+    ssize_t pt_len = input_io(pt, sizeof(pt));
+    if (pt_len <= 0) return 0;
+
+    uint8_t ct[1100];
+    uint16_t ct_len = encrypt_data(iv_b, ct, pt, pt_len);
+    add_val(iv, iv_b, IV_SIZE);
+    add_val(cip, ct, ct_len);
+
+    // HMAC over serialized IV + CIPHERTEXT TLVs
+    uint8_t mac_data[2000];
+    uint16_t mlen  = serialize_tlv(mac_data, iv);
+         mlen     += serialize_tlv(mac_data + mlen, cip);
+    uint8_t mac_b[MAC_SIZE];
+    hmac(mac_b, mac_data, mlen);
+    if (inc_mac) mac_b[10] = 0;   // bad-mac test hook
+    add_val(mac, mac_b, MAC_SIZE);
+
+    add_tlv(data, iv);
+    add_tlv(data, cip);
+    add_tlv(data, mac);
+
+    uint16_t len = serialize_tlv(buf, data);
+    free_tlv(data);
+    return len;
+}
+```
+
+#### Data state: `output_sec` in `DATA_STATE` (receive encrypted data)
+
+```c
+case DATA_STATE: {
+    tlv* data = deserialize_tlv(buf, length);
+    if (!data) exit(6);
+    tlv* iv  = get_tlv(data, IV);
+    tlv* cip = get_tlv(data, CIPHERTEXT);
+    tlv* mac = get_tlv(data, MAC);
+    if (!iv || !cip || !mac) exit(6);
+
+    // Verify MAC: HMAC(IV TLV + CIPHERTEXT TLV)
+    uint8_t mac_check[2000];
+    uint16_t mlen  = serialize_tlv(mac_check, iv);
+         mlen     += serialize_tlv(mac_check + mlen, cip);
+    uint8_t digest[MAC_SIZE];
+    hmac(digest, mac_check, mlen);
+    if (memcmp(digest, mac->val, MAC_SIZE) != 0)
+        { print("BAD MAC"); exit(5); }
+
+    // Decrypt
+    uint8_t pt[cip->length];
+    uint16_t pt_len = decrypt_cipher(pt, cip->val, cip->length, iv->val);
+    output_io(pt, pt_len);
+    free_tlv(data);
+    break;
+}
+```
+
+### Exit Codes
+
+| Code | Reason |
+|------|--------|
+| `1` | Bad Certificate: Invalid CA signature or Certificate Expired / Not Yet Valid |
+| `2` | Bad Identity: Hostname mismatch (DNS name in cert != target hostname) |
+| `3` | Bad Handshake Signature: Signature in Server Hello is invalid |
+| `4` | Bad Transcript: Finished HMAC verification failed |
+| `5` | Bad MAC: Integrity check failed on a Data message |
+| `6` | Malformed Message: Missing required TLVs, bad lengths, etc. |
+
+### Debugging
+
+- Use `./helper interactive` to enter the container and run binaries manually
+- The framework calls `print()` on state transitions — look at stderr
+- Use `print_hex(buf, len)` to dump raw bytes
+- Use `print_tlv_bytes(buf, len)` to parse and print TLV structure
+- All file loading uses **relative paths** — run from the `keys` directory
 
 ### File Locations
 
@@ -228,14 +553,14 @@ Your code must compare these to the current time (`time(NULL)`) and reject expir
 
 ## Grading Criteria
 
-There are **6 tests**: a compilation prerequisite (0 points) and 5 functional tests totaling **90 points**.
+There are **6 tests**: a compilation prerequisite (0 points) and 5 functional tests totaling **100 points**.
 
 | Test | Points | What is tested |
 |---|---|---|
 | Compilation | — | `Makefile` builds `client` and `server` executables |
-| Client Hello | 10 | Client sends a properly formed CLIENT_HELLO (nonce + public key) |
+| Client Hello | 15 | Client sends a properly formed CLIENT_HELLO (nonce + public key) |
 | Server Hello | 25 | Server sends a properly formed SERVER_HELLO + CERTIFICATE; client parses and verifies it |
-| Finished | 25 | Both sides complete the handshake with correct HMAC; bad cert/name/privkey/expired cert earn partial credit |
+| Finished | 30 | Both sides complete the handshake with correct HMAC; bad cert/name/privkey/expired cert earn partial credit |
 | Encrypt & MAC: Client | 15 | Client correctly encrypts/decrypts data and verifies HMAC |
 | Encrypt & MAC: Server | 15 | Server correctly encrypts/decrypts data and verifies HMAC |
 
@@ -295,9 +620,8 @@ void       free_tlv(tlv* t);
 
 ### Implementation Hints
 
-1. **Read the reference solution** at `github.com/uclacs118/project3s26` — it shows exactly how to implement all five functions. Study `src/security.c` carefully.
-2. **Start with the client side**: implement `handle_client_hello` first. Build a `CLIENT_HELLO` TLV with a nonce and your EC public key, then serialize and return.
-3. **For the EC key pair**: call `generate_private_key()` and `derive_public_key()` in `init_sec`. The public key bytes are in `public_key` (size `pub_key_size`).
+1. **Start with the client side**: implement the Client Hello step first. Build a `CLIENT_HELLO` TLV with a nonce and your EC public key, then serialize and return.
+2. **For the EC key pair**: call `generate_private_key()` and `derive_public_key()` in `init_sec`. The public key bytes are in `public_key` (size `pub_key_size`).
 4. **For the shared secret**: call `load_peer_public_key(pk->val, pk->length)` with the peer's EC point, then `derive_secret()` to fill `secret[32]`.
 5. **Transcript**: collect the raw bytes of every handshake TLV (type+length+value) in order into a buffer. The `TRANSCRIPT` in FINISHED is `HMAC-SHA256(transcript_buffer, transcript_len)`.
 6. **AES-CBC**: `encrypt_data(iv_buf, ct_buf, pt, pt_len)` writes 16 random bytes to `iv_buf` and ciphertext to `ct_buf`, returns ciphertext length. The grading proxy appends IV before the ciphertext on the wire.
