@@ -14,11 +14,6 @@ import * as H from "../../components/helpers/index.astro";
 ## Quick Links
 
 - [Starter Code](https://github.com/uclacs118/project3s26-starter)
-- [Environment Setup](/misc/environment-setup)
-- [Socket Programming Tips](/misc/sockets)
-- [Local Autograder](/misc/autograder-p3)
-- [Libsecurity API](/misc/libsecurity-p3)
-- [TLV Helpers](/misc/tlv-helpers-p3)
 
 ## Overview
 
@@ -44,7 +39,7 @@ This project gives hands-on experience with:
 
 ## Submission
 
-Submit a ZIP file to [Gradescope](https://www.gradescope.com/courses/1292484/assignments/) by **11:59pm on Monday, June 1st**. Late submission is allowed until Wednesday, June 3rd (20% deduction per day).
+Submit a ZIP file to [Gradescope](https://www.gradescope.com/courses/1292484/assignments/8129653) by **11:59pm on Monday, June 1st**. Late submission is allowed until Wednesday, June 3rd (20% deduction per day).
 
 The `helper zip` command in the starter repo creates a compatible ZIP file.
 
@@ -219,30 +214,7 @@ The `LIFETIME` field (16 bytes) contains:
 - Bytes 0–7: `not_before` as a 64-bit big-endian Unix timestamp
 - Bytes 8–15: `not_after` as a 64-bit big-endian Unix timestamp
 
-Your code must compare these to the current time (`time(NULL)`) and reject expired or not-yet-valid certificates. You may implement lifetime enforcement however you prefer. The reference solution calls `exit(1)` with message `EXPIRED Certificate` or `CERTIFICATE NOT YET VALID`.
-
-### Specification
-
-Please clone the [Starter Code](https://github.com/uclacs118/project3s26-starter) and read the implementation guide there.
-
-### Exit Codes
-
-| Code | Reason |
-|------|--------|
-| `1` | Bad Certificate: Invalid CA signature or Certificate Expired / Not Yet Valid |
-| `2` | Bad Identity: Hostname mismatch (DNS name in cert != target hostname) |
-| `3` | Bad Handshake Signature: Signature in Server Hello is invalid |
-| `4` | Bad Transcript: Finished HMAC verification failed |
-| `5` | Bad MAC: Integrity check failed on a Data message |
-| `6` | Malformed Message: Missing required TLVs, bad lengths, etc. |
-
-### Debugging
-
-- Use `./helper interactive` to enter the container and run binaries manually
-- The framework calls `print()` on state transitions — look at stderr
-- Use `print_hex(buf, len)` to dump raw bytes
-- Use `print_tlv_bytes(buf, len)` to parse and print TLV structure
-- All file loading uses **relative paths** — run from the `keys` directory
+Your code must compare these to the current time (`time(NULL)`) and reject expired or not-yet-valid certificates (the reference server calls `exit(1)` in these cases).
 
 ### File Locations
 
@@ -255,14 +227,14 @@ Please clone the [Starter Code](https://github.com/uclacs118/project3s26-starter
 
 ## Grading Criteria
 
-There are **6 tests**: a compilation prerequisite (0 points) and 5 functional tests totaling **100 points**.
+There are **6 tests**: a compilation prerequisite (0 points) and 5 functional tests totaling **90 points**.
 
 | Test | Points | What is tested |
 |---|---|---|
 | Compilation | — | `Makefile` builds `client` and `server` executables |
-| Client Hello | 15 | Client sends a properly formed CLIENT_HELLO (nonce + public key) |
+| Client Hello | 10 | Client sends a properly formed CLIENT_HELLO (nonce + public key) |
 | Server Hello | 25 | Server sends a properly formed SERVER_HELLO + CERTIFICATE; client parses and verifies it |
-| Finished | 30 | Both sides complete the handshake with correct HMAC; bad cert/name/privkey/expired cert earn partial credit |
+| Finished | 25 | Both sides complete the handshake with correct HMAC; bad cert/name/privkey/expired cert earn partial credit |
 | Encrypt & MAC: Client | 15 | Client correctly encrypts/decrypts data and verifies HMAC |
 | Encrypt & MAC: Server | 15 | Server correctly encrypts/decrypts data and verifies HMAC |
 
@@ -322,7 +294,7 @@ void       free_tlv(tlv* t);
 
 ### Implementation Hints
 
-1. **Start with the client side**: implement the Client Hello step first. Build a `CLIENT_HELLO` TLV with a nonce and your EC public key, then serialize and return.
+1. **Start with the client side**: implement `handle_client_hello` first. Build a `CLIENT_HELLO` TLV with a nonce and your EC public key, then serialize and return.
 2. **For the EC key pair**: call `generate_private_key()` and `derive_public_key()` in `init_sec`. The public key bytes are in `public_key` (size `pub_key_size`).
 3. **For the shared secret**: call `load_peer_public_key(pk->val, pk->length)` with the peer's EC point, then `derive_secret()` to fill `secret[32]`.
 4. **Transcript**: collect the raw bytes of every handshake TLV (type+length+value) in order into a buffer. The `TRANSCRIPT` in FINISHED is `HMAC-SHA256(transcript_buffer, transcript_len)`.
