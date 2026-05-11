@@ -171,18 +171,18 @@ The CA's public key is in `keys/ca_public_key.bin` (65-byte uncompressed EC poin
 
 ## Grading Criteria
 
-The autograder runs **6 tests**. Compilation is a prerequisite (0 points). The remaining 5 tests total **90 points**.
+The autograder runs **6 tests** for a total of **100 points**.
 
 ### Test Descriptions
 
 | Test | Points | What it checks |
 |---|---|---|
-| Compilation | — | `Makefile` builds `client` and `server`; `README.md` present |
+| Compilation | 10 | `Makefile` builds `client` and `server`; `README.md` present |
 | Client Hello | 10 | Client sends a properly formed Client Hello (nonce + pubkey) |
 | Server Hello | 25 | Server sends a properly formed Server Hello + Certificate |
 | Finished | 25 | Both sides complete the handshake with correct HMAC verification; expired/rejected certificates earn partial credit |
-| Encrypt & MAC: Client | 15 | Client correctly encrypts/decrypts data and authenticates with HMAC |
-| Encrypt & MAC: Server | 15 | Server correctly encrypts/decrypts data and authenticates with HMAC |
+| Encrypt & MAC: Client | 20 | Client correctly encrypts/decrypts data and authenticates with HMAC |
+| Encrypt & MAC: Server | 20 | Server correctly encrypts/decrypts data and authenticates with HMAC |
 
 ### Running Tests Locally
 
