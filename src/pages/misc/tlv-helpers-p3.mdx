@@ -7,7 +7,7 @@ import * as H from "../../components/helpers/index.astro";
 
 <H.Title>TLV Helpers</H.Title>
 
-Tlv Helpers P2
+Tlv Helpers P3
 
 As seen in the Project 3 spec, instead of using packet headers with predefined byte boundaries, weâll be using Type-Length-Value (TLV) encoding for the security messages. TLV can be a bit tricky to work with, so weâre providing some TLV helpers in the consts.h file found in the starter code.
 
@@ -15,11 +15,11 @@ Using security.c
 
 Before going into how to use the TLV helpers, itâs important to know how the programming model in security.c works.
 
-In Project 1, we implemented a reliable data transfer protocol. Our âupper layerâ was standard input and standard output. We interfaced with stdin and stdout using the functions provided in io.h.
+In Project 2, we implemented a reliable data transfer protocol. Our "upper layer" was standard input and standard output. We interfaced with stdin and stdout using the functions provided in io.h.
 
-In Project 3, our âupper layerâ is our security layer. Youâll see that the functions in security.h are similar to the functions in io.h. This allows us to âhot swapâ our layers very easily when transitioning from Project 1 to Project 3. (I encourage you to take a look at the difference between server.c/client.c in the Project 1 and Project 3 starter code. Thereâs barely any difference!)
+In Project 3, our "upper layer" is our security layer. You'll see that the functions in security.h are similar to the functions in io.h. This allows us to "hot swap" our layers very easily when transitioning from Project 2 to Project 3. (I encourage you to take a look at the difference between server.c/client.c in the Project 2 and Project 3 starter code. There's barely any difference!)
 
-The starter code as-is functions as a Project 1 solution since we pass our data directly to the io functions.
+The starter code as-is functions as a Project 2 solution since we pass our data directly to the io functions.
 
 init_sec
 
