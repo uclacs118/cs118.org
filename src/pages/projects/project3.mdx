@@ -1,0 +1,139 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Project 3: TLS/Security"
+dueDate: 2026-06-01 23:59:00
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Project 3</H.Title>
+<H.Subtitle>
+  TLS/Security - Due 11:59pm Monday, June 1 (Week 10)
+</H.Subtitle>
+
+## Quick Links
+
+- [Starter Code](https://github.com/uclacs118/project3s26-starter)
+
+## Overview
+
+In this project, you will implement a **TLS-like secure transport protocol** in C. You will build a secure client and server that:
+
+1. Perform a **TLS handshake** using ECDH key exchange and X.509 certificates
+2. Authenticate both sides using HMAC-SHA256
+3. Encrypt data in transit using **AES-256-CBC**
+
+This project gives practical experience with:
+
+- ECDH (Elliptic Curve Diffie-Hellman) key exchange
+- X.509 certificate parsing and verification
+- AES-256-CBC encryption
+- HMAC-SHA256 authentication
+- TLV (Type-Length-Value) protocol encoding
+
+## Notices
+
+1. If you're using GitHub or a similar tool to track your work, please make sure that your repository is **set to private**.
+2. As per the syllabus, the use of AI assisted tools is not allowed.
+3. You may do this project in groups of up to 3 people. Please remember to include your whole group in your gradescope submission.
+
+## Submission
+
+Submit a ZIP file to [Gradescope](https://www.gradescope.com/courses/1292484/assignments/) by **11:59pm on Monday, June 1st**. Late submission is allowed until Wednesday, June 3rd (20% deduction per day).
+
+The `helper zip` command creates a compatible ZIP file.
+
+## Grading Criteria
+
+The autograder runs 6 tests for a total of **100 points**.
+
+### Compilation (required — prerequisite for all other tests)
+
+Your submission must:
+
+- Include a `Makefile` in `project/` that builds `client` and `server` executables
+- Include a `README.md` in `project/`
+
+### Security Tests
+
+| Test | Points | Description |
+| --- | ------ | ----------- |
+| Handshake: Client Hello | 10 | Client sends a properly formed Client Hello |
+| Handshake: Server Hello | 25 | Server sends a properly formed Server Hello with certificate |
+| Handshake: Finished | 25 | Both sides complete the handshake; certificate and signature verified |
+| Encrypt and MAC: Client | 15 | Client correctly encrypts data sent to server and decrypts server responses |
+| Encrypt and MAC: Server | 15 | Server correctly encrypts data sent to client and decrypts client requests |
+| Certificate Expiry | 10 | Client correctly rejects expired certificates |
+
+### Running Tests Locally
+
+You can run individual tests using the helper script:
+
+```bash
+./helper test compile   # Run compilation test only
+./helper test client_hello   # Run Client Hello test
+./helper test server_hello   # Run Server Hello test
+./helper test finished   # Run Finished/handshake test
+./helper test encrypt_and_mac_client  # Run client encrypt/MAC test
+./helper test encrypt_and_mac_server  # Run server encrypt/MAC test
+./helper test expired_cert  # Run expired certificate test
+```
+
+Run `./helper` without arguments to see all available commands.
+
+## Protocol Details
+
+### Handshake Flow
+
+```
+Client                          Server
+  |                               |
+  |-------- Client Hello -------->|
+  |   (nonce + public key)        |
+  |<------ Server Hello ----------|
+  |   (nonce + certificate       |
+  |    + signature)               |
+  |-------- Finished ----------->|
+  |   (HMAC transcript)           |
+  |<------ Finished --------------|
+  |   (HMAC transcript)           |
+  |                               |
+  |<========== Data ==============>|
+  |   (AES-256-CBC + HMAC)       |
+```
+
+### Security States
+
+| State | Role | Description |
+| --- | --- | --- |
+| `CLIENT_HELLO_SEND` | Client | Awaiting send of Client Hello |
+| `CLIENT_SERVER_HELLO_AWAIT` | Client | Awaiting Server Hello |
+| `CLIENT_FINISHED_SEND` | Client | Awaiting send of Finished |
+| `SERVER_CLIENT_HELLO_AWAIT` | Server | Awaiting Client Hello |
+| `SERVER_SERVER_HELLO_SEND` | Server | Awaiting send of Server Hello |
+| `SERVER_FINISHED_AWAIT` | Server | Awaiting Finished |
+| `DATA_STATE` | Both | In secure data exchange |
+
+### Certificate Format (TLV)
+
+The server certificate contains:
+
+- `DNS_NAME` (0xA1): The server's DNS name (e.g. `localhost`)
+- `PUBLIC_KEY` (0x02): Server's ephemeral EC public key
+- `SIGNATURE` (0xA2): CA signature over DNS name + public key + lifetime
+- `LIFETIME` (0xA3): Validity window (not_before, not_after as 64-bit big-endian)
+
+### Key Cryptographic Parameters
+
+- **Key Exchange**: ECDH with P-256 curve
+- **Encryption**: AES-256-CBC
+- **MAC**: HMAC-SHA256 (32 bytes)
+- **Nonce**: 32 bytes (random)
+- **IV**: 16 bytes (random per message)
+
+## Resources
+
+- [OpenSSL EVP API](https://www.openssl.org/docs/manmaster/man7/evp.html)
+- [RFC 5246](https://tools.ietf.org/html/rfc5246) - TLS 1.2 (reference for handshake)
+- [RFC 6090](https://tools.ietf.org/html/rfc6090) - ECC for key exchange
+- [NIST SP 800-56A](https://csrc.nist.gov/publications/detail/sp/800-56a/rev-3/final) - ECDH key agreement
