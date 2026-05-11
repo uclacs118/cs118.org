@@ -14,236 +14,292 @@ import * as H from "../../components/helpers/index.astro";
 ## Quick Links
 
 - [Starter Code](https://github.com/uclacs118/project3s26-starter)
-- [Autograder Image](https://github.com/uclacs118/project3s26/pkgs/container/project3s26) (for local testing)
+- [Reference Solution](https://github.com/uclacs118/project3s26) (private; for TAs/instructors)
 
 ## Overview
 
-In this project, you will implement a **TLS-like secure transport protocol** in C. You will build a secure client and server that:
+In this project, you will implement a **TLS-like secure transport protocol** in C. Your client and server will:
 
-1. Perform a **TLS handshake** using ECDH key exchange and X.509 certificates
-2. Authenticate both sides using HMAC-SHA256
-3. Encrypt data in transit using **AES-256-CBC**
+1. Perform a **4-message handshake** using ECDH key exchange and X.509-like certificates
+2. Authenticate both sides using **HMAC-SHA256**
+3. Encrypt all subsequent data using **AES-256-CBC**
 
-This project gives practical experience with:
+This project gives hands-on experience with:
 
 - ECDH (Elliptic Curve Diffie-Hellman) key exchange on the P-256 curve
-- X.509 certificate parsing and verification
-- AES-256-CBC encryption and decryption
+- X.509-like certificate parsing and verification
+- AES-256-CBC encryption / decryption
 - HMAC-SHA256 message authentication
 - TLV (Type-Length-Value) binary protocol encoding
 
 ## Notices
 
-1. If you're using GitHub or a similar tool to track your work, please make sure that your repository is **set to private**.
+1. If you use GitHub or a similar tool to track your work, please make sure your repository is **set to private**.
 2. As per the syllabus, the use of AI assisted tools is not allowed.
-3. You may do this project in groups of up to 3 people. Please remember to include your whole group in your Gradescope submission.
+3. You may do this project in groups of up to 3 people. Please include your entire group in your Gradescope submission.
 
 ## Submission
 
 Submit a ZIP file to [Gradescope](https://www.gradescope.com/courses/1292484/assignments/) by **11:59pm on Monday, June 1st**. Late submission is allowed until Wednesday, June 3rd (20% deduction per day).
 
-The `helper zip` command creates a compatible ZIP file.
+The `helper zip` command in the starter repo creates a compatible ZIP file.
 
 ## What You Implement
 
-Students implement **five functions** in `security.c`:
+You will fill in five functions in `security.c`. The framework (`client.c` / `server.c`) handles the network I/O and calls your functions at the right moments. You only write the cryptographic logic.
 
 | Function | Description |
 |---|---|
-| `handle_client_hello(uint8_t* buf, size_t len)` | Parse incoming Client Hello; extract nonce and server public key; send Server Hello + Certificate |
-| `handle_server_hello(uint8_t* buf, size_t len)` | Parse incoming Server Hello + Certificate; verify cert; extract server nonce and public key; send Client Hello |
-| `handle_server_finished(uint8_t* buf, size_t len)` | Parse Server Finished; verify HMAC transcript; send Client Finished |
-| `handle_client_finished(uint8_t* buf, size_t len)` | Parse Client Finished; verify HMAC transcript |
-| `encrypt_and_mac(uint8_t* buf, size_t len, bool to_server)` | Encrypt `buf[0:len]` and append HMAC tag |
+| `input_sec` in state `CLIENT_CLIENT_HELLO_SEND` | Build and send a `CLIENT_HELLO` message containing a nonce and your EC public key |
+| `output_sec` in state `SERVER_CLIENT_HELLO_AWAIT` | Receive and parse a `CLIENT_HELLO`; prepare to respond |
+| `input_sec` in state `SERVER_SERVER_HELLO_SEND` | Build and send a `SERVER_HELLO` with a certificate and your EC public key, signed by the CA |
+| `output_sec` in state `CLIENT_SERVER_HELLO_AWAIT` | Receive and parse `SERVER_HELLO` + certificate; verify cert, signature, and DNS name; derive shared secret |
+| `input_sec` in state `CLIENT_FINISHED_SEND` | Build and send a `FINISHED` message with an HMAC of the transcript |
+| `output_sec` in state `SERVER_FINISHED_AWAIT` | Receive and verify the `FINISHED` HMAC |
+| `output_sec` in state `CLIENT_FINISHED_SEND` | (same state machine handles both finished directions) |
+| `input_sec` in state `DATA_STATE` | Encrypt stdin data: generate random IV, AES-256-CBC encrypt, append HMAC tag |
 
-The framework calls your functions at the right moments — you only fill in the crypto logic.
+You also implement the corresponding **decryption/verification** logic in `output_sec` when in `DATA_STATE`.
 
 ## Protocol Details
 
 ### Handshake Flow
 
 ```
- Client                                        Server
-   |                                              |
-   |  1. CLIENT HELLO  (nonce + client pubkey)    |
-   |  ──────────────────────────────────────────> |
-   |                                              |
-   |  2. SERVER HELLO  (nonce + certificate)      |
-   |      + SERVER SIGNATURE                      |
-   |  <─────────────────────────────────────────  |
-   |                                              |
-   |  3. CLIENT FINISHED  (HMAC of transcript)    |
-   |  ──────────────────────────────────────────> |
-   |                                              |
-   |  4. SERVER FINISHED  (HMAC of transcript)   |
-   |  <─────────────────────────────────────────  |
-   |                                              |
-   |  5. ENCRYPTED DATA  (AES-256-CBC + HMAC)    |
-   |  ════════════════════════════════════════════ |
-   |  (both directions, until connection closes)  |
+ Client                                           Server
+   |                                                 |
+   |  1. CLIENT HELLO  ──────────────────────────────>|
+   |      NONCE (32 bytes) + PUBLIC_KEY (65 bytes)   |
+   |                                                 |
+   |  2. SERVER HELLO  <─────────────────────────────|
+   |      NONCE + CERTIFICATE + EPHEMERAL_PUBKEY     |
+   |      + HANDSHAKE_SIGNATURE                      |
+   |                                                 |
+   |  3. CLIENT FINISHED  ──────────────────────────>|
+   |      TRANSCRIPT (HMAC-SHA256 of handshake)     |
+   |                                                 |
+   |  4. SERVER FINISHED  <─────────────────────────|
+   |      TRANSCRIPT (HMAC-SHA256 of handshake)     |
+   |                                                 |
+   |  5. ENCRYPTED DATA  (bidirectional)            |
+   |      DATA = IV + CIPHERTEXT + MAC               |
 ```
 
 ### Security States
 
 | State | Role | Meaning |
 |---|---|---|
-| `CLIENT_CLIENT_HELLO_SEND` | Client | About to send Client Hello |
-| `CLIENT_SERVER_HELLO_AWAIT` | Client | Waiting for Server Hello + Certificate |
-| `CLIENT_FINISHED_SEND` | Client | About to send Client Finished |
-| `SERVER_CLIENT_HELLO_AWAIT` | Server | Waiting for Client Hello |
-| `SERVER_SERVER_HELLO_SEND` | Server | About to send Server Hello + Certificate |
-| `SERVER_FINISHED_AWAIT` | Server | Waiting for Client Finished |
-| `DATA_STATE` | Both | Handshake done — in secure data exchange |
+| `CLIENT_CLIENT_HELLO_SEND` | Client | Must call `input_sec` to get CLIENT_HELLO bytes |
+| `CLIENT_SERVER_HELLO_AWAIT` | Client | Received SERVER_HELLO; parse and verify it |
+| `CLIENT_FINISHED_SEND` | Client | Must call `input_sec` to get CLIENT_FINISHED bytes |
+| `SERVER_CLIENT_HELLO_AWAIT` | Server | Received CLIENT_HELLO; parse and verify it |
+| `SERVER_SERVER_HELLO_SEND` | Server | Must call `input_sec` to get SERVER_HELLO bytes |
+| `SERVER_FINISHED_AWAIT` | Server | Received CLIENT_FINISHED; verify it |
+| `DATA_STATE` | Both | Handshake complete; encrypt/decrypt application data |
 
 ### TLV (Type-Length-Value) Encoding
 
-All messages are encoded as TLV structures. The format:
+All protocol messages are TLV-encoded. Every TLV has:
 
 ```
-  1 byte     1 or 3 bytes           N bytes
-+--------+------------------+---------------------+
-|  Type  |  Length (LE)     |  Value              |
-+--------+------------------+---------------------+
+  1 byte       1 or 3 bytes              N bytes
++--------+-------------------+------------------------+
+|  Type |  Length (BE if ≥253) |  Value                |
++--------+-------------------+------------------------+
 ```
 
-- **Type**: 1 byte identifying the field
-- **Length**: 1 byte if value length ≤ 252 bytes, else 3 bytes (`0xFD` + 2-byte big-endian length). The threshold is `VN3 - 1 = 0xFC` (decimal 252).
-- **Value**: raw bytes (primitive) or nested TLVs (container)
+- **Type**: 1 byte — identifies the field
+- **Length**: 1 byte if value ≤ 252 bytes; otherwise 3 bytes: `0xFD` + 2-byte big-endian length
+- **Value**: raw bytes (primitive) **or** a sequence of child TLVs (container)
 
-**TLV Container types** (their value is a sequence of child TLVs):
+#### TLV Container Types (value is nested TLVs)
 
-| Type | Name | Description |
+| Type | Name | Children |
 |---|---|---|
-| `0x10` | `CLIENT_HELLO` | Client's opening message |
-| `0x20` | `SERVER_HELLO` | Server's response message |
-| `0xA0` | `CERTIFICATE` | X.509 certificate (contains children) |
-| `0x30` | `FINISHED` | Handshake completion message |
-| `0x50` | `DATA` | Application data record |
+| `0x10` | `CLIENT_HELLO` | `NONCE`, `PUBLIC_KEY` |
+| `0x20` | `SERVER_HELLO` | `NONCE`, `CERTIFICATE`, `PUBLIC_KEY` (ephemeral), `HANDSHAKE_SIGNATURE` |
+| `0xA0` | `CERTIFICATE` | `DNS_NAME`, `PUBLIC_KEY`, `SIGNATURE`, `LIFETIME` |
+| `0x30` | `FINISHED` | `TRANSCRIPT` |
+| `0x50` | `DATA` | `IV`, `CIPHERTEXT`, `MAC` |
 
-**Primitive types** (their value is raw bytes):
+#### TLV Primitive Types (value is raw bytes)
 
-| Type | Name | Value Size | Description |
+| Type | Name | Length | Description |
 |---|---|---|---|
 | `0x01` | `NONCE` | 32 bytes | Random nonce for ECDH |
-| `0x02` | `PUBLIC_KEY` | 65 bytes | Uncompressed EC point (P-256) |
-| `0xA1` | `DNS_NAME` | variable | Server DNS hostname (e.g. `localhost`) |
-| `0xA2` | `SIGNATURE` | 64 bytes | ECDSA signature over transcript |
-| `0xA3` | `LIFETIME` | 16 bytes | `not_before` + `not_after` (64-bit big-endian each) |
+| `0x02` | `PUBLIC_KEY` | 65 bytes | Uncompressed EC point on P-256 |
+| `0xA1` | `DNS_NAME` | variable | Server hostname, e.g. `localhost` |
+| `0xA2` | `SIGNATURE` | variable | ECDSA signature (r‖s, DER-encoded) |
+| `0xA3` | `LIFETIME` | 16 bytes | `not_before` (8 bytes BE) + `not_after` (8 bytes BE) |
+| `0x21` | `HANDSHAKE_SIGNATURE` | variable | Signature over client hello + nonce + cert + ephemeral pubkey |
 | `0x51` | `IV` | 16 bytes | Random IV for AES-CBC |
 | `0x52` | `CIPHERTEXT` | variable | AES-256-CBC encrypted data |
 | `0x53` | `MAC` | 32 bytes | HMAC-SHA256 tag |
-| `0x04` | `TRANSCRIPT` | variable | HMAC of all handshake messages so far |
+| `0x04` | `TRANSCRIPT` | 32 bytes | HMAC-SHA256 of full handshake transcript |
 
 ### Certificate Contents
 
-The `CERTIFICATE` TLV (`0xA0`) contains four child TLVs:
+The `CERTIFICATE` TLV (`0xA0`) contains:
 
 ```
 CERTIFICATE (0xA0)
-  ├── DNS_NAME      (0xA1)  : "localhost"
-  ├── PUBLIC_KEY    (0x02)  : server's ephemeral EC public key
-  ├── SIGNATURE     (0xA2)  : CA's ECDSA signature over DNS_NAME + PUBLIC_KEY + LIFETIME
-  └── LIFETIME      (0xA3)  : 8 bytes not_before + 8 bytes not_after (big-endian)
+  ├── DNS_NAME    (0xA1) : "localhost"  (variable bytes)
+  ├── PUBLIC_KEY  (0x02) : CA-signed EC public key (65 bytes)
+  ├── SIGNATURE   (0xA2) : ECDSA signature over DNS_NAME + PUBLIC_KEY + LIFETIME (variable)
+  └── LIFETIME    (0xA3) : 8 bytes not_before + 8 bytes not_after  (both 64-bit big-endian)
 ```
 
-The CA's public key is in `keys/ca_public_key.bin` (65-byte uncompressed EC point).
+The CA's public key is in `keys/ca_public_key.bin` (65-byte uncompressed EC point, P-256).
 
 ### Cryptographic Parameters
 
 | Parameter | Value |
 |---|---|
-| Key exchange | ECDH on P-256 curve (`NID_X9_62_prime256v1`) |
-| Signature | ECDSA with P-256 (64-byte r||s encoding) |
-| Encryption | AES-256-CBC |
+| Key exchange | ECDH on P-256 (`NID_X9_62_prime256v1`) |
+| Signature | ECDSA with P-256 (DER-encoded r‖s) |
+| Encryption | AES-256-CBC (16-byte block, PKCS#7 padding) |
 | MAC | HMAC-SHA256 (32 bytes) |
 | Client nonce | 32 random bytes |
 | Server nonce | 32 random bytes |
+| EC public key | 65-byte uncompressed point: `0x04` ‖ x ‖ y |
 | AES IV | 16 random bytes per encrypted record |
+
+### Helper Functions Provided
+
+`libsecurity.h` declares all crypto helper functions you may use:
+
+```c
+// Load CA public key (for verifying server cert)
+void        load_ca_public_key(const char* filename);
+
+// Load server certificate chain
+void        load_certificate(const char* filename);
+
+// Load/generate EC keypair for this node
+void        load_private_key(const char* filename);   // server: load from file
+void        generate_private_key();                   // generate fresh keypair
+void        derive_public_key();                      // derive pub from priv
+
+// ECDH: derive shared secret from peer's EC public key
+void        load_peer_public_key(const uint8_t* peer_key, size_t size);
+void        derive_secret();                         // fills extern secret[32]
+
+// Derive encryption/mac keys from shared secret + transcript
+void        derive_keys(const uint8_t* salt, size_t size);
+
+// Signing and verification
+size_t      sign(uint8_t* sig, const uint8_t* data, size_t size);
+int         verify(const uint8_t* sig, size_t sig_size,
+                  const uint8_t* data, size_t size, EVP_PKEY* authority);
+
+// Randomness and HMAC
+void        generate_nonce(uint8_t* buf, size_t size);
+void        hmac(uint8_t* digest, const uint8_t* data, size_t size);
+
+// AES-256-CBC
+size_t      encrypt_data(uint8_t* iv, uint8_t* cipher,
+                         const uint8_t* data, size_t size);
+size_t      decrypt_cipher(uint8_t* data, const uint8_t* cipher,
+                            size_t size, const uint8_t* iv);
+```
+
+`consts.h` defines all type constants and sizes (`NONCE_SIZE=32`, `SECRET_SIZE=32`, `MAC_SIZE=32`, `IV_SIZE=16`).
+
+### Transcript Construction
+
+The **transcript** is the concatenation of every raw handshake message TLV (type ‖ length ‖ value), **in order**, for both the client and server sides. The `TRANSCRIPT` field in `FINISHED` is the HMAC-SHA256 of this concatenated byte sequence.
+
+### Certificate Lifetime Validation
+
+The `LIFETIME` field (16 bytes) contains:
+- Bytes 0–7: `not_before` as a 64-bit big-endian Unix timestamp
+- Bytes 8–15: `not_after` as a 64-bit big-endian Unix timestamp
+
+Your code must compare these to the current time (`time(NULL)`) and reject expired or not-yet-valid certificates (the reference server calls `exit(1)` in these cases).
 
 ### File Locations
 
 | File | Location | Purpose |
 |---|---|---|
 | CA public key | `keys/ca_public_key.bin` | Verify server certificate signature |
-| Server private key | `keys/server_key.bin` | Sign server's nonce+pubkey in `handle_client_hello` |
+| Server private key | `keys/server_key.bin` | Sign server's nonce+pubkey during `handle_server_hello` |
 | Server cert (valid) | `keys/server_cert.bin` | Sent to client during handshake |
-| Server cert (expired) | `keys/server_cert_expired.bin` | Used by expired-cert test only |
+| Server cert (expired) | `keys/server_cert_expired.bin` | Used only by the expired-cert test |
 
 ## Grading Criteria
 
-The autograder runs **6 tests** for a total of **100 points**.
+There are **6 tests**: a compilation prerequisite (0 points) and 5 functional tests totaling **90 points**.
 
-### Test Descriptions
-
-| Test | Points | What it checks |
+| Test | Points | What is tested |
 |---|---|---|
-| Compilation | 10 | `Makefile` builds `client` and `server`; `README.md` present |
-| Client Hello | 5 | Client sends a properly formed Client Hello (nonce + pubkey) |
-| Server Hello | 25 | Server sends a properly formed Server Hello + Certificate |
-| Finished | 20 | Both sides complete the handshake with correct HMAC verification; expired/rejected certificates earn partial credit |
-| Encrypt & MAC: Client | 20 | Client correctly encrypts/decrypts data and authenticates with HMAC |
-| Encrypt & MAC: Server | 20 | Server correctly encrypts/decrypts data and authenticates with HMAC |
+| Compilation | — | `Makefile` builds `client` and `server` executables |
+| Client Hello | 10 | Client sends a properly formed CLIENT_HELLO (nonce + public key) |
+| Server Hello | 25 | Server sends a properly formed SERVER_HELLO + CERTIFICATE; client parses and verifies it |
+| Finished | 25 | Both sides complete the handshake with correct HMAC; bad cert/name/privkey/expired cert earn partial credit |
+| Encrypt & MAC: Client | 15 | Client correctly encrypts/decrypts data and verifies HMAC |
+| Encrypt & MAC: Server | 15 | Server correctly encrypts/decrypts data and verifies HMAC |
 
 ### Running Tests Locally
 
-Run from the repo root (where `project/` is):
-
 ```bash
-./helper test compile           # Compilation test only
-./helper test client_hello     # Client Hello test
-./helper test server_hello    # Server Hello test
-./helper test finished         # Finished + full handshake test
-./helper test encrypt_and_mac_client  # Client encrypt/MAC test
-./helper test encrypt_and_mac_server  # Server encrypt/MAC test
-
-./helper run                   # Run full autograder (all tests)
-./helper interactive          # Bash shell inside the grading container
+./helper test compile    # Compilation only
+./helper test client_hello
+./helper test server_hello
+./helper test finished
+./helper test encrypt_and_mac_client
+./helper test encrypt_and_mac_server
+./helper run             # Run all tests
+./helper interactive     # Bash shell inside grading container
 ```
 
-Run `./helper` without arguments to see all available commands.
+Run `./helper` with no arguments to see all commands.
 
 ## Resources
 
 ### Reference Specifications
 
-- [RFC 5246 — TLS 1.2](https://www.rfc-editor.org/rfc/rfc5246) — Handshake protocol reference (Sections 7.3–7.4)
+- [RFC 5246 — TLS 1.2](https://www.rfc-editor.org/rfc/rfc5246) — Sections 7.3 (handshake) and 7.4 (handshake messages) are the closest reference for the overall flow
 - [RFC 6090 — ECC Key Agreement](https://www.rfc-editor.org/rfc/rfc6090) — ECDH/ECDSA fundamentals
-- [NIST SP 800-56A Rev. 3](https://csrc.nist.gov/publications/detail/sp/800-56a/rev-3/final) — ECDH key agreement (Section 6.2.2 for Diffie-Hellman on EC)
-- [RFC 5480 — ECC SubjectPublicKeyInfo](https://www.rfc-editor.org/rfc/rfc5480) — Uncompressed EC point format (Section 2.2)
+- [NIST SP 800-56A Rev. 3](https://csrc.nist.gov/publications/detail/sp/800-56a/rev-3/final) — ECDH key agreement (Section 6.2.2)
+- [RFC 5480 — ECC SubjectPublicKeyInfo](https://www.rfc-editor.org/rfc/rfc5480) — Uncompressed EC point format, Section 2.2 (`0x04 ‖ x ‖ y`)
 - [FIPS 180-4 — SHA-256](https://csrc.nist.gov/publications/detail/fips/180/4/final) — HMAC-SHA256 specification
 
 ### OpenSSL API Reference
 
-- [EVP API (OpenSSL)](https://www.openssl.org/docs/manmaster/man7/evp.html) — `EVP_*` interfaces for all crypto operations
-- [EVP Symmetric Encryption](https://www.openssl.org/docs/manmaster/man3/EVP_EncryptInit.html) — AES-CBC encrypt/decrypt
-- [EVP Signing/Verification](https://www.openssl.org/docs/manmaster/man3/EVP_DigestSign.html) — ECDSA sign/verify
+- [EVP API (OpenSSL)](https://www.openssl.org/docs/manmaster/man7/evp.html) — All `EVP_*` interfaces
+- [EVP Symmetric Encryption](https://www.openssl.org/docs/manmaster/man3/EVP_EncryptInit.html) — AES-CBC
+- [EVP Signing/Verification](https://www.openssl.org/docs/manmaster/man3/EVP_DigestSign.html) — ECDSA
 - [EC DH Key Agreement](https://www.openssl.org/docs/manmaster/man3/ECDH_compute_key.html) — `ECDH_compute_key`
-- [BN API](https://www.openssl.org/docs/manmaster/man3/bn.html) — Big-number arithmetic (for parsing EC points)
+- [BN API](https://www.openssl.org/docs/manmaster/man3/bn.html) — Big-number arithmetic
 
-### TLV Encoding Reference
+### TLV Framework Functions
 
-The provided framework handles TLV serialization/deserialization. Key functions to use:
+The TLV utilities are already implemented in `consts.h`. You call them from `security.c`:
 
 ```c
-// Read a TLV from a buffer
-tlv* deserialize_tlv(uint8_t* buf, uint16_t size);
+// Create / populate a TLV
+tlv*       create_tlv(uint8_t type);
+void       add_val(tlv* t, uint8_t* val, uint16_t size);          // primitive
+void       add_tlv(tlv* parent, tlv* child);                     // container
 
-// Write a TLV to a buffer
-uint16_t serialize_tlv(uint8_t* buf, tlv* t);
+// Serialize / deserialize
+uint16_t   serialize_tlv(uint8_t* buf, tlv* t);
+tlv*       deserialize_tlv(uint8_t* buf, uint16_t size);
 
-// Find a child TLV by type inside a container
-tlv* get_tlv(tlv* parent, uint8_t type);
+// Find a child TLV by type (recursive search)
+tlv*       get_tlv(tlv* parent, uint8_t type);
+
+// Cleanup
+void       free_tlv(tlv* t);
 ```
-
-Primitive fields: `NONCE` (0x01), `PUBLIC_KEY` (0x02), `DNS_NAME` (0xA1), `SIGNATURE` (0xA2), `LIFETIME` (0xA3), `IV` (0x51), `CIPHERTEXT` (0x52), `MAC` (0x53), `TRANSCRIPT` (0x04).
-
-Container fields (use `get_tlv` to find children): `CLIENT_HELLO` (0x10), `SERVER_HELLO` (0x20), `CERTIFICATE` (0xA0), `FINISHED` (0x30), `DATA` (0x50).
 
 ### Implementation Hints
 
-1. **Start with `handle_client_hello`** — it's called first when the client connects. Build a `CLIENT_HELLO` TLV, send it.
-2. **Use `get_tlv`** to extract the server's nonce and public key from its `SERVER_HELLO` message.
-3. **For ECDH**: Use `EVP_PKEY_new_raw_public_key` with `EVP_PKEY_X25519` or the P-256 curve to import the raw 65-byte EC point. Call `EVP_PKEY_derive` to compute the shared secret.
-4. **For the transcript HMAC**: Collect every raw bytes of every handshake message (including type+length headers) in order. HMAC-SHA256 the concatenated transcript.
-5. **The expired cert test**: Your `handle_server_hello` should call `ntohl()` on the 64-bit big-endian timestamps in `LIFETIME`, compare to `time(NULL)`, and return without sending if expired.
-6. **AES-CBC**: Use `EVP_CIPHER_CTX_new`, `EVP_EncryptInit_ex2`, `EVP_CipherUpdate`, `EVP_CipherFinal_ex`. The IV is sent in the clear before the ciphertext.
+1. **Read the reference solution** at `github.com/uclacs118/project3s26` — it shows exactly how to implement all five functions. Study `src/security.c` carefully.
+2. **Start with the client side**: implement `handle_client_hello` first. Build a `CLIENT_HELLO` TLV with a nonce and your EC public key, then serialize and return.
+3. **For the EC key pair**: call `generate_private_key()` and `derive_public_key()` in `init_sec`. The public key bytes are in `public_key` (size `pub_key_size`).
+4. **For the shared secret**: call `load_peer_public_key(pk->val, pk->length)` with the peer's EC point, then `derive_secret()` to fill `secret[32]`.
+5. **Transcript**: collect the raw bytes of every handshake TLV (type+length+value) in order into a buffer. The `TRANSCRIPT` in FINISHED is `HMAC-SHA256(transcript_buffer, transcript_len)`.
+6. **AES-CBC**: `encrypt_data(iv_buf, ct_buf, pt, pt_len)` writes 16 random bytes to `iv_buf` and ciphertext to `ct_buf`, returns ciphertext length. The grading proxy appends IV before the ciphertext on the wire.
+7. **HMAC in DATA messages**: HMAC over `IV ‖ CIPHERTEXT` (the serialized TLV children, not including the DATA wrapper or MAC itself).
+8. **Expired certificates**: parse `LIFETIME` (16 bytes = 8-byte BE not_before + 8-byte BE not_after), compare to `time(NULL)`. If expired, call `print("EXPIRED Certificate")` and `exit(1)`.
