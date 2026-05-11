@@ -178,7 +178,7 @@ Client-Hello = CLIENT-HELLO-TYPE TLV-LENGTH Nonce Public-Key
 
 After receiving the Client Hello, the server will construct and send its own Server Hello message. This message contains its own nonce (independent from the client's nonce), its certificate, a public key, and a signature over the rest of this message.
 
-The certificate contains three values: the associated DNS name (e.g. example.com), a public key, and a signature of the `DNS-Name`, `Public-Key` and `Lifetime` appended after each other by the certificate authority. `Lifetime` payload has 16 bytes, the first 8 bytes contains a *notBefore* in Unix Timestamp in big endian, while the second 8 bytes contains a *notAfter*, also a Unix Timestamp in big endian. They two together describes a validity period of a certificate, and client must not accept an expired (or yet valid) certificate. You'll be able to access this certificate by reading the file `server_cert.bin` in the current working directory.
+The certificate contains three values: the associated DNS name (e.g. example.com), a public key, and a signature of the `DNS-Name`, `Public-Key` and `Lifetime` appended after each other by the certificate authority. `Lifetime` payload has 16 bytes, the first 8 bytes contains a *notBefore* in Unix Timestamp in big endian, while the second 8 bytes contains a *notAfter*, also a Unix Timestamp in big endian. These two together describe a validity period of a certificate, and the client must not accept an expired (or not yet valid) certificate. You'll be able to access this certificate by reading the file `server_cert.bin` in the current working directory.
 
 ```
 DNS-NAME-TYPE = 0xA1
@@ -276,7 +276,7 @@ We also have [TLV Helpers](/misc/tlv-helpers-p3) that will help with most of the
 ## Common Problems (list will be frequently updated)
 
 - Make sure that **lengths** are in network order/big endian.
-- Make sure your HMAC is computed over the TLV-serialized representation of you cryptographic primitives.
+- Make sure your HMAC is computed over the TLV-serialized representation of your cryptographic primitives.
 
 ## Autograder Test Cases
 
