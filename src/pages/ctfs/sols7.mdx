@@ -1,0 +1,136 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 7 Solutions: IP, NAT"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 7 Solutions: IP, NAT</H.Title>
+
+## Subnetting
+
+### Subnetting 1
+
+We need 25 addresses for the 25 devices in the main network and 1 address for the router interface. Additionally, we have a reserved network address and a reserved broadcast address. In total, our subnet requires at least 25 + 1 + 2 = 28 addresses.
+
+28 addresses can be expressed with a minimum of 5 bits, since the smallest power of 2 greater than 27 is 2^5 = 32. If 5 bits of the IP address are used for the host ID, then 32 - 5 = 27 bits are used for the network ID.
+
+Answer: `/27`
+
+### Subnetting 2
+
+We need 10 addresses for the 10 devices in the IoT network and 1 address for the router interface. Additionally, we have a reserved network address and a reserved broadcast address. In total, our subnet requires at least 10 + 1 + 2 = 13 addresses.
+
+13 addresses can be expressed with a minimum of 4 bits, since the smallest power of 2 greater than 13 is 2^4 = 16. If 4 bits of the IP address are used for the host ID, then 32 - 4 = 28 bits are used for the network ID.
+
+Answer: `/28`
+
+### Subnetting 3
+
+We need to support parties of 100 people with 5 devices each, or 500 devices in total. We need 500 addresses for the 500 devices and 1 address for the router interface. Additionally, we have a reserved network address and a reserved broadcast address. In total, our subnet requires at least 500 + 1 + 2 = 503 addresses.
+
+503 addresses can be expressed with a minimum of 9 bits, since the smallest power of 2 greater than 503 is 2^9 = 512. If 9 bits of the IP address are used for the host ID, then 32 - 9 = 23 bits are used for the network ID.
+
+Answer: `/23`
+
+### Subnetting 4
+
+The network address is the first address of the network. The broadcast address is the last address of the network. The first usable IP address is the address immediately after the network addrress.
+
+We start addressing at `192.168.0.0`, so the network address is `192.168.0.0`. The first usable IP address is then `192.168.0.1`. The last address of the network has all 9 host ID bits set to 1, so the broadcast address is `192.168.1.255`.
+
+Answer: `192.168.0.0,192.168.1.255,192.168.0.1`
+
+### Subnetting 5
+
+The guest network uses 9 bits for the host ID. To prevent the main network from overlapping with the guest network, we start addressing at `192.168.2.0`, so the network address is `192.168.2.0`. The first usable IP address is then `192.168.2.1`. The last address of the network has all 5 host ID bits set to 1, so the broadcast address is `192.168.2.31`.
+
+Answer: `192.168.2.0,192.168.2.31,192.168.2.1`
+
+### Subnetting 6
+
+The main network uses 5 bits for the host ID. To prevent the IoT network from overlapping with the main network, we start addressing at `192.168.2.32`, so the network address is `192.168.2.32`. The first usable IP address is then `192.168.2.33`. The last address of the network has all 4 host ID bits set to 1, so the broadcast address is `192.168.2.47`.
+
+Answer: `192.168.2.32,192.168.2.47,192.168.2.33`
+
+## IPv6
+
+### IPv6 1
+
+IPv4 uses a fragment offset field that gives the offset of the fragmented packet in units 8 bytes, an MF bit that is set in all but the last fragment, and an identification value that identifies all fragments of the same packet. In IPv4, all packet headers carry these fields whether the packets are fragmented or not, whereas in IPv6, only extension headers carry these fields when needed. The use of extension headers to indicate fragmentation eliminates the need to parse these fields for unfragmented packets, increasing routing speed.
+
+Answers may vary.
+
+### IPv6 2
+
+IPv6 was designed with a header of a fixed length to increase routing efficiency. In IPv4, routers must calculate where each packet's header ends and data begins based on the header length field, whereas in IPv6, this isn't necessary. Since IPv6 packets do not include the variable-length options fields present in IPv4 packets, the amount of time time needed to parse each packet is reduced.
+
+Answers may vary.
+
+## NAT
+
+### NAT 1
+
+Server A uses LAN-side IP address `192.168.1.10` and port `40001`. The router uses WAN-side IP address `203.0.113.5` and assigns server A the WAN-side port `1024`.
+
+Answer: `192.168.1.10:40001,203.0.113.5:1024`
+
+### NAT 2
+
+Server B uses LAN-side IP address `192.168.1.50` and port `50002`. The router uses WAN-side IP address `203.0.113.5` and assigns server B the WAN-side port `1025`.
+
+Answer: `192.168.1.50:50002,203.0.113.5:1025`
+
+## NAT Traversal
+
+### NAT Traversal 1
+
+Add an entry into the NAT table: `172.16.0.72:8080,54.45.211.98:80`. Then, clients can talk to your server.
+
+Flag: `cs118{st4t1c_n4t_c0nf1g}`
+
+### NAT Traversal 2
+
+Have the host request using UPnP that local port 8080 is bound to public port 80. Then, clients can talk to your server.
+
+Flag: `cs118{UPNP_n4t_c0nf1g}`
+
+### NAT Traversal 3
+
+Have hosts A and B contact the STUN server. Once they both register with the STUN server, they can ask the server again for each others' IP addresses. At this point, you can observe that the NAT tables have a "hole punched" already, and using the same public IP addresses and ports that each host used to contact the STUN server, the clients can now talk to each other.
+
+Flag: `cs118{h0le_punch1ng}`
+
+## ICMP
+
+### ICMP 1
+
+Traceroute uses IP packets with increasingly large TTLs to determine where packets are routed.
+
+Answer: `3`
+
+### ICMP 2
+
+ICMP does not handle incorrect checksums, routers check these and drop packets with malformed checksums.
+
+Answer: `1`
+
+### ICMP 3
+
+The sequence number of a ping message is different for each ICMP echo request/response pair. This associates these pairs.
+
+Answer: `2`.
+
+## Tunneling
+
+### Tunneling 1
+
+The inner IP header contains the source and destination addresses as if Alice was a host in the network. The source is `145.27.15.99` and the destination is `145.27.15.100`. The outer IP header contains Alice's public IP address as the source address (which allows packets to be routed back to her), and the destination address is the gateway/VPN server's address. The source is `61.126.152.98` and the destination is `145.27.0.1`.
+
+Answer: `145.27.15.99,145.27.15.100,61.126.152.98,145.27.0.1`
+
+### Tunneling 2
+
+The inner IP header contains the source and destination addresses in the private networks. The source is the host in network A (`192.168.3.5`) and the destination is the host in network B (`192.168.4.5`). The outer IP header contains the source and destination addresses of the public routers that route packets to each other. The source is `137.1.23.31` and the destination is `137.1.24.31`.
+
+Answer: `192.168.3.5,192.168.4.5,137.1.23.31,137.1.24.31`
