@@ -1,0 +1,153 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 7: IP, NAT"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 7: IP, NAT</H.Title>
+
+## Subnetting
+
+Suppose I am setting up 3 networks at home: a main network for laptops, desktop computers, etc.; a guest network for visitors; and an IoT network to isolate my smart devices like my wifi-enabled printer, toaster, and fruit juicer. I have roughly 25 devices that need to be connected to my main network as well as maybe 10 IoT devices. With my guest network, I want to be able to support parties of up to 100 people, each potentially bringing a phone, iPad, laptop, smart watch, and work laptop.
+
+My ISP only provides me with one publicly routable IP address, so I have to use NAT. Each network will be on its own subnet, and the networks must not overlap.
+
+### Subnetting 1
+
+What minimum subnet size do I need for the main network? Remember to take into account reserved addresses within the subnet.
+
+Answer with `/N`, where `N` is the number of bits reserved for the network ID.
+
+### Subnetting 2
+
+What minimum subnet size do I need for the IoT network? Remember to take into account reserved addresses within the subnet.
+
+Answer with `/N`, where `N` is the number of bits reserved for the network ID.
+
+### Subnetting 3
+
+What minimum subnet size do I need for the guest network? Remember to take into account reserved addresses within the subnet.
+
+Answer with `/N`, where `N` is the number of bits reserved for the network ID.
+
+### Subnetting 4
+
+Assume we start our addressing at `192.168.0.0`. Since the guest network (`/23`) is the largest network, it's easiest to place it first. What is the network address, broadcast address, and first usable IP address for this subnet?
+
+Answer with a list of three IPv4 addresses, like `A.B.C.D,E.F.G.H,I.J.K.L` where `A.B.C.D` is the network address, `E.F.G.H` is the broadcast address, and `I.J.K.L` is the first usable IP address.
+
+### Subnetting 5
+
+Now, suppose we start the main network (`/27`) right after the guest network ends. What is the network address, broadcast address, and first usable IP address for this subnet?
+
+Answer with a list of three IPv4 addresses, like `A.B.C.D,E.F.G.H,I.J.K.L` where `A.B.C.D` is the network address, `E.F.G.H` is the broadcast address, and `I.J.K.L` is the first usable IP address.
+
+### Subnetting 6
+
+Now, suppose we start the IoT network (`/28`) right after the main network ends. What is the network address, broadcast address, and first usable IP address for this subnet?
+
+Answer with a list of three IPv4 addresses, like `A.B.C.D,E.F.G.H,I.J.K.L` where `A.B.C.D` is the network address, `E.F.G.H` is the broadcast address, and `I.J.K.L` is the first usable IP address.
+
+## IPv6
+
+### IPv6 1
+
+If a packet is fragmented, how does IPv4 indicate this? How does IPv6 indicate this? Why does IPv6 do it the way it does rather than how IPv4 does?
+
+### IPv6 2
+
+The IPv6 header has a fixed length of 40 bytes, whereas the IPv4 header has variable length (20–60 bytes). What was the primary design goal for simplifying the IPv6 header?
+
+## NAT
+
+You are a network administrator for a startup. You need to configure a NAT box to connect the local office to the Internet.
+
+The LAN uses a private IPv4 range. Server A in the LAN uses address `192.168.1.10`. Server B in the LAN uses address `192.168.1.50`.
+
+The router's LAN-side interface has address `192.168.1.1`. The router's WAN-side interface has address `203.0.113.5`.
+
+Assume that the router multiplexes the public address using ports starting from 1024 and then increments the port number by one for each new entry.
+
+### NAT 1
+
+Server A accesses an external web server at IP address `93.184.216.34`. It uses `40001` for its local source port. What entry is added to the NAT table?
+
+Assume an entry in the NAT table looks like this: `A.B.C.D:P,E.F.G.H:Q` where `A.B.C.D` is the LAN-side IP address, `P` is the LAN-side port, `E.F.G.H` is the WAN-side IP address, and `Q` is the WAN-side port.
+
+### NAT 2
+
+Server B accesses an external web server at IP address `103.43.767.5`. It uses `50002` for its local source port. What entry is added to the NAT table?
+
+Assume an entry in the NAT table looks like this: `A.B.C.D:P,E.F.G.H:Q` where `A.B.C.D` is the LAN-side IP address, `P` is the LAN-side port, `E.F.G.H` is the WAN-side IP address, and `Q` is the WAN-side port.
+
+## NAT Traversal
+
+### NAT Traversal 1
+
+First, we will configure a router's NAT statically. You have a server running locally at `172.16.0.72:8080`. Clients know this server's public address as `54.45.211.98:80`.
+
+Enter the activity with `nc nat.cs118.org 10001`, and get your server connected to the internet!
+
+### NAT Traversal 2
+
+Now, we have a router that uses UPnP. Send a UPnP message from your host machine to the router so that it can receive messages from the internet. The addresses are the same as the first activity.
+
+Enter the activity with `nc nat.cs118.org 10002`, and get your server connected to the internet!
+
+### NAT Traversal 3
+
+Now, we will use NAT hole-punching to establish a peer-to-peer connection between hosts A and B. You need to learn each host's IP address and then have them communicate on public port 5000.
+
+Enter the activity with `nc nat.cs118.org 10003`, and send messages between host A and host B.
+
+## ICMP
+
+### ICMP 1
+
+What type of ICMP message does the traceroute utility typically send?
+
+1. Echo
+2. Destination host unreachable
+3. TTL expired/Time exceeded
+4. Fragmentation required
+
+Answer with a number, like `1`.
+
+### ICMP 2
+
+Which of the following is NOT diagnostic information that ICMP can provide?
+
+1. The IP header's checksum is incorrect
+2. Packet size is too large and fragmentation is needed
+3. A router cannot route a packet to its destination
+4. A packet's TTL has expired
+
+Answer with a number, like `1`.
+
+### ICMP 3
+
+What part of an ICMP ping header is used to associate specific echo requests with echo replies?
+
+1. Identifier
+2. Sequence number
+3. Type
+4. Application data
+
+Answer with a number, like `1`.
+
+## Tunneling
+
+### Tunneling 1
+
+Alice is using a VPN to tunnel into UCLA's network from her home. UCLA's network is `145.27.0.0/16`, and its gateway/VPN server is at `145.27.0.1`. Alice's public IP address is `61.126.152.98`. Inside UCLA's network, Alice has obtained an IP address of `145.27.15.99`. When connected to the VPN, Alice wants to send a request to `145.27.15.100`.
+
+NOTE: UCLA's network **does not** use NAT in this question.
+
+Alice's router sends IP packets encapsulated in IP packets. What are the source and destination addresses in both headers? Answer in the format `inner_source,inner_destination,outer_source,outer_destination`, where all 4 fields are IPv4 addresses (without the slash/CIDR notation).
+
+### Tunneling 2
+
+There are two private networks (A:`192.168.3.0/24` and B:`192.168.4.0/24`) that are connected using a tunnel. The gateway for network A has a public address of `137.1.23.31` and the gateway for network B has a public address of `137.1.24.31`. Host `192.168.3.5` in network A sends a message to host `192.168.4.5` in network B. When this message is on the global internet, it has an inner IP header encapsulated with an outer IP header, as before.
+
+What are the source and destination addresses in both headers? Answer in the format `inner_source,inner_destination,outer_source,outer_destination`, where all 4 fields are IPv4 addresses (without the slash/CIDR notation).
