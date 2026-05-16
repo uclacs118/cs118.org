@@ -1,0 +1,295 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Midterm 2 Practice Problems"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Midterm 2 Practice Problems</H.Title>
+
+## Congestion Control Simulation (from Week 5 CTF)
+
+Host A begins sending data to host B over a TCP connection at T = 0 ms. Host B does not have any data to send to host A. Each segment that host A sends is 1 KB, which is also the MSS. At T = 0 ms, host A's congestion control window `cwnd` = 1 KB and `ssthresh` = 3 KB. Additionally, RTO = 100 ms and 1 RTT = 20 ms. The RTT includes a transmission delay of 4 ms for data-carrying segments. The transmission delay for ACK segments with no data is negligible. Delayed ACKs are not used.
+
+### Congestion Control Simulation 1
+
+At what time (in ms) does host A receive the ACK for segment 2?
+
+### Congestion Control Simulation 2
+
+What is host A's congestion control phase once it receives the ACK for segment 2?
+
+1. Slow start
+2. Congestion avoidance
+3. Fast recovery
+
+Answer with a number, like `1`.
+
+### Congestion Control Simulation 3
+
+At what time (in ms) does host A begin transmitting segment 5?
+
+### Congestion Control Simulation 4
+
+Once host A receives the ACK for segment 5, what is `cwnd` (in KB)?
+
+### Congestion Control Simulation 5
+
+Suppose segment 6 gets lost once. At what time (in ms) does host A begin retransmitting the segment?
+
+### Congestion Control Simulation 6
+
+What is host A's congestion control phase once it finishes retransmitting segment 6?
+
+1. Slow start
+2. Congestion avoidance
+3. Fast recovery
+
+### Congestion Control Simulation 7
+
+At what time (in ms) does host A receive the ACK for segment 9?
+
+### Congestion Control Simulation 8
+
+Once host A receives the ACK for segment 9, what is `cwnd` (in KB)?
+
+## Security
+
+### Security 1
+
+In TLS, what algorithm/cryptographic concept provides confidentiality of most data transmitted over a connection?
+
+1. Asymmetric encryption
+2. Symmetric encryption
+3. Signatures
+4. MAC
+
+### Security 2
+
+Why do we need to use MACs instead of just hashing algorithms? Think about what makes a MAC different from a hashing algorithm, and name the cryptographic property that a MAC provides that a hashing algorithm doesn't.
+
+### Security 3
+
+A server must have its public key verified in order for a client to trust it. Who verifies this public key and when?
+
+### Security 4
+
+Why do newer versions of TLS use Diffie-Hellman Key Exchange instead of simpler methods to establish a shared session key? For example, in an older version, a client would encrypt a random number with the server's public key and the server could decrypt it; in this way, the random number could be used as the shared key.
+
+## QUIC
+
+### QUIC 1
+
+What primary transport-layer protocol does QUIC build upon, and what is the main architectural reason for this choice?
+
+### QUIC 2
+
+Which mechanism enables QUIC connections to survive a change in the client's IP address or port (such as transitioning from Wi-Fi to cellular data)?
+
+### QUIC 3
+
+How does QUIC use streams, frames, and packets to solve the head-of-line (HOL) blocking issue inherent in TCP?
+
+## IP
+
+### Misc
+
+#### Misc 1
+
+Which of the following is _not_ required for internet connectivity when configuring a new IP host on a private network?
+
+1. Default router's IP address
+2. Subnet mask
+3. DNS recursive resolver's IP address
+4. IP address for the host's network interface
+5. Public IP address
+
+### ICMP
+
+#### ICMP 1
+
+What is the purpose of ICMP? Why doesn't TCP have an ICMP-equivalent companion protocol?
+
+#### ICMP 2
+
+What tool makes use of ICMP TTL expired messages?
+
+1. ping
+2. dig
+3. traceroute
+4. nc
+
+#### ICMP 3
+
+When you send a `ping` command, the client can display several messages. Which of these messages is _not_ due to an ICMP message notifying the client?
+
+1. Destination host unreachable
+2. Echo reply
+3. TTL expired
+4. Request timed out
+
+### IP Fragmentation
+
+#### IP Fragmentation 1
+
+After an IP packet is fragmented, why is the packet solely reassembled at the destination host and not at intermediate routers?
+
+#### IP Fragmentation 2
+
+If the MF bit is 1 and the offset field is 0, which of the following is true?
+
+1. This is a non-fragmented packet.
+2. This is the first fragment of a fragmented packet.
+3. This is a fragment in the middle of a fragmented packet.
+4. This is the last fragment of a fragmented packet.
+
+#### IP Fragmentation 3
+
+If the MF bit is 0 and the offset field is not 0, which of the following is true?
+
+1. This is a non-fragmented packet.
+2. This is the first fragment of a fragmented packet.
+3. This is a fragment in the middle of a fragmented packet.
+4. This is the last fragment of a fragmented packet.
+
+#### IP Fragmentation 4
+
+If the MF bit is 0 and the offset field is 0, which of the following is true?
+
+1. This is a non-fragmented packet.
+2. This is the first fragment of a fragmented packet.
+3. This is a fragment in the middle of a fragmented packet.
+4. This is the last fragment of a fragmented packet.
+
+#### IP Fragmentation 5
+
+If the MF bit is 1 and the offset field is not 0, which of the following is true?
+
+1. This is a non-fragmented packet.
+2. This is the first fragment of a fragmented packet.
+3. This is a fragment in the middle of a fragmented packet.
+4. This is the last fragment of a fragmented packet.
+
+### Subnetting
+
+You are designing the network infrastructure for a high-tech smart home and home office. You want to isolate your traffic into three separate subnets:
+
+- An office network for your 14 work servers and development machines
+- A family/media network for up to 50 personal phones, TVs, and gaming consoles
+- A community network for hosting neighborhood meetups and workshops with the expectation that up to 200 concurrent devices might connect simultaneously
+
+#### Subnetting 1
+
+What minimum subnet size is needed for each of the three networks? (In other words, how many bits should be reserved for the network ID?)
+
+#### Subnetting 2
+
+Assume we start our addressing at the private block 10.0.0.0. To optimize address space, we will order our subnets from largest to smallest.
+
+What is the range of usable IP addresses for each of the three networks?
+
+### NAT
+
+#### NAT 1
+
+You are setting up network connectivity for a corporate environment. The internal network (LAN) houses three dedicated machines:
+
+- Database server: `10.0.0.15`
+- Application server: `10.0.0.25`
+- Backup Server: `10.0.0.35`
+
+The corporate NAT gateway has the following interface configurations:
+
+- LAN-side gateway IP: `10.0.0.1`
+- WAN-side public IP: `198.51.100.42`
+
+The gateway multiplexes the single public WAN IP by assigning external ports starting at port 5000 and incrementing by 1 for each new connection.
+
+The database server opens a connection to an external cloud storage bucket at `203.0.113.88`. The database server uses its local source port `49152`. What entry is added to the NAT table?
+
+#### NAT 2
+
+You are setting up network connectivity for a corporate environment. The internal network (LAN) houses three dedicated machines:
+
+- Database server: `10.0.0.15`
+- Application server: `10.0.0.25`
+- Backup Server: `10.0.0.35`
+
+The corporate NAT gateway has the following interface configurations:
+
+- LAN-side Gateway IP: `10.0.0.1`
+- WAN-side Public IP: `198.51.100.42`
+
+The gateway multiplexes the single public WAN IP by assigning external ports starting at port 5000 and incrementing by 1 for each new connection.
+
+The application server opens a connection to an API endpoint at `192.0.2.10`. The application server uses its local source port `51000`. What entry is added to the NAT table?
+
+#### NAT 3
+
+Which of the following NAT traversal strategies requires an administrator to make a change in a router's NAT table?
+
+1. Static NAT configuration
+2. UPnP
+3. NAT hole-punching
+
+#### NAT 4
+
+In what scenario would you want to use the NAT traversal strategy from the previous question?
+
+1. Your host in the local network needs to make a peer-to-peer connection with another host on the global internet (for example, in a Skype call).
+2. You are playing a video game and need the video game server to send you packets at a certain port.
+3. You are hosting a web server and want clients on the global internet to access your server at a static public IP address.
+
+#### NAT 5
+
+NAT can often be used in a way similar to a firewall (although this is not the original motivation for NAT) by blocking some inbound traffic. It is important to note, however, that NAT is **NOT** a true firewall. Explain why NAT can be used in this way, and why it is not a true firewall.
+
+### Tunneling
+
+#### Tunneling 1 (from Week 7 CTF)
+
+Alice is using a VPN to tunnel into UCLA's network from her home. UCLA's network is `145.27.0.0/16`, and its gateway/VPN server is at `145.27.0.1`. Alice's public IP address is `61.126.152.98`. Inside UCLA's network, Alice has obtained an IP address of `145.27.15.99`. When connected to the VPN, Alice wants to send a request to `145.27.15.100`.
+
+NOTE: UCLA's network **does not** use NAT in this question.
+
+Alice's router sends IP packets encapsulated in IP packets. What are the source and destination addresses in both headers? Answer in the format `inner_source,inner_destination,outer_source,outer_destination`, where all 4 fields are IPv4 addresses (without the slash/CIDR notation).
+
+#### Tunneling 2 (from Week 7 CTF)
+
+There are two private networks (A:`192.168.3.0/24` and B:`192.168.4.0/24`) that are connected using a tunnel. The gateway for network A has a public address of `137.1.23.31` and the gateway for network B has a public address of `137.1.24.31`. Host `192.168.3.5` in network A sends a message to host `192.168.4.5` in network B. When this message is on the global internet, it has an inner IP header encapsulated with an outer IP header, as before.
+
+What are the source and destination addresses in both headers? Answer in the format `inner_source,inner_destination,outer_source,outer_destination`, where all 4 fields are IPv4 addresses (without the slash/CIDR notation).
+
+#### Tunneling 3
+
+Explain how tunneling can be used to provide IPv6 connectivity over an IPv4 network.
+
+### IPv6
+
+#### IPv6 1
+
+Which of the following IPv4 header fields were removed in IPv6, and why?
+
+1. Version number
+2. Header length
+3. Fragment offset
+4. Source IP address
+5. Destination IP address
+6. Options
+
+#### IPv6 2
+
+Explain the purpose of extension headers in IPv6.
+
+## True or False
+
+1. In QUIC, when a probe timeout (PTO) occurs, a packet is retransmitted.
+2. The IPv4 packet header contains a checksum calculated over the entire packet.
+3. There is no limit on the size of an IPv4 packet.
+4. The IPv4 packet header contains the length of the header in bytes.
+5. An IP packet can be encapsulated inside an infinite number of other IP packets, limited only by network constraints like the maximum transmission unit (MTU).
+6. Routers can fragment packets in IPv6.
+7. After a server shares its public key with a client, both parties can immediately begin encrypting their communication with symmetric cryptography.
+8. Encryption is sufficient to ensure communication between two hosts is secure.
+9. Symmetric cryptography is preferred over asymmetric cryptography when processing large amounts of data because it is more efficient.
+10. ICMP messages are encapsulated in IP headers.
