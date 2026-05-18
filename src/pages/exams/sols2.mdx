@@ -229,7 +229,7 @@ In IPv4, the main header includes a variable-length options field; every router 
 2. The IPv4 packet header contains a checksum calculated over the entire packet.
    - **False**. The IPv4 packet header checksum is only calculated over the header fields of the packet.
 3. There is no limit on the size of an IPv4 packet.
-   - **False**. The total length field is 16 bits long, so it can accommodate packets with at most $2^16 - 1$ bytes.
+   - **False**. The total length field is 16 bits long, so it can accommodate packets with at most $2^\{16\} - 1$ bytes.
 4. The IPv4 packet header contains the length of the header in bytes.
    - **False**. The IPv4 packet header contains the length of the header measured in 4-byte chunks (or rows of the header).
 5. An IP packet can be encapsulated inside an infinite number of other IP packets, limited only by network constraints like the maximum transmission unit (MTU).
