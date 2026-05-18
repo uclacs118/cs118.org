@@ -1,0 +1,246 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Midterm 2 Practice Problem Solutions"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Midterm 2 Practice Problem Solutions</H.Title>
+
+## Congestion Control Simulation (from Week 5 CTF)
+
+The following table depicts the scenario. A blank cell is used whenever a value does not change from the previous row.
+
+| T (ms) | Event experienced by A                         | Duplicate ACKs | ssthresh after event (KB) | cwnd after event (KB)   | Phase after event    |
+| ------ | ---------------------------------------------- | -------------- | ------------------------- | ----------------------- | -------------------- |
+| 0      | Send S1                                        | 0              | 3                         | 1 (S1)                  | Slow start           |
+| 20     | Get ACK for S1, send S2                        |                |                           | 2 (S2, S3)              |                      |
+| 24     | Send S3                                        |                |                           |                         |                      |
+| 40     | Get ACK for S2, send S4                        |                |                           | 3 (S3, S4, S5)          | Congestion avoidance |
+| 44     | Get ACK for S3, send S5                        |                |                           | 3.33 (S4, S5, S6)       |                      |
+| 48     | Send S6                                        |                |                           |                         |                      |
+| 60     | Get ACK for S4, send S7                        |                |                           | 3.67 (S5, S6, S7)       |                      |
+| 64     | Get ACK for S5, send S8                        |                |                           | 4 (S6, S7, S8, S9)      |                      |
+| 68     | Send S9                                        |                |                           |                         |                      |
+| 80     | Get ACK for S5 (due to receipt of S7)          | 1              |                           |                         |                      |
+| 84     | Get ACK for S5 (due to receipt of S8)          | 2              |                           |                         |                      |
+| 88     | Get ACK for S5 (due to receipt of S9), send S6 | 3              | 2                         | 5 (S6, S7, S8, S9, S10) | Fast recovery        |
+| 92     | Send S10                                       |                |                           |                         |                      |
+| 108    | Get ACK for S9                                 | 0              |                           | 2 (S10, S11)            | Congestion avoidance |
+
+### Congestion Control Simulation 1
+
+Host A receives the ACK for segment 2 at T = 40 ms.
+
+### Congestion Control Simulation 2
+
+Once host A receives the ACK for segment 2, `cwnd` is adjusted to 3 KB. `cwnd` = 3 KB = `ssthresh`, so host A enters the congestion avoidance phase.
+
+### Congestion Control Simulation 3
+
+Host A begins transmitting segment 5 at T = 44 ms.
+
+### Congestion Control Simulation 4
+
+We use the equation `cwnd` = `cwnd` + MSS \* (MSS / `cwnd`) several times while in the congestion avoidance phase. We find that once host A receives the ACK for segment 5, `cwnd` = 4 KB.
+
+### Congestion Control Simulation 5
+
+Host A begins retransmitting segment 6 as soon as it receives 3 duplicate ACKs for segment 5. This occurs at T = 88 ms.
+
+### Congestion Control Simulation 6
+
+When host A receives 3 duplicate ACKs for segment 5, it retransmits segment 6 and then enters the fast recovery phase.
+
+### Congestion Control Simulation 7
+
+Host B sends the cumulative ACK for segment 9 once it receives all segments up to and including 9. Host A receives the ACK at T = 108 ms.
+
+### Congestion Control Simulation 8
+
+We use the equation `cwnd` = `ssthresh` as host A enters the congestion avoidance phase. We find that `cwnd` = `ssthresh` = 2 KB.
+
+## Security
+
+### Security 1
+
+Encryption provides confidentiality. TLS uses symmetric encryption because it is more efficient than asymmetric encryption. The answer is `2`.
+
+### Security 2
+
+A hash can be computed for any text by anyone, where a MAC requires a secret key to compute. This still provides integrity while preventing unauthorized parties from forging their messages. MACs provide _authenticity_, which hashing does not. Only those with a secret key are able to compute a correct MAC, and those with the secret key can also verify the MAC.
+
+### Security 3
+
+A server's public key is verified through a certificate signed by a CA (certificate authority). The certificate binds the server to the public key. This certificate is generated well before the client sends the server the request—the server must get a certificate signed by the CA in order to have clients trust the public key.
+
+### Security 4
+
+Diffie-Hellman provides _forward secrecy_. Forward secrecy means that even if a private key is compromised, past communications are still safe and secure. The old version with asymmetric encryption of a random number did not have forward secrecy—if an RSA private key was leaked, all past session communications would be compromised. DHKE _can_ provide forward secrecy. If both the client and server generate ephemeral private values (i.e., on each session, they generate new private values), then they can use DHKE to generate a different key for each session. Even with knowledge of one session key and all of the session communications, an attacker cannot recover other session keys.
+
+## QUIC
+
+### QUIC 1
+
+QUIC uses UDP for a couple primary reasons. First, UDP does not manage connection states, handshakes, or packet retransmissions. This lack of intervention gives QUIC the freedom to implement its own complex connection logic entirely within the user space (the application layer). Also, the Internet is full of middleboxes that only understand TCP and UDP, so by using UDP, QUIC packets are able to pass through these middleboxes.
+
+### QUIC 2
+
+QUIC uses connection IDs (random numbers) to survive changes in a client's IP address or port. When a client switches networks, its IP and port change, but its QUIC connection ID stays the same. Each connection is identified by a pair of connection IDs.
+
+### QUIC 3
+
+A QUIC connection is like a super TCP connection containing multiple streams, which are akin to TCP connections. If a frame within a given stream is lost, the other streams are not blocked while the frame is retransmitted. By enabling multiplexing at the transport level, QUIC eliminates head-of-line blocking.
+
+## IP
+
+### Misc
+
+#### Misc 1
+
+The first 4 options are required for a host to connect to the internet, but a host does not need to know its public IP address. The answer is `5`.
+
+### ICMP
+
+#### ICMP 1
+
+Communication in IP is unidirectional, so routers along a path need to use ICMP to report back to the sender if something goes wrong. Communication in TCP is bidirectional; ACK numbers are used to confirm successful delivery. Therefore, TCP does not need an ICMP-equivalent companion protocol.
+
+#### ICMP 2
+
+Traceroute uses increasing TTLs to detect where packets are routed when TTLs expire. The answer is `3`.
+
+#### ICMP 3
+
+All of the options except "timed out" are types of ICMP messages. When a packet "times out", this is detected by a client-side timer, not with ICMP. The answer is `4`.
+
+### IP Fragmentation
+
+#### IP Fragmentation 1
+
+IP packets may take different routes through a network to reach a given destination host. A router is not guaranteed to receive any given packet, so the destination host is responsible for reassembling all the fragments of an IP packet.
+
+#### IP Fragmentation 2
+
+An MF bit of 1 signifies that there are more fragments to come. An offset of 0 signifies that the fragment begins at the start of the packet. Therefore, this is the first fragment of a fragmented packet.
+
+#### IP Fragmentation 3
+
+An MF bit of 0 signifies that there are no more fragments to come. An offset field that is not 0 signifies that the fragment does not begin at the start of the packet. Therefore, this is the last fragment of a fragmented packet.
+
+#### IP Fragmentation 4
+
+An MF bit of 0 signifies that there are no more fragments to come. An offset of 0 signifies that the fragment begins at the start of the packet. Therefore, this is a non-fragmented packet.
+
+#### IP Fragmentation 5
+
+An MF bit of 1 signifies that there are more fragments to come. An offset field that is not 0 signifies that the fragment does not begin at the start of the packet. Therefore, this is a fragment in the middle of a fragmented packet.
+
+### Subnetting
+
+#### Subnetting 1
+
+We need 14 addresses for the 14 devices in the office network and 1 address for the router interface. Additionally, we have a reserved network address and a reserved broadcast address. In total, our subnet requires at least 14 + 1 + 2 = 17 addresses.
+
+17 addresses can be expressed with a minimum of 5 bits, since the smallest power of 2 greater than 17 is 2^5 = 32. If 5 bits of the IP address are used for the host ID, then 32 - 5 = 27 bits are used for the network ID.
+
+Similarly, our family/media network requires 50 + 1 + 2 = 53 addresses. They can be expressed with a minimum of 6 bits, since the smallest power of 2 greater than 53 is 2^6 = 64. If 6 bits of the IP address are used for the host ID, then 32 - 6 = 26 bits are used for the network ID.
+
+Finally, our community network requires 200 + 1 + 2 = 203 addresses. They can be expressed with a minimum of 8 bits, since the smallest power of 2 greater than 203 is 2^8 = 256. If 8 bits of the IP address are used for the host ID, then 32 - 8 = 24 bits are used for the network ID.
+
+So, the office network uses a subnet of size `/27`, the family/media network uses a subnet of size `/26`, and the community network uses a subnet of size `/24`.
+
+#### Subnetting 2
+
+We start by assigning addresses to the largest network, our community network. The first and last addresses of the subnet are reserved, so the range of usable addresses for the router interface and devices for this network is `10.0.0.1`-`10.0.0.254`.
+
+Then, we assign addresses to the next-largest network, our family/media network. The first and last addresses of the subnet are reserved, so the range of usable addresses for the router interface and devices for this network is `10.0.1.1`-`10.0.1.62`.
+
+Finally, we assign addresses to the smallest network, our office network. The first and last addresses of the subnet are reserved, so the range of usable addresses for the router interface and devices for this network is `10.0.1.65`-`10.0.1.94`.
+
+### NAT
+
+#### NAT 1
+
+Assume an entry in the NAT table looks like this: `A.B.C.D:P,E.F.G.H:Q` where `A.B.C.D` is the LAN-side IP address, `P` is the LAN-side port, `E.F.G.H` is the WAN-side IP address, and `Q` is the WAN-side port.
+
+The LAN-side IP address of the database server is `10.0.0.15`. The LAN-side port is `49152`.
+
+The WAN-side IP address of the NAT gateway is `198.51.100.42`. The first WAN-side port assigned is `5000`.
+
+So, the NAT entry added is `10.0.0.15:49152,198.51.100.42:5000`.
+
+#### NAT 2
+
+Assume an entry in the NAT table looks like this: `A.B.C.D:P,E.F.G.H:Q` where `A.B.C.D` is the LAN-side IP address, `P` is the LAN-side port, `E.F.G.H` is the WAN-side IP address, and `Q` is the WAN-side port.
+
+The LAN-side IP address of the application server is `10.0.0.25`. The LAN-side port is `51000`.
+
+The WAN-side IP address of the NAT gateway is `198.51.100.42`. The next WAN-side port assigned is `5001`.
+
+So, the NAT entry added is `10.0.0.25:51000,198.51.100.42:5001`.
+
+#### NAT 3
+
+UPnP and NAT holepunching are all initated by hosts and do not require any manual changes to the router. The answer is static NAT configuration: `1`.
+
+#### NAT 4
+
+To configure a static public IP address for a webserver, you would want to hard-code an entry into your router's NAT table (i.e. statically configure its NAT table). UPnP does not guarantee a static public IP address (if NAT entries expire, for example), and your server is not making peer-to-peer connections with its clients (so hole-punching wouldn't work). The answer is `3`.
+
+#### NAT 5
+
+NAT effectively "hides" a private IP block from the global internet and allows a gateway router to somewhat control which packets get routed to the block.
+
+However, NAT does not give a router fine-grained controls or policies on what packets to accept or deny. This can only be done by an actual firewall.
+
+### Tunneling
+
+#### Tunneling 1 (from Week 7 CTF)
+
+The inner IP header contains the source and destination addresses as if Alice was a host in the network. The source is `145.27.15.99` and the destination is `145.27.15.100`. The outer IP header contains Alice's public IP address as the source address (which allows packets to be routed back to her), and the destination address is the gateway/VPN server's address. The source is `61.126.152.98` and the destination is `145.27.0.1`.
+
+The answer is `145.27.15.99,145.27.15.100,61.126.152.98,145.27.0.1`.
+
+#### Tunneling 2 (from Week 7 CTF)
+
+The inner IP header contains the source and destination addresses in the private networks. The source is the host in network A (`192.168.3.5`) and the destination is the host in network B (`192.168.4.5`). The outer IP header contains the source and destination addresses of the public routers that route packets to each other. The source is `137.1.23.31` and the destination is `137.1.24.31`.
+
+The answer is `192.168.3.5,192.168.4.5,137.1.23.31,137.1.24.31`.
+
+#### Tunneling 3
+
+Two hosts who speak IPv6 that are behind a dual-stack router can create an IPv4 tunnel between them. The two hosts use the other's IPv6 address as the destination and their own address as the source when creating IP packets. Then, when the routers forward these packets, they encapsulate them with IPv4 addresses. If router A is forwarding to router B, the source IPv4 address is router A's IPv4 address and the destination IPv4 address is router B's IPv4 address. Router B can then decapsulate the packets and forward them to an IPv6 host. This creates a tunnel where two hosts can communicate with IPv6 in an IPv4 network.
+
+### IPv6
+
+#### IPv6 1
+
+The header length, fragment offset, and options fields were removed. The header length field and the variable-length options field were removed because IPv6 uses fixed-length headers of 40 bytes. The fragment offset field was removed because IPv6 puts this information in extension headers when necessary.
+
+#### IPv6 2
+
+In IPv4, the main header includes a variable-length options field; every router along a packet's path needs to parse the entire header to check for options, even if those options are not relevant to them. This causes significant processing delays. In IPv6, all optional information is included in extension headers to speed up router processing.
+
+## True or False
+
+1. In QUIC, when a probe timeout (PTO) occurs, a packet is retransmitted.
+   - **False**. A PTO does not signify a packet loss event. When a PTO occurs, the sender sends one or more ACK-eliciting packets.
+2. The IPv4 packet header contains a checksum calculated over the entire packet.
+   - **False**. The IPv4 packet header checksum is only calculated over the header fields of the packet.
+3. There is no limit on the size of an IPv4 packet.
+   - **False**. The total length field is 16 bits long, so it can accommodate packets with at most $2^16 - 1$ bytes.
+4. The IPv4 packet header contains the length of the header in bytes.
+   - **False**. The IPv4 packet header contains the length of the header measured in 4-byte chunks (or rows of the header).
+5. An IP packet can be encapsulated inside an infinite number of other IP packets, limited only by network constraints like the maximum transmission unit (MTU).
+   - **True**. There is no software limit to how many layers of IP-in-IP encapsulation you can have. There is only a physical limit due to the MTU.
+6. Routers can fragment packets in IPv6.
+   - **False**. Only the sending host performs fragmentation in IPv6.
+7. After a server shares its public key with a client, both parties can immediately begin encrypting their communication with symmetric cryptography.
+   - **False**. The parties do not share a private key. They would need to run a key exchange protocol or communicate a shared secret with each other using asymmetric encryption first.
+8. Encryption is sufficient to ensure communication between two hosts is secure.
+   - **False**. Encryption only provides confidentiality. It does not provide integrity and authenticity (it does not protect against tampering, and it does not prove you are communicating with the party you think you are).
+9. Symmetric cryptography is preferred over asymmetric cryptography when processing large amounts of data because it is more efficient.
+   - **True**.
+10. ICMP messages are encapsulated in IP headers.
+    - **True**.
