@@ -113,70 +113,43 @@ An attacker can replace _both_ the key and its hash. A hash can be computed with
 
 The following table depicts the scenario. A blank cell is used whenever a value does not change from the previous row.
 
-| T (ms) | Event experienced by A                         | Duplicate ACKs | ssthresh after event (KB) | cwnd after event (KB)   | Phase after event    |
-| ------ | ---------------------------------------------- | -------------- | ------------------------- | ----------------------- | -------------------- |
-| 0      | Send S1                                        | 0              | 3                         | 1 (S1)                  | Slow start           |
-| 20     | Get ACK for S1, send S2                        |                |                           | 2 (S2, S3)              |                      |
-| 24     | Send S3                                        |                |                           |                         |                      |
-| 40     | Get ACK for S2, send S4                        |                |                           | 3 (S3, S4, S5)          | Congestion avoidance |
-| 44     | Get ACK for S3, send S5                        |                |                           | 3.33 (S4, S5, S6)       |                      |
-| 48     | Send S6                                        |                |                           |                         |                      |
-| 60     | Get ACK for S4, send S7                        |                |                           | 3.67 (S5, S6, S7)       |                      |
-| 64     | Get ACK for S5, send S8                        |                |                           | 4 (S6, S7, S8, S9)      |                      |
-| 68     | Send S9                                        |                |                           |                         |                      |
-| 80     | Get ACK for S5 (due to receipt of S7)          | 1              |                           |                         |                      |
-| 84     | Get ACK for S5 (due to receipt of S8)          | 2              |                           |                         |                      |
-| 88     | Get ACK for S5 (due to receipt of S9), send S6 | 3              | 2                         | 5 (S6, S7, S8, S9, S10) | Fast recovery        |
-| 92     | Send S10                                       |                |                           |                         |                      |
-| 108    | Get ACK for S9                                 | 0              |                           | 2 (S10, S11)            | Congestion avoidance |
+| T (ms) | Event experienced by A | Duplicate ACKs | ssthresh after event (KB) | cwnd after event (KB) | Phase after event |
+|---|---|---|---|---|---|
+| 0 | Send S1 | 0 | 3 | 1 (S1) | Slow start |
+| 20 | Get ACK for S1, send S2 |  |  | 2 (S2, S3) |  |
+| 24 | Send S3 |  |  |  |  |
+| 40 | Get ACK for S2, send S4 |  |  | 3 (S3, S4, S5) | Congestion avoidance |
+| 44 | Get ACK for S3, send S5 |  |  | 3.33 (S4, S5, S6) |  |
+| 48 | Send S6 |  |  |  |  |
+| 60 | Get ACK for S4, send S7 |  |  | 3.63 (S5, S6, S7) |  |
+| 64 | Get ACK for S5, send S8 |  |  | 3.91 (S6, S7, S8) |  |
+| 80 | Get ACK for S5 (due to receipt of S7) | 1 |  |  |  |
+| 84 | Get ACK for S5 (due to receipt of S8) | 2 |  |  |  |
+| 148 | Timeout, send S6 | 0 | 1.95 | 1 (S6) | Slow start |
 
 ### Congestion Control Simulation 1
 
 Host A receives the ACK for segment 2 at T = 40 ms.
 
-Answer: `40`
-
 ### Congestion Control Simulation 2
 
 Once host A receives the ACK for segment 2, `cwnd` is adjusted to 3 KB. `cwnd` = 3 KB = `ssthresh`, so host A enters the congestion avoidance phase.
-
-Answer: `2`
 
 ### Congestion Control Simulation 3
 
 Host A begins transmitting segment 5 at T = 44 ms.
 
-Answer: `44`
-
 ### Congestion Control Simulation 4
 
-We use the equation `cwnd` = `cwnd` + MSS \* (MSS / `cwnd`) several times while in the congestion avoidance phase. We find that once host A receives the ACK for segment 5, `cwnd` = 4 KB.
-
-Answer: `4`
+We use the equation `cwnd` = `cwnd` + MSS * (MSS / `cwnd`) several times while in the congestion avoidance phase. We find that once host A receives the ACK for segment 5, `cwnd` = 4 KB.
 
 ### Congestion Control Simulation 5
 
-Host A begins retransmitting segment 6 as soon as it receives 3 duplicate ACKs for segment 5. This occurs at T = 88 ms.
-
-Answer: `88`
+Host A begins retransmitting segment 6 once the RTO expires. This occurs at T = 148 ms.
 
 ### Congestion Control Simulation 6
 
-When host A receives 3 duplicate ACKs for segment 5, it retransmits segment 6 and then enters the fast recovery phase.
-
-Answer: `3`
-
-### Congestion Control Simulation 7
-
-Host B sends the cumulative ACK for segment 9 once it receives all segments up to and including 9. Host A receives the ACK at T = 108 ms.
-
-Answer: `108`
-
-### Congestion Control Simulation 8
-
-We use the equation `cwnd` = `ssthresh` as host A enters the congestion avoidance phase. We find that `cwnd` = `ssthresh` = 2 KB.
-
-Answer: `2`
+When host A's RTO expires, it retransmits segment 6 and enters the slow start phase.
 
 ## TLS
 
