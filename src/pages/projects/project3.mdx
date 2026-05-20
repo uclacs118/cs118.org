@@ -1,19 +1,25 @@
 ---
 layout: ../../layouts/Layout.astro
 title: "Project 3: TLS/Security"
-dueDate: 2026-06-01 23:59:00
+dueDate: 2026-06-11 23:59:59
 ---
 
 import * as H from "../../components/helpers/index.astro";
 
 <H.Title>Project 3</H.Title>
 <H.Subtitle>
-  TLS/Security - Due 11:59pm Monday, June 1 (Week 10)
+  TLS/Security - Due 11:59pm Thursday, June 11 (Finals Week)
 </H.Subtitle>
 
 ## Quick Links
 
+### Assignment
+
 - [Starter Code](https://github.com/uclacs118/project3s26-starter)
+- [Gradescope Assignment](https://www.gradescope.com/courses/1292484/assignments/8129653/)
+
+### Resources
+
 - [Using the Local Autograder](/misc/autograder-p3)
 - [Libsecurity API](/misc/libsecurity-p3)
 - [TLV Helpers](/misc/tlv-helpers-p3)
@@ -178,7 +184,7 @@ Client-Hello = CLIENT-HELLO-TYPE TLV-LENGTH Nonce Public-Key
 
 After receiving the Client Hello, the server will construct and send its own Server Hello message. This message contains its own nonce (independent from the client's nonce), its certificate, a public key, and a signature over the rest of this message.
 
-The certificate contains three values: the associated DNS name (e.g. example.com), a public key, and a signature of the `DNS-Name`, `Public-Key` and `Lifetime` appended after each other by the certificate authority. `Lifetime` payload has 16 bytes, the first 8 bytes contains a *notBefore* in Unix Timestamp in big endian, while the second 8 bytes contains a *notAfter*, also a Unix Timestamp in big endian. These two together describe a validity period of a certificate, and the client must not accept an expired (or not yet valid) certificate. You'll be able to access this certificate by reading the file `server_cert.bin` in the current working directory.
+The certificate contains three values: the associated DNS name (e.g. example.com), a public key, and a signature of the `DNS-Name`, `Public-Key` and `Lifetime` appended after each other by the certificate authority. `Lifetime` payload has 16 bytes, the first 8 bytes contains a _notBefore_ in Unix Timestamp in big endian, while the second 8 bytes contains a _notAfter_, also a Unix Timestamp in big endian. These two together describe a validity period of a certificate, and the client must not accept an expired (or not yet valid) certificate. You'll be able to access this certificate by reading the file `server_cert.bin` in the current working directory.
 
 ```
 DNS-NAME-TYPE = 0xA1
@@ -208,7 +214,7 @@ To generate the Server Hello:
 
 1. Generate a nonce.
 2. Copy the certificate into the `Server-Hello`.
-3. Generate a public key. **Please note that the `Public-Key` in `Server-Hello` is different from the `Public-Key` in your certificate**. This public key must be generated yourself. We will refer to this public key as the server's *ephemeral* public key.
+3. Generate a public key. **Please note that the `Public-Key` in `Server-Hello` is different from the `Public-Key` in your certificate**. This public key must be generated yourself. We will refer to this public key as the server's _ephemeral_ public key.
 4. Create a handshake signature over the received `Client-Hello`, `Nonce`, `Certificate`, and `Public-Key` appended to after each other using the given private key. The given private key is available by reading the file `server_key.bin` in the current working directory.
 
 We now have the client's public key and our own ephemeral private key. This is enough to derive a symmetric shared secret using Diffie-Hellman. Using HKDF, generate two other keys from the shared secret: an **ENC** key and a **MAC** key. The salt is the `Client-Hello` with the `Server-Hello` appended right after.
@@ -317,6 +323,6 @@ This test case passes if:
 
 ## Submission Requirements
 
-Submit a ZIP file to [Gradescope](https://www.gradescope.com/courses/1292484/assignments/8129653/) (course **1292484**, assignment **8129653**) by **11:59pm on Monday, June 1st**. Late submission is allowed until Wednesday, June 3rd (20% deduction per day).
+Submit a ZIP file to [Gradescope](https://www.gradescope.com/courses/1292484/assignments/8129653/) (course **1292484**, assignment **8129653**).
 
 In your ZIP file, include all your source code and a `Makefile` that generates two executables named `server` and `client`. **Do not include any other files; the autograder will reject submissions with those.** If you're using the starter repository, the `helper` tool has a zip method that automatically creates a compatible ZIP file.
