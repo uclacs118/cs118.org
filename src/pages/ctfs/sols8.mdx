@@ -1,0 +1,106 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 8 Solutions: DHCP, Routing"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 8 Solutions: DHCP, Routing</H.Title>
+
+## DHCP
+
+### DHCP 1
+
+Initially (DISCOVER), the client doesn't have an IP address. When the server responds (OFFER), it has an IP address that it can use as a source. The client when sending a REQUEST message can use an actual IP address if it is trying to renew a DHCP lease, for example. Then, the server uses its own IP address for the next message (ACK).
+
+Answer: `2,3,4`
+
+### DHCP 2
+
+DHCP is an application layer protocol which runs over UDP. A host initializing on a network does not have an IP address yet, making a connection-oriented protocol like TCP impossible to establish.
+
+Answer: `1`
+
+## Routing
+
+### Routing 1
+
+In the distance-vector algorithm, nodes do not keep track of the whole topology of the network. When a link breaks, a given node does not know which nodes are reachable, so it may advertise paths to its neighbors which cannot be taken. On the other hand, in the link-state algorithm, each node knows the topology of the network. A given node can avoid choosing paths that cannot be taken.
+
+Answers may vary.
+
+### Routing 2
+
+A routing protocol provides routers with the information required for route computation algorithms, monitors the statuses of links and neighboring nodes, sends updates to routers in the network upon detecting a failure, and mitigates potential packet losses in routing update delivery. A routing protocol does not statically pre-configure routing paths; paths are adjusted dynamically since they must react to failures as they occur. Also, payload encryption is a security function typically managed by transport or application layer protocols.
+
+Answer: `1,2,4,6`
+
+## Link-State Simulation
+
+The filled-out table for the network is as follows.
+
+| Step | N' | D(B), p(B) | D(C), p(C) | D(D), p(D) | D(E), p(E) | D(F), p(F) | D(G), p(G) |
+|---|---|---|---|---|---|---|---|
+| 0 | <code>&#123;A&#125;</code> | 2, A | 4, A | 7, A | inf | inf | inf |
+| 1 | <code>&#123;A, B&#125;</code> | | 3, B | 7, A | 10, B | inf | inf |
+| 2 | <code>&#123;A, B, C&#125;</code> | | | 7, A | 10, B | 5, C | inf |
+| 3 | <code>&#123;A, B, C, F&#125;</code> | | | 6, F | 8, F | | 8, F |
+| 4 | <code>&#123;A, B, C, F, D&#125;</code> | | | | 8, F | | 7, D |
+| 5 | <code>&#123;A, B, C, F, D, G&#125;</code> | | | | 8, F | | |
+| 6 | <code>&#123;A, B, C, F, D, G, E&#125;</code> | | | | | | |
+
+### Link-State Simulation 1
+
+At step 3, the shortest distances to B, C, D, E, F, and G are 2, 3, 6, 8, 5, and 8, respectively.
+
+Answer: `2,3,6,8,5,8`
+
+### Link-State Simulation 2
+
+At step 6, the shortest distances to B, C, D, E, F, and G are 2, 3, 6, 8, 5, and 7, respectively.
+
+Answer: `2,3,6,8,5,7`
+
+### Link-State Simulation 3
+
+We can look at the N' column of the table to find the order in which the nodes were added to N'. The nodes were added in the following order: A, B, C, F, D, G, E.
+
+Answer: `A,B,C,F,D,G,E`
+
+### Link-State Simulation 4
+
+For each node X, we can look at the final p(X) value for the node and follow the path backward until we reach node A. In this way, we can determine the next-hop node from node A. The next-hop nodes for B, C, D, E, F, and G are B, B, B, B, B, and B.
+
+Answer: `B,B,B,B,B,B`
+
+## Distance-Vector Simulation
+
+### Distance-Vector Simulation 1
+
+A broadcasts its distances to each neighbor.
+
+Answer: `A:0,B:1,C:3,D:inf`
+
+### Distance-Vector Simulation 2
+
+C now knows distances to all 3 neighbors, but sees that the best distance to A is not through the cost-3 link, but rather via B with a cost of 2.
+
+Answer: `A:2,B:1,C:0,D:1`
+
+### Distance-Vector Simulation 3
+
+B simply sends what it knows as the best distance to each node.
+
+Answer: `A:1,B:0,C:1,D:2`
+
+### Distance-Vector Simulation 4
+
+When node C receives the message from node B, it thinks that the best distance to D is via B. All other distances are unchanged.
+
+Answer: `A:2,B:1,C:0,D:3`
+
+### Distance-Vector Simulation 5
+
+One example of a network topology is replacing all link costs with 1. Then, node A and node B will inform each other that their distance to D is 2, and both think the best route to D is via each other, which causes counting-to-infinity.
+
+Answers may vary.
