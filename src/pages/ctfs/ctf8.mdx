@@ -1,0 +1,136 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 8: DHCP, Routing"
+---
+
+import * as H from "../../components/helpers/index.astro";
+import { Image } from "astro:assets";
+import linkStateDiagram from "../../../public/ctfs/link-state.png";
+import distanceVectorDiagram from "../../../public/ctfs/distance-vector.png";
+
+<H.Title>Week 8: DHCP, Routing</H.Title>
+
+## DHCP
+
+### DHCP 1
+
+Which of the following DHCP messages can have an address other than `0.0.0.0` as the source address?
+
+1. Discover
+2. Offer
+3. Request
+4. ACK
+
+Answer with a comma-separated list, like `1,2,3`.
+
+### DHCP 2
+
+Which protocol does DHCP run over?
+
+1. UDP
+2. TCP
+3. IP
+4. Ethernet
+
+Answer with a number, like `1`.
+
+## Routing
+
+### Routing 1
+
+Why is the count-to-infinity problem present in the distance-vector routing algorithm but not in the link-state algorithm?
+
+### Routing 2
+
+Which of the following are responsibilities of a routing protocol?
+
+1. Monitoring the statuses of links and neighboring nodes
+2. Providing routers with the information required for route computation algorithms
+3. Statically pre-configuring optimal paths across all intermediate routers during network initialization
+4. Sending updates to routers in the network upon detecting a failure
+5. Encrypting payload data end-to-end to ensure secure and confidential packet transmission
+6. Mitigating potential packet losses in routing update delivery
+
+Answer with a comma-separated list, like `1,2,3`.
+
+## Link-State Simulation
+
+### Link-State Simulation 1
+
+Consider the network topology given by the undirected graph. The nodes represent routers, and the numbers on the edges represent the link costs. By filling out the table below, we can use the link-state (Dijkstra's) algorithm to find the shortest path from source node A to all other nodes in the network. Here, D(X) represents the current shortest distance from A to node X, and p(X) represents the node preceding X along that path. N' represents the set of nodes whose shortest paths have been found.
+
+<Image
+  src={linkStateDiagram}
+  style={{ width: "100%", height: "auto" }}
+  alt="Link-state simulation topology"
+/>
+
+| Step | N' | D(B), p(B) | D(C), p(C) | D(D), p(D) | D(E), p(E) | D(F), p(F) | D(G), p(G) |
+|---|---|---|---|---|---|---|---|
+| 0 | <code>&#123;A&#125;</code> | | | | | | |
+| 1 | | | | | | | |
+| 2 | | | | | | | |
+| 3 | | | | | | | |
+| 4 | | | | | | | |
+| 5 | | | | | | | |
+| 6 | | | | | | | |
+
+Complete the initialization row in the table (step 0) and fill out the next few rows. At step 3, what are the current shortest distances D(X) to all nodes (other than A) in alphabetical order (B, C, D, E, F, G)?
+
+Answer with a comma-separated list of numbers, like `1,2,inf,3,1,inf`. Use `inf` if a node is currently unreachable.
+
+### Link-State Simulation 2
+
+Fill out the rest of the table from Link-State Simulation 1. At step 6, what are the shortest distances D(X) to all nodes (other than A) in alphabetical order (B, C, D, E, F, G)?
+
+Answer with a comma-separated list of numbers, like `1,2,inf,3,1,inf`. Use `inf` if a node is currently unreachable.
+
+### Link-State Simulation 3
+
+In the scenario from Link-State Simulation 1, what is the final sequence of nodes in the order they were added to N' (starting with A)?
+
+Answer with a comma-separated list of node names, like `A,B,C,D,E,F,G`.
+
+### Link-State Simulation 4
+
+Now, we can populate node A's forwarding table for the scenario from Link-State Simulation 1. Determine the next-hop node from node A for all other destinations in alphabetical order (B, C, D, E, F, G).
+
+Answer with a comma-separated list of node names, like `B,C,D,E,F,G`.
+
+## Distance-Vector Simulation
+
+### Distance-Vector Simulation 1
+
+Consider the following network with the specified link costs. Suppose each node knows the link cost to each of its neighbors initially. What is the first message that node A broadcasts to its neighbors?
+
+<Image
+  src={distanceVectorDiagram}
+  style={{ width: "100%", height: "auto" }}
+  alt="Distance-vector simulation topology"
+/>
+
+Format your answer as a comma-separated list associating nodes to distance, like `A:10,B:10,C:10,D:0`. Please put all nodes A-D in alphabetical order in your list. Use `inf` if the distance to a node is unknown, and 0 for the distance from a node to itself.
+
+### Distance-Vector Simulation 2
+
+Suppose each neighbor has sent their first distance-vector message and those messages have been received by all neighbors. What is the updated list of distances that node C now has?
+
+Format your answer as a comma-separated list associating nodes to distance, like `A:10,B:10,C:10,D:0`. Please put all nodes A-D in alphabetical order in your list. Use `inf` if the distance to a node is unknown, and 0 for the distance from a node to itself.
+
+### Distance-Vector Simulation 3
+
+After a long time, suppose all nodes have settled on their distances to other nodes. Every node again informs each other what their list of distances is. What message will node B send?
+
+Format your answer as a comma-separated list associating nodes to distance, like `A:10,B:10,C:10,D:0`. Please put all nodes A-D in alphabetical order in your list. Use `inf` if the distance to a node is unknown, and 0 for the distance from a node to itself.
+
+### Distance-Vector Simulation 4
+
+Now, the C-D link is broken. C knows that this link is broken and updates its distance to D to infinity. Then, after receiving the message from node B in Distance-Vector Simulation 3, what message will node C send?
+
+Format your answer as a comma-separated list associating nodes to distance, like `A:10,B:10,C:10,D:0`. Please put all nodes A-D in alphabetical order in your list. Use `inf` if the distance to a node is unknown, and 0 for the distance from a node to itself.
+
+### Distance-Vector Simulation 5
+
+This is known as the count-to-infinity problem. Nodes will keep counting up their distance to D even though the link is broken and there is no path to D. Split horizon is a way to mitigate this, where routers will not advertise distances back to routers that they learned the distance from. In this scenario, B learned the distance from C to D from C. When the C-D link breaks, B will not advertise its distance to D back to C, since it learned this distance from C.
+
+Some network topologies (not this one) will still run into the count-to-infinity problem when using split horizon. Describe such a network topology here. Hint: keep the same structure of the network that we are using but change the link costs.
