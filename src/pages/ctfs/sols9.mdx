@@ -1,0 +1,96 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 9 Solutions: Routing Protocols, OSPF, RIP, BGP"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 9 Solutions: Routing Protocols, OSPF, RIP, BGP</H.Title>
+
+## Routing Protocols
+
+### Routing Protocols 1
+
+In intra-AS routing, performance is prioritized. Since an AS is completely private, an organization can choose the exact routing protocol that fits its specific engineering needs without worrying about routers outside of the AS. This freedom has resulted in multiple popular intra-AS protocols.
+
+In inter-AS routing, policy and business strategy are prioritized. For different ASes to send packets to each other, they must understand the same inter-AS routing protocols. There is only one inter-AS routing protocol, BGP, because it is cheapest and simplest to support only one rather than multiple.
+
+Answers may vary.
+
+### Routing Protocols 2
+
+An AS is a unit of topology and does not necessarily have a one-to-one relationship with any of the entities listed.
+
+Answer: `4`
+
+## OSPF
+
+### OSPF 1
+
+An LSA can be uniquely identified by the source router ID and the sequence number.
+
+Answer: `3,5`
+
+### OSPF 2
+
+In an OSPF network, a flood of messages to the network is triggered periodically as well as whenever a network change occurs. During a flood, each LSA message sent across a link must be acknowledged with either an ACK message or an LSA message sent across the link in the opposite direction. Therefore, 2 messages traverse each link per unique network change.
+
+Answer: `2`
+
+### OSPF 3
+
+A router will broadcast an LSA on a periodic basis based on its 30-minute timer (1). A router will also broadcast an LSA if it detects that any of its neighbors have come down, such as when it sends a HELLO message and does not receive a response (3). A router will also retransmit an LSA if its neighbor does not ACK the LSA (5).
+
+Answer: `1,3,5`
+
+## RIP
+
+### RIP 1
+
+Hop count is used as the distance metric for RIP.
+
+Answer: `2`
+
+### RIP 2
+
+R1 is directly attached to `10.1.1.0` and `10.1.2.0`, so it tells R2 it is 0 hops away from those networks. R1 learned the routes to the other networks from R2, so it tells R2 that it cannot reach those networks.
+
+Answer: `0,0,inf,inf,inf`
+
+### RIP 3
+
+R2 learned the route to `10.1.1.0` from R1, so it tells R1 that it cannot reach that network. R2 tells R1 that its distances to `10.1.2.0`, `10.1.3.0`, `10.1.4.0`, and `10.1.5.0` are 0, 0, 1, and 2 hops, respectively.
+
+Answer: `inf,0,0,1,2`
+
+## BGP
+
+### BGP 1
+
+BGP runs in the application layer, as it is an application used by routers and runs atop TCP, a transport-layer protocol.
+
+Answer: `1`
+
+### BGP 2
+
+`1` is not allowed; it would require AS3 to forward traffic from a non-customer to provider, which costs money. `2` is not allowed; AS2 and AS4 are not directly connected. `3` is not allowed; it would require AS3 to advertise to AS2 (its provider) a path it learned from AS2 (its provider) itself, which violates the no-valley policy. `4` is allowed. `5` is not allowed; it would require AS3 to advertise a path it learned from AS4 to its provider, which is not allowed. `6` is allowed.
+
+Answer: `4,6`
+
+### BGP 3
+
+A1 tries to leave its AS as fast as possible, so it takes the link with cost 2, then the link with cost 6 to B2. A1-B2 cost is 8. B2 tries to leave its AS as fast as possible, so it takes the link with cost 2, then the link with cost 4 to A1. B2-A1 cost is 6.
+
+Answer: `3`
+
+### BGP 4
+
+Answers may vary.
+
+iBGP advertises routes learned from eBGP to all the routers within the AS. However, it runs in the application layer and thus does not know the routes to all these routers in the AS. In order to find the routes, we also need an IGP. The IGP determines the routes, then iBGP can take these routes to reach every router.
+
+### BGP 5
+
+Answers may vary.
+
+This has happened many times. For example, Pakistan took down YouTube by sending BGP advertisements for YouTube's IP addresses that were more specific than YouTube's IP address ranges themselves. These advertisements redirected traffic to Pakistan's ISPs, where the traffic would not leave. You can read more about it here: https://www.ripe.net/about-us/news/youtube-hijacking-a-ripe-ncc-ris-case-study/.
