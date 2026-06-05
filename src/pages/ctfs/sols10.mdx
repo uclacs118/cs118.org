@@ -1,0 +1,94 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 10 Solutions: Multiple-Access Protocols, ARP"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Week 10 Solutions: Multiple-Access Protocols, ARP</H.Title>
+
+## Multiple-Access Protocols
+
+### Multiple-Access Protocols 1
+
+Collisions can still happen in CSMA because signals take time to travel through the network. Two hosts can transmit at the same time, because they both think the channel is idle. Later, however, there will be a collision.
+
+Answer: `4`
+
+### Multiple-Access Protocols 2
+
+Exponential backoff creates an exponentially-increasing wait time before retransmission, which reduces the chance of collisions when there is congestion.
+
+Answer: `1`
+
+### Multiple-Access Protocols 3
+
+One of the benefits of token-passing is that it is deterministic; that is, if no parties are down, the time it takes to send messages is bounded. However, this delay is usually larger than random-access protocols. There is also a single point of failure—the token holder. Also, there is significant protocol overhead required for ring initialization and membership management.
+
+Answer: `2`
+
+### Multiple-Access Protocols 4
+
+After a collision, an Ethernet NIC sends a jam signal and aborts transmission.
+
+Answer: `2`
+
+### Multiple-Access Protocols 5
+
+Ethernet efficiency increases as transmission delay increases (a sender can only detect collisions while it is transmitting data), and decreases with propagation delay (longer propagation times widen the window of time where other senders might blindly cause collisions). This can also be seen in the efficiency formula for Ethernet: $\text\{eff\} = \frac\{1\}\{1+5\frac\{T_\{\text\{prop\}\}\}\{T_\{\text\{trans\}\}\}\}$.
+
+Answer: `3`
+
+### Multiple-Access Protocols 6
+
+For M collisions, we wait a random value between $[0, 2^\{M-1\}]$ slots. The only value outside of this range for M = 3 is 8.
+
+Answer: `4`
+
+### Multiple-Access Protocols 7
+
+Active scanning requires hosts to broadcast a probe request frame first.
+
+Answer: `1`
+
+### Multiple-Access Protocols 8
+
+Wi-Fi devices often cannot detect collisions due to attenuation and the hidden-terminal problem.
+
+Answer: `2`
+
+### Multiple-Access Protocols 9
+
+It is not possible for the same AP to send a CTS signal to two different hosts simultaneously while waiting on data frames from both of them. The last option could not have occurred.
+
+Answer: `4`
+
+## ARP Simulation
+
+### ARP Simulation 1
+
+Host A does not know host B's MAC address.
+
+### ARP Simulation 2
+
+Host A doesn't know host B's MAC address, so it broadcasts the request to the MAC address `FF-FF`. All other fields are known to host A.
+
+Answer: `192.168.0.2,AA-AA,192.168.0.3,FF-FF`
+
+### ARP Simulation 3
+
+Now, host B knows the true values for each field from host A's ARP request, and adds an entry in its ARP cache for host A. Host B knows all fields when sending an ARP reply.
+
+Answer: `192.168.0.3,BB-BB,192.168.0.2,AA-AA`
+
+### ARP Simulation 4
+
+ARP requests are broadcast since the requester does not know the destination MAC address. However, the replier can reply to the request with the MAC address in the request, so this reply can be unicast.
+
+Answer: `2`
+
+### ARP Simulation 5
+
+Host A and host B, from their ARP request and reply, now have entries in their ARP caches. Switches do not have ARP caches. Note that since host A's ARP request was broadcast, _host C also receives it_. Host C doesn't respond, but it can add host A's MAC address to its ARP cache.
+
+Answer: `1,2,3`

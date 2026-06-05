@@ -6,7 +6,8 @@ interface Frontmatter {
 }
 
 const ctfSols = Object.values(import.meta.glob<MarkdownInstance<Frontmatter>>("../pages/ctfs/sols*.mdx", { eager: true }));
+const sorted = ctfSols.sort((a, b) => a.frontmatter.title.localeCompare(b.frontmatter.title, undefined, { numeric: true, sensitivity: 'base' }));
 ---
 
-{ctfSols.map(ctf => <Assignment title={ctf.frontmatter.title!} link={ctf.url!} dueDate={null} />)}
-{ctfSols.length == 0 ? <p>No CTF challenge solutions are available yet—check back later!</p> : null}
+{sorted.map(ctf => <Assignment title={ctf.frontmatter.title!} link={ctf.url!} dueDate={null} />)}
+{sorted.length == 0 ? <p>No CTF challenge solutions are available yet—check back later!</p> : null}
