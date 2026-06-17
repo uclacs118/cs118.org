@@ -73,7 +73,7 @@ Answer: `1`
 
 ### BGP 2
 
-`1` is not allowed; it would require AS3 to forward traffic from a non-customer to provider, which costs money. `2` is not allowed; AS2 and AS4 are not directly connected. `3` is not allowed; it would require AS3 to advertise to AS2 (its provider) a path it learned from AS2 (its provider) itself, which violates the no-valley policy. `4` is allowed. `5` is not allowed; it would require AS3 to advertise a path it learned from AS4 to its provider, which is not allowed. `6` is allowed.
+`1` is not allowed; it would require AS3 to advertise its provider's prefixes to its peer (AS3 only advertises its customers' prefixes to its peers). `2` is not allowed; AS2 and AS4 are not directly connected. `3` is not allowed; it would require AS3 to advertise its provider's prefixes back to its provider. `4` is allowed. `5` is not allowed; it would require AS3 to advertise its peer's prefixes to its provider. `6` is allowed.
 
 Answer: `4,6`
 
@@ -85,12 +85,12 @@ Answer: `3`
 
 ### BGP 4
 
-Answers may vary.
-
 iBGP advertises routes learned from eBGP to all the routers within the AS. However, it runs in the application layer and thus does not know the routes to all these routers in the AS. In order to find the routes, we also need an IGP. The IGP determines the routes, then iBGP can take these routes to reach every router.
+
+Answers may vary.
 
 ### BGP 5
 
-Answers may vary.
-
 This has happened many times. For example, Pakistan took down YouTube by sending BGP advertisements for YouTube's IP addresses that were more specific than YouTube's IP address ranges themselves. These advertisements redirected traffic to Pakistan's ISPs, where the traffic would not leave. You can read more about it here: https://www.ripe.net/about-us/news/youtube-hijacking-a-ripe-ncc-ris-case-study/.
+
+Answers may vary.

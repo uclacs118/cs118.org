@@ -1,0 +1,163 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Week 10: Multiple-Access Protocols, ARP"
+---
+
+import * as H from "../../components/helpers/index.astro";
+import { Image } from "astro:assets";
+import arpDiagram from "../../../public/ctfs/arp-simulation.png";
+
+<H.Title>Week 10: Multiple-Access Protocols, ARP</H.Title>
+
+## Multiple-Access Protocols
+
+### Multiple-Access Protocols 1
+
+Why does CSMA not completely eliminate collisions?
+
+1. MAC addresses are not unique.
+2. CRC fails too often.
+3. Switches forward packets that collide with each other.
+4. Hosts that are far from each other have inconsistent views due to propagation delay.
+
+### Multiple-Access Protocols 2
+
+What is the purpose of exponential backoff?
+
+1. Reducing collisions under congestion.
+2. Accounting for the effects of propagation delay.
+3. Reducing CRC errors.
+4. Increasing the bandwidth of the link.
+
+### Multiple-Access Protocols 3
+
+Which of these is **NOT** a downside of token-passing?
+
+1. Delays can be high.
+2. Delays can be unbounded.
+3. There is a single point of failure.
+4. Token ring management adds overhead.
+
+### Multiple-Access Protocols 4
+
+After detecting a collision, what does an Ethernet NIC do?
+
+1. Continue transmitting the frame
+2. Send a jam signal and abort transmission
+3. Recalculate the CRC
+4. Change its MAC address
+
+Answer with a number, like `1`.
+
+### Multiple-Access Protocols 5
+
+Which of the following combinations results in the highest efficiency for Ethernet?
+
+1. High propagation delay, high transmission delay
+2. High propagation delay, low transmission delay
+3. Low propagation delay, high transmission delay
+4. Low propagation delay, low transmission delay
+
+Answer with a number, like `1`.
+
+### Multiple-Access Protocols 6
+
+An Ethernet NIC using exponential backoff has experienced 3 collisions. Which of the following is **NOT** a possible amount of slots it can wait before retransmission?
+
+1. 0
+2. 3
+3. 7
+4. 8
+
+Answer with a number, like `1`.
+
+### Multiple-Access Protocols 7
+
+What type of Wi-Fi scanning requires the host to send a request initially?
+
+1. Active scanning
+2. Passive scanning
+3. Collision scanning
+4. Backoff scanning
+
+Answer with a number, like `1`.
+
+### Multiple-Access Protocols 8
+
+Why does Wi-Fi use CSMA/CA instead of CSMA/CD?
+
+1. Wireless devices can easily detect collisions.
+2. Wireless devices cannot reliably detect collisions while transmitting.
+3. CSMA/CA is faster than CSMA/CD.
+4. CSMA/CD requires coordination between different hosts.
+
+Answer with a number, like `1`.
+
+### Multiple-Access Protocols 9
+
+Host A is a Wi-Fi device. It sends a RTS (request-to-send) and receives a corresponding a CTS (clear-to-send) reply granting host A permission to send data. Host A then sends its data, but doesn't receive an ACK. What **COULD NOT** have been a cause for this?
+
+1. The data frame host A transmitted was corrupted or unable to reach the AP.
+2. A hidden Wi-Fi host that could hear neither the RTS nor the CTS transmission began transmitting at the same time, causing interference with the data frame.
+3. The ACK signal was sent by the AP, but it was lost or corrupted.
+4. A different Wi-Fi device, host B, simultaneously received a CTS signal from the same AP granting host B permission to send data. Host B decided to transmit a frame at the same time, causing a collision.
+
+Answer with a number, like `1`.
+
+## ARP Simulation
+
+### ARP Simulation 1
+
+Consider the following network, where hosts A, B, and C are behind a switch. Initially, all ARP caches are empty. We are using a simplified version of MAC addresses where they are 2 bytes long instead of 6 bytes.
+
+<Image
+  src={arpDiagram}
+  style={{ width: "100%", height: "auto" }}
+  alt="ARP simulation topology"
+/>
+
+Why can't host A immediately send a packet to host B? Answer in 10 words or less.
+
+### ARP Simulation 2
+
+Host A sends an ARP request. What are the values of the following 4 fields?
+
+1. Sender IP address
+2. Sender MAC address
+3. Target IP address
+4. Target MAC address
+
+Answer in a comma-separated list of addresses, like `1.1.1.1,AA-AA,2.2.2.2,BB-BB`.
+
+### ARP Simulation 3
+
+Host B sends an ARP reply to A's request. What are the values of the following 4 fields?
+
+1. Sender IP address
+2. Sender MAC address
+3. Target IP address
+4. Target MAC address
+
+Answer in a comma-separated list of addresses, like `1.1.1.1,AA-AA,2.2.2.2,BB-BB`.
+
+### ARP Simulation 4
+
+Are host A's request and host B's response unicast or broadcast?
+
+1. A's request is broadcast. B's response is broadcast.
+2. A's request is broadcast. B's response is unicast.
+3. A's request is unicast. B's response is broadcast.
+4. A's request is unicast. B's response is unicast.
+
+Answer with a number, like `1`.
+
+### ARP Simulation 5
+
+Which of the following devices now have an entry in their ARP cache?
+
+1. Host A
+2. Host B
+3. Host C
+4. The switch
+
+Answer with a comma-separated list of numbers, like `1,2,3`.

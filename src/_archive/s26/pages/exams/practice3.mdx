@@ -1,0 +1,222 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Final Practice Problems"
+---
+
+import * as H from "../../components/helpers/index.astro";
+import { Image } from "astro:assets";
+import linkStateDiagram from "../../../public/practice/link-state.png";
+import distanceVectorDiagram from "../../../public/practice/distance-vector.png";
+import ripDiagram from "../../../public/practice/rip.png";
+import bgpTopologyDiagram from "../../../public/practice/bgp-topology.png";
+import switchingDiagram from "../../../public/practice/switching.png";
+
+<H.Title>Final Practice Problems</H.Title>
+
+Note: These problems are focused on some of the content covered after the second midterm, but the final exam covers earlier topics as well. For more practice with those topics, we recommend reviewing past practice problem sets and CTFs!
+
+## Misc
+
+### Misc 1
+
+Which components are crucial for any protocol that ensures reliable delivery?
+
+1. Flow control window
+2. Data sequence number
+3. Retransmission timer
+4. Time-to-live (TTL)
+5. Acknowledgement (ACK)
+6. Encryption key
+
+### Misc 2
+
+What is the difference between soft-state and hard-state protocol design? Categorize the following protocols as soft-state or hard-state: OSPF, BGP, ARP.
+
+## Routing Algorithms
+
+### Link-State Simulation
+
+#### Link-State Simulation 1
+
+Consider the network topology given by the undirected graph. The nodes represent routers, and the numbers on the edges represent the link costs. Use the link-state algorithm to find the shortest path from source node A to all other nodes in the network by filling out the table below. Here, D(X) represents the current shortest distance from A to node X, and p(X) represents the node preceding X along that path. N' represents the set of nodes whose shortest paths have been found.
+
+<Image
+  src={linkStateDiagram}
+  style={{ width: "100%", height: "auto" }}
+  alt="Link-state simulation topology"
+/>
+
+| Step | N' | D(B), p(B) | D(C), p(C) | D(D), p(D) | D(E), p(E) | D(F), p(F) |
+|---|---|---|---|---|---|---|
+| 0 | <code>&#123;A&#125;</code> | | | | | |
+| 1 | | | | | | |
+| 2 | | | | | | |
+| 3 | | | | | | |
+| 4 | | | | | | |
+| 5 | | | | | | |
+
+#### Link-State Simulation 2
+
+We can now populate node A's forwarding table for the scenario from Link-State 1. Determine the next-hop node from node A for all other destinations (B, C, D, E, F).
+
+### Distance-Vector Simulation
+
+#### Distance-Vector Simulation 1 (from Week 8 CTF)
+
+Consider the following network with the specified link costs. Suppose each node knows the link cost to each of its neighbors initially. What is the first distance-vector message that node A broadcasts to its neighbors?
+
+<Image
+  src={distanceVectorDiagram}
+  style={{ width: "100%", height: "auto" }}
+  alt="Distance-vector simulation topology"
+/>
+
+Format your answer as a comma-separated list associating nodes to distance, like `A:10,B:10,C:10,D:0`. Please put all nodes A-D in alphabetical order in your list. Use `inf` if the distance to a node is unknown, and 0 for the distance from a node to itself.
+
+#### Distance-Vector Simulation 2 (from Week 8 CTF)
+
+Consider the situation from Distance-Vector Simulation 1. Suppose each neighbor has sent their first distance-vector message and those messages have been received by all neighbors. What is the updated list of distances that node C now has?
+
+Format your answer as a comma-separated list associating nodes to distance, like `A:10,B:10,C:10,D:0`. Please put all nodes A-D in alphabetical order in your list. Use `inf` if the distance to a node is unknown, and 0 for the distance from a node to itself.
+
+#### Distance-Vector Simulation 3 (from Week 8 CTF)
+
+After a long time, suppose all nodes have settled on their distances to other nodes. Every node again informs each other what their list of distances is. What distance-vector message does node B send?
+
+Format your answer as a comma-separated list associating nodes to distance, like `A:10,B:10,C:10,D:0`. Please put all nodes A-D in alphabetical order in your list. Use `inf` if the distance to a node is unknown, and 0 for the distance from a node to itself.
+
+#### Distance-Vector Simulation 4 (from Week 8 CTF)
+
+Now, the C-D link is broken. C knows that this link is broken and updates its distance to D to infinity. Then, after receiving the message from node B in Distance-Vector Simulation 3, what distance-vector message does node C send?
+
+Format your answer as a comma-separated list associating nodes to distance, like `A:10,B:10,C:10,D:0`. Please put all nodes A-D in alphabetical order in your list. Use `inf` if the distance to a node is unknown, and 0 for the distance from a node to itself.
+
+## Routing Protocols
+
+### Misc
+
+#### Misc 1
+
+Consider the routing protocols OSPF, RIP, and BGP. Does each one guarantee reliable delivery? If so, how? If not, what alternative strategies does it employ to ensure network accuracy?
+
+### OSPF
+
+#### OSPF 1
+
+Which of the following pieces of information are not included in a link-state advertisement?
+
+1. Link-state advertisement age
+2. Source router ID
+3. Destination router ID
+4. Sequence number
+5. Checksum
+6. Complete routing table
+
+### RIP
+
+#### RIP 1
+
+Consider the network topology given by the graph. The nodes represent routers, and the labels on the edges represent the prefixes for the networks connected by the routers. Once distance vectors have stabilized, what are the distances sent by R3 to R2 in an update message? Assume split horizon with poison reverse is used.
+
+<Image
+  src={ripDiagram}
+  style={{ width: "100%", height: "auto" }}
+  alt="RIP network topology"
+/>
+
+Answer with a list of 5 numbers like `1,2,3,4,inf` representing values corresponding to `10.1.1.0`, `10.1.2.0`, `10.1.3.0`, `10.1.4.0`, and `10.1.5.0`, respectively. For the purposes of this problem, use `inf` for networks advertised as unreachable.
+
+#### RIP 2
+
+Consider the network topology from RIP 1. Once distance vectors have stabilized, what are the distances sent by R3 to R4 in an update message? Assume split horizon with poison reverse is used.
+
+Answer with a list of 5 numbers like `1,2,3,4,inf` representing values corresponding to `10.1.1.0`, `10.1.2.0`, `10.1.3.0`, `10.1.4.0`, and `10.1.5.0`, respectively. For the purposes of this problem, use `inf` for networks advertised as unreachable.
+
+### BGP
+
+#### BGP 1
+
+Order the following properties of routes from most prioritized to least prioritized during BGP route selection.
+
+1. Low IGP cost
+2. Short AS_PATH
+3. High LOCAL_PREF
+
+#### BGP 2
+
+Which of the following are true about routing among ASes in BGP?
+
+1. When an AS forwards traffic to its peer, it pays its peer.
+2. When an AS forwards traffic to its customer, it pays its customer.
+3. When an AS forwards traffic to its provider, it pays its provider.
+4. An AS only advertises its customers' prefixes to its peers.
+5. An AS only advertises its customers' prefixes to its customers.
+6. An AS only advertises its customers' prefixes to its providers.
+
+#### BGP 3
+
+Consider the following network topology among ASes. List all valid paths from AS1 to AS6.
+
+<Image
+  src={bgpTopologyDiagram}
+  style={{ width: "100%", height: "auto" }}
+  alt="BGP topology between ASes"
+/>
+
+#### BGP 4
+
+Consider the network topology among ASes from BGP 3. List all valid paths from AS5 to AS1.
+
+## Switching Simulation
+
+### Switching Simulation 1
+
+Consider the following network, where hosts A, B, and C are behind a switch which is connected to a router. The switch has 4 network ports/interfaces, which are labeled in the diagram. Initially, all ARP caches and MAC address tables are empty. We are using a simplified version of MAC addresses where they are 2 bytes long instead of 6 bytes.
+
+<Image
+  src={switchingDiagram}
+  style={{ width: "100%", height: "auto" }}
+  alt="Switch and router topology"
+/>
+
+The following events occur in this order:
+1. Host A sends an ARP request for host B.
+2. Host B sends an ARP reply to host A.
+3. Host A sends a message to host B.
+4. Host C sends an ARP request for the router.
+5. The router sends an ARP reply to host C.
+6. Host C sends a packet to 8.8.8.8 via the router.
+
+Fill out the table below. Devices can include hosts, routers, and switches. The MAC address table associates MAC addresses with network interfaces.
+
+| Frame number | Source MAC address | Destination MAC address | Devices that receive the frame | New entries added to switch's MAC address table
+|---|---|---|---|---|
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+| 4 | | | | |
+| 5 | | | | |
+| 6 | | | | |
+
+## True or False
+
+1. Routers operate asynchronously.
+2. OSPF can distinguish between a link failure and a node failure.
+3. In RIP, routers may send different distance vectors to different neighbors.
+4. OSPF supports asymmetric link costs (i.e., the link cost from node A to node B can differ from the link cost from node B to node A).
+5. Link bandwidth is used as the cost measure in RIP.
+6. A customer stub network can connect to a tier-1 ISP.
+7. To create a data frame, you only need to add framing bytes `01111110` at the beginning and end.
+8. CSMA reduces the probability of collision compared to ALOHA by sensing the channel before transmitting. 
+9. CRC checksums in the link layer are guaranteed to catch errors.
+10. MAC addresses are *intended to be* globally unique.
+11. Switches and routers operate in the same OSI network layer.
+12. Switches are transparent to hosts, while routers are not.
+13. Switches largely eliminate data collisions.
+14. The trailer field of a link-layer data frame contains a checksum.
+15. There are no constraints on the topological structure of interconnected switches.
+16. ARP is a link-layer protocol.
+17. Host A wants to talk to Host D, which are on different subnets (there is a router connecting them). Host A will have to use ARP to determine Host D's MAC address.
+18. ARP requests are broadcast, while ARP replies are unicast.
+19. The destination MAC address for an ARP request is FF-FF-FF-FF-FF-FF.
+20. Switches contain ARP caches.

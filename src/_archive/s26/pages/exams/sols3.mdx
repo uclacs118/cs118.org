@@ -1,0 +1,188 @@
+---
+layout: ../../layouts/Layout.astro
+title: "Final Practice Problem Solutions"
+---
+
+import * as H from "../../components/helpers/index.astro";
+
+<H.Title>Final Practice Problem Solutions</H.Title>
+
+Note: These problems are focused on some of the content covered after the second midterm, but the final exam covers earlier topics as well. For more practice with those topics, we recommend reviewing past practice problem sets and CTFs!
+
+## Misc
+
+### Misc 1
+
+The three components necessary for reliable delivery are the data sequence number, the retransmission timer, and the acknowledgment (ACK).
+
+A flow control window is used to prevent a sender from overwhelming a receiver. A time-to-live (TTL) is used to prevent a packet from circulating endlessly in a network. An encryption key is used for security and privacy.
+
+### Misc 2
+
+In soft-state protocol design, information automatically expires if it is not refreshed within a time limit. In hard-state protocol design, information remains valid unless explicitly invalidated.
+
+OSPF and ARP use soft-state protocol design; they use TTLs which cause stored information to expire. BGP uses hard-state protocol design; stored information is only invalidated with a withdrawal message.
+
+## Routing Algorithms
+
+### Link-State Simulation
+
+#### Link-State Simulation 1
+
+Here is the completed table.
+
+| Step | N' | D(B), p(B) | D(C), p(C) | D(D), p(D) | D(E), p(E) | D(F), p(F) |
+|---|---|---|---|---|---|---|
+| 0 | <code>&#123;A&#125;</code> | 4, A | ∞ | ∞ | 5, A | ∞ |
+| 1 | <code>&#123;A, B&#125;</code> | | 7, B | 10, B | 5, A| ∞ |
+| 2 | <code>&#123;A, B, E&#125;</code> | | 6, E | 9, E | | 8, E |
+| 3 | <code>&#123;A, B, E, C&#125;</code> | | | 8, C | | 7, C|
+| 4 | <code>&#123;A, B, E, C, F&#125;</code> | | | 8, C | | |
+| 5 | <code>&#123;A, B, E, C, F, D&#125;</code> | | | | | |
+
+#### Link-State Simulation 2
+
+The next-hop nodes from node A for B, C, D, E, and F are B, E, E, E, and E, respectively.
+
+### Distance-Vector Simulation
+
+#### Distance-Vector Simulation 1 (from Week 8 CTF)
+
+A broadcasts its distances to each neighbor: `A:0,B:1,C:3,D:inf`.
+
+#### Distance-Vector Simulation 2 (from Week 8 CTF)
+
+C now knows distances to all 3 neighbors, but sees that the best distance to A is not through the cost-3 link, but rather via B with a cost of 2. The answer is `A:2,B:1,C:0,D:1`.
+
+#### Distance-Vector Simulation 3 (from Week 8 CTF)
+
+B simply sends what it knows as the best distance to each node: `A:1,B:0,C:1,D:2`.
+
+#### Distance-Vector Simulation 4 (from Week 8 CTF)
+
+When node C receives the message from node B, it thinks that the best distance to D is via B. All other distances are unchanged. It then sends `A:2,B:1,C:0,D:3`.
+
+## Routing Protocols
+
+### Misc
+
+#### Misc 1
+
+OSPF guarantees reliable delivery. It does not run atop a transport protocol; it ensures its own reliable delivery through packet IDs, acknowledgments, and retransmission timeouts.
+
+RIP does not guarantee reliable delivery. To ensure network accuracy, each node periodically sends its distance vector to all neighbors.
+
+BGP guarantees reliable delivery by running atop TCP.
+
+### OSPF
+
+#### OSPF 1
+
+The link-state advertisement (LSA) age, source router ID, sequence number, and checksum are all components of a link-state advertisement.
+
+There is no destination router ID in an LSA because an LSA is sent to the entire network, not to an individual router. Also, there is no complete routing table because an LSA only describes the raw topology (links and costs), not final routing decisions or next hops.
+
+### RIP
+
+#### RIP 1
+
+R3 learned the routes to `10.1.1.0` and `10.1.2.0` from R2, so it tells R2 that it cannot reach those networks. R3 is directly attached to `10.1.3.0` and `10.1.4.0`, so it tells R2 it is 0 hops away from those networks. R3 is 1 hop away from `10.1.5.0`. So, R3 sends R2 `inf,inf,0,0,1`.
+
+#### RIP 2
+
+R3 is 2, 1, 0, and 0 hops away from `10.1.1.0`, `10.1.2.0`, `10.1.3.0`, and `10.1.4.0`, respectively. R3 learned the route to `10.1.5.0` from R4, so it tells R4 it cannot reach that network. So, R3 sends R4 `2,1,0,0,inf`.
+
+### BGP
+
+#### BGP 1
+
+In BGP, routes are selected based on highest LOCAL_PREF, then shortest AS_PATH, then lowest IGP cost, and
+then other criteria.
+
+#### BGP 2
+
+1. When an AS forwards traffic to its peer, it pays its peer.
+   - **False**. When an AS forwards traffic to its peer, it does not need to pay.
+2. When an AS forwards traffic to its customer, it pays its customer.
+   - **False**. An AS never pays its customer. When an AS forwards traffic to its customer, the AS's customer pays the AS.
+3. When an AS forwards traffic to its provider, it pays its provider.
+   - **True**.
+4. An AS only advertises its customers' prefixes to its peers.
+   - **True**. An AS makes no money from forwarding traffic from peers to non-customer destinations.
+5. An AS only advertises its customers' prefixes to its customers.
+   - **False**. An AS advertises all prefixes to its customers so that the AS's customers forward as much traffic as possible to the AS, causing the AS to make money.
+6. An AS only advertises its customers' prefixes to its providers.
+   - **True**. An AS makes no money from forwarding traffic from providers to non-customer destinations.
+
+#### BGP 3
+
+The valid paths from AS1 to AS6 are as follows:
+
+- AS1 -> AS2 -> AS4 -> AS6
+- AS1 -> AS4 -> AS6
+
+#### BGP 4
+
+The valid paths from AS5 to AS1 are as follows:
+
+- AS5 -> AS3 -> AS1
+- AS5 -> AS4 -> AS1
+- AS5 -> AS4 -> AS2 -> AS1
+
+## Switching Simulation
+
+### Switching Simulation 1
+
+Note that ARP requests are broadcast (destination address FF-FF). When a switch receives these, it floods them to all of its interfaces. Additionally, whenever a frame is sent via a switch, the switch adds an entry to its MAC address table if it doesn't exist. With this in mind, we can fill out the table.
+
+| Frame number | Source MAC address | Destination MAC address | Devices that receive the frame | New entries added to switch's MAC address table
+|---|---|---|---|---|
+| 1 | AA-AA | FF-FF | B, C, router, switch | AA-AA:1 |
+| 2 | BB-BB | AA-AA | A, switch | BB-BB:2 |
+| 3 | AA-AA | BB-BB | B, switch |  |
+| 4 | CC-CC | FF-FF | A, B, switch, router | CC-CC:3 |
+| 5 | DD-DD | CC-CC | C, switch | DD-DD:4 |
+| 6 | CC-CC | DD-DD | Router, switch |  |
+
+## True or False
+
+1. Routers operate asynchronously.
+    - **True**.
+2. OSPF can distinguish between a link failure and a node failure.
+    - **False**. In OSPF, if a node does not receive a HELLO message from a neighbor for a while, it does not know whether the link or the neighbor has failed.
+3. In RIP, routers may send different distance vectors to different neighbors.
+    - **True**. RIP supports split horizon with poison reverse, which requires a node to tell its neighbor that a given route has infinite cost if the node learned the route from the neighbor.
+4. OSPF supports asymmetric link costs (i.e., the link cost from node A to node B can differ from the link cost from node B to node A).
+    - **True**. Designers of OSPF wanted to generalize the protocol to support both symmetric and asymmetric link costs.
+5. Link bandwidth is used as the cost measure in RIP.
+    - **False**. Hop count is used as the cost measure in RIP.
+6. A customer stub network can connect to a tier-1 ISP.
+    - **True**. However, for a stub network, connecting to a tier-1 ISP is more expensive than connecting to a regional ISP, so this is not done in practice.
+7. To create a data frame, you only need to add framing bytes `01111110` at the beginning and end.
+    - **False**. You also have to add duplicate framing bytes if the same bytes appear in the frame's data (data stuffing).
+8. CSMA reduces the probability of collision compared to ALOHA by sensing the channel before transmitting. 
+    - **True**. Nodes listen to the channel and determine if it is IDLE before transmitting.
+9. CRC checksums in the link layer are guaranteed to catch errors.
+    - **False**. CRC checksums are not cryptographically strong and it is quite easy to create collisions. However, they are cheap to compute.
+10. MAC addresses are *intended to be* globally unique.
+    - **True**. While this may not be true in practice due to the large number of network devices, MAC addresses should be treated as globally unique identifiers of devices on a network.
+11. Switches and routers operate in the same OSI network layer.
+    - **False**. Switches generally operate in the link layer, while routers generally operate in the network layer.
+12. Switches are transparent to hosts, while routers are not.
+    - **True**. Switches are transparent link layer devices, while routers are network layer devices that are not transparent.
+13. Switches largely eliminate data collisions.
+    - **True**. Switches create an isolated collision domain or channel in each link, so we don't have multiple access issues.
+14. The trailer field of a link-layer data frame contains a checksum.
+    - **True**.
+15. There are no constraints on the topological structure of interconnected switches.
+    - **False**. Interconnected switches must be arranged in a tree structure.
+16. ARP is a link-layer protocol.
+    - **True**. ARP only runs on link-layer frames.
+17. Host A wants to talk to Host D, which are on different subnets (there is a router connecting them). Host A will have to use ARP to determine Host D's MAC address.
+    - **False**. To talk to host D, A would want to use its router as a gateway to the other subnet. A will need to know its router's MAC address, but will not need to know D's MAC address. The router is in charge of routing A's request to D.
+18. ARP requests are broadcast, while ARP replies are unicast.
+    - **True**. ARP requests must be broadcast because the requester doesn't know the destination MAC address. On the other hand, the replier knows the source MAC address of the request, so it can reply unicast to that address.
+19. The destination MAC address for an ARP request is FF-FF-FF-FF-FF-FF.
+    - **True**. This is the broadcast MAC address.
+20. Switches contain ARP caches.
+    - **False**. Switches only maintain MAC address tables. They do not need ARP caches because they do not operate in the network layer and have no conception of an IP address.
