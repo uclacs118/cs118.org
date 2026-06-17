@@ -1,24 +1,5 @@
 ---
-let secondSlash = Astro.url.pathname.slice(1).indexOf("/");
-secondSlash = secondSlash == -1 ? Astro.url.pathname.length - 1 : secondSlash;
-const rootPage = Astro.url.pathname.slice(0, secondSlash + 1);
-
-// Determine the quarter prefix (e.g., /spring26, /winter25) or empty for portal
-const isQuarterPage = rootPage.startsWith("/winter") || rootPage.startsWith("/spring");
-const quarterPrefix = isQuarterPage ? rootPage : "";
-
-// Build links with proper prefix
-const links = [
-    [quarterPrefix + "/", "Syllabus", "newspaper"],
-    [quarterPrefix + "/schedule", "Schedule", "calendar"],
-    [quarterPrefix + "/homeworks", "Homeworks", "document-text"],
-    [quarterPrefix + "/projects", "Projects", "construct"],
-    [quarterPrefix + "/exams", "Exams", "school"],
-    ["https://www.gradescope.com/courses/1292484", "Gradescope", "podium"],
-    ["https://bruinlearn.ucla.edu/courses/227821", "Bruin Learn", "flag"],
-    ["https://piazza.com/class/mnf41zj8kot3mi", "Piazza", "chatbubbles"],
-    [quarterPrefix + "/ctfs", "CTFs", "trophy"],
-];
+// Site is in archive mode: only the home page renders.
 ---
 
 <div class="expandbutton">
@@ -59,32 +40,12 @@ const links = [
 
     <div class="links">
         <ul>
-            {
-                links.map(([link, name, icon]) => {
-                    if (link == rootPage) {
-                        return (
-                            <a href={link}>
-                                <li style="color: var(--acc); font-weight: bolder;">
-                                    <ion-icon name={icon} size="large" />
-                                    <span>{name}</span>
-                                </li>
-                            </a>
-                        );
-                    } else {
-                        return (
-                            <a href={link} style="color: var(--fg)">
-                                <li>
-                                    <ion-icon
-                                        name={icon + "-outline"}
-                                        size="large"
-                                    />
-                                    <span>{name}</span>
-                                </li>
-                            </a>
-                        );
-                    }
-                })
-            }
+            <a href="/" style="color: var(--fg)">
+                <li>
+                    <ion-icon name="home-outline" size="large" />
+                    <span>Home</span>
+                </li>
+            </a>
         </ul>
     </div>
 </nav>
